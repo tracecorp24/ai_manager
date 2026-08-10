@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mekanik CRM | Müşteri Takip Sistemi</title>
+    <style>
+        /* ========== GLOBAL STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        #app {
+            width: 1440px;
+            max-width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER / TAB BAR */
+        .header-tabs {
+            display: flex;
+            background: #0b2b40;
+            color: white;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-right: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 18px 28px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 4px solid transparent;
+            letter-spacing: 0.3px;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: white;
+            border-bottom-color: #00b8a9;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .export-btn {
+            background: #1e7e34;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .export-btn:hover {
+            background: #2a9d4e;
+            transform: scale(1.02);
+        }
+
+        /* YENİ: İleri/Geri butonları */
+        .history-buttons {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .history-btn {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+
+        .history-btn:hover {
+            background: #1e2b37;
+        }
+
+        /* TAB CONTENT */
+        .tab-content {
+            display: none;
+            padding: 30px;
+            background: #f8fafb;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0b2b40;
+            margin-bottom: 24px;
+            border-left: 8px solid #00b8a9;
+            padding-left: 20px;
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e2f3f;
+            margin-bottom: 16px;
+        }
+
+        /* ========== 1. SEKM E : MÜŞTERİ VERİ TABANI ========== */
+        .musteri-panel {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+        }
+
+        .musteri-listesi {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        .musteri-card {
+            display: flex;
+            flex-direction: column;
+            /* YENİ: Tarihi alt kısma eklemek için */
+            background: #ffffff;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eef2f6;
+            transition: 0.2s;
+        }
+
+        .musteri-card.sari {
+            background: #fff7e0;
+            border-left: 8px solid #f4b740;
+        }
+
+        .musteri-card.yesil {
+            background: #e1f7ed;
+            border-left: 8px solid #2d9c6b;
+        }
+
+        .musteri-card.kirmizi {
+            background: #ffe6e5;
+            border-left: 8px solid #d1453a;
+        }
+
+        .musteri-info {
+            flex: 2;
+        }
+
+        .musteri-info strong {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 4px;
+            color: #0b2b40;
+        }
+
+        .musteri-info small {
+            color: #5f6c7a;
+            font-size: 13px;
+            display: block;
+        }
+
+        .musteri-not {
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        .musteri-not input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d0d9e2;
+            border-radius: 40px;
+            font-size: 13px;
+            background: #f9fbfd;
+            transition: 0.2s;
+        }
+
+        .musteri-not input:focus {
+            outline: none;
+            border-color: #00b8a9;
+            box-shadow: 0 0 0 3px rgba(0, 184, 169, 0.15);
+        }
+
+        .musteri-butonlar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            /* YENİ: Tarih için boşluk */
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-sari {
+            background: #f4b740;
+        }
+
+        .btn-sari:hover {
+            background: #e09d2b;
+            transform: translateY(-2px);
+        }
+
+        .btn-yesil {
+            background: #2d9c6b;
+        }
+
+        .btn-yesil:hover {
+            background: #248054;
+            transform: translateY(-2px);
+        }
+
+        .btn-kirmizi {
+            background: #d1453a;
+        }
+
+        .btn-kirmizi:hover {
+            background: #b53a30;
+            transform: translateY(-2px);
+        }
+
+        .btn-mavi {
+            background: #1f7a8c;
+        }
+
+        .btn-mavi:hover {
+            background: #16606f;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        /* YENİ: Tarih göstergesi */
+        .son-tarih-buyuk {
+            font-size: 16px;
+            font-weight: 500;
+            color: #0b2b40;
+            background: #f0f4f9;
+            padding: 6px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .filtre-alani {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+            align-self: start;
+        }
+
+        .filtre-grup {
+            margin-bottom: 20px;
+        }
+
+        .filtre-grup label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1f3a4c;
+            font-size: 14px;
+        }
+
+        .filtre-grup input,
+        .filtre-grup select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d4dee8;
+            border-radius: 40px;
+            font-size: 14px;
+            background: #f9fbfd;
+        }
+
+        .filtre-grup input:focus,
+        .filtre-grup select:focus {
+            border-color: #00b8a9;
+            outline: none;
+        }
+
+        /* ========== 2. SEKM E : KANBAN ========== */
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 12px 0 24px;
+            min-height: 600px;
+        }
+
+        .kanban-sutun {
+            background: #eef2f6;
+            border-radius: 28px;
+            min-width: 280px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            max-height: 700px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+        }
+
+        .sutun-baslik {
+            padding: 18px 20px;
+            background: #dae2e9;
+            border-radius: 28px 28px 0 0;
+            font-weight: 700;
+            color: #0b2b40;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sutun-baslik span {
+            background: #ffffffb3;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 14px;
+        }
+
+        .sutun-icerik {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 400px;
+        }
+
+        .kanban-kart {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            cursor: grab;
+            border-left: 6px solid #1f7a8c;
+            transition: 0.1s;
+            user-select: none;
+        }
+
+        .kanban-kart:active {
+            cursor: grabbing;
+            opacity: 0.8;
+        }
+
+        .kart-baslik {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #0b2b40;
+        }
+
+        .kart-detay {
+            font-size: 13px;
+            color: #4a5f73;
+        }
+
+        .yeni-is-btn {
+            background: #1f7a8c;
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.1);
+            transition: 0.2s;
+        }
+
+        .yeni-is-btn:hover {
+            background: #0b5b6e;
+        }
+
+        /* ========== 3. SEKM E : MAIL ========== */
+        .mail-panel {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+        }
+
+        .mail-sablon,
+        .pdf-list {
+            background: white;
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .mail-sablon select,
+        .mail-sablon input,
+        .mail-sablon textarea {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border: 1px solid #d0d9e2;
+            border-radius: 40px;
+            font-size: 15px;
+            background: #f9fbfd;
+        }
+
+        .mail-sablon textarea {
+            border-radius: 24px;
+            height: 240px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .pdf-item {
+            background: #f0f4f9;
+            padding: 14px 18px;
+            border-radius: 40px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .pdf-yukle input {
+            border: 2px dashed #a0b8cc;
+            padding: 30px;
+            border-radius: 40px;
+            width: 100%;
+            cursor: pointer;
+            background: #fcfdff;
+        }
+
+        /* ========== 4. SEKM E : CIRO ========== */
+        .ciro-ozet {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 36px;
+        }
+
+        .ozet-kart {
+            background: linear-gradient(145deg, #1f7a8c, #115566);
+            color: white;
+            padding: 24px;
+            border-radius: 28px;
+            flex: 1;
+            min-width: 180px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .ozet-kart.vergi {
+            background: linear-gradient(145deg, #c44536, #a33024);
+        }
+
+        .ozet-kart.kar {
+            background: linear-gradient(145deg, #2d9c6b, #1f6e4a);
+        }
+
+        .is-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .is-table th {
+            background: #1d3f54;
+            color: white;
+            padding: 16px 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .is-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e6edf4;
+            text-align: center;
+            background: white;
+        }
+
+        .is-table input {
+            width: 100px;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* ========== 5. SEKM E : LINKLER ========== */
+        .link-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .aktif-isler,
+        .link-list {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .link-item {
+            background: #f5f8fc;
+            padding: 18px;
+            border-radius: 24px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-link {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-link:hover {
+            background: #7d3c98;
+        }
+
+        hr {
+            margin: 30px 0;
+            border: none;
+            border-top: 3px solid #d9e2ec;
+        }
+
+        .text-small {
+            font-size: 13px;
+            color: #6b7f90;
+        }
+
+        /* ========== MISC ========== */
+        .tarih-bilgi {
+            font-size: 11px;
+            color: #8f9eae;
+            margin-top: 4px;
+        }
+
+        /* ========== MODAL STYLES ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 32px;
+            width: 500px;
+            max-width: 95%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #0b2b40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 28px;
+            color: #999;
+        }
+
+        .modal-body label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #4a5f73;
+        }
+
+        .modal-body input,
+        .modal-body textarea {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid #d4dee8;
+            border-radius: 12px;
+            font-size: 15px;
+        }
+
+        .customer-search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            margin-top: -12px;
+            margin-bottom: 16px;
+            background: #f9fbfd;
+            display: none;
+        }
+
+        .search-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .search-item:hover {
+            background: #eef2f6;
+        }
+
+        .search-item.selected {
+            background: #00b8a9;
+            color: white;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .modal-footer button {
+            flex: 1;
+        }
+        /* Business Manager görsel sistemi */
+        :root { --bm-ink:#15263d; --bm-muted:#64748b; --bm-line:#e2e8f0; --bm-bg:#f4f7fb; }
+        body { padding:0; background:var(--bm-bg); color:var(--bm-ink); }
+        #app { width:min(1480px,100%); min-height:100vh; border-radius:0; box-shadow:none; }
+        .header-tabs { min-height:72px; padding:0 24px; gap:16px; background:linear-gradient(115deg,#102c46,#0c5360); }
+        .tabs { min-width:0; gap:4px; overflow-x:auto; scrollbar-width:none; flex-wrap:nowrap; }
+        .tabs::-webkit-scrollbar { display:none; }
+        .tab-btn { flex:0 0 auto; padding:22px 16px 18px; font-size:13px; white-space:nowrap; border-bottom-width:3px; }
+        .history-buttons { margin-left:auto; margin-right:0; flex:0 0 auto; }
+        .history-btn { padding:9px 12px; font-size:12px; background:rgba(255,255,255,.12); }
+        .export-btn { padding:10px 14px; font-size:12px; white-space:nowrap; }
+        .tab-content { padding:32px clamp(18px,4vw,48px); background:var(--bm-bg); }
+        h2 { font-size:24px; margin:0 0 22px; padding-left:14px; border-left-width:4px; }
+        h3 { font-size:17px; color:var(--bm-ink); }
+        .musteri-panel { grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start; }
+        .musteri-listesi,.filtre-alani,.kanban-board,.mail-panel,.ciro-ozet,.link-panel { border:1px solid var(--bm-line); box-shadow:0 8px 24px rgba(15,35,60,.06); border-radius:16px; }
+        .musteri-listesi { padding:16px; max-height:calc(100vh - 220px); }
+        .musteri-card { padding:14px 16px; margin-bottom:10px; border-radius:12px; box-shadow:none; border-color:var(--bm-line); }
+        .musteri-card:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(15,35,60,.08); }
+        .filtre-alani { padding:20px; background:#fff; }
+        input,select,textarea { border-color:#d4deea !important; border-radius:9px !important; color:var(--bm-ink); background:#fff; }
+        button { border-radius:9px; }
+        .kanban-board { padding:16px; gap:14px; background:#fff; overflow-x:auto; }
+        .kanban-sutun { min-width:220px; border:1px solid var(--bm-line); border-radius:12px; background:#f8fafc; }
+        .kanban-kart { border-radius:10px; border:1px solid var(--bm-line); box-shadow:0 3px 10px rgba(15,35,60,.06); }
+        .mail-panel,.link-panel { gap:20px; padding:20px; background:#fff; }
+        .ciro-ozet { padding:18px; gap:12px; background:#fff; }
+        .ozet-kart { border-radius:12px; border:1px solid var(--bm-line); box-shadow:none; }
+        table { border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--bm-line); border-radius:12px; background:#fff; }
+        th { background:#f8fafc; color:var(--bm-muted); font-size:12px; }
+        td,th { padding:13px 14px; border-bottom:1px solid var(--bm-line); }
+        @media (max-width:900px) { html,body { min-width:0; overflow-x:hidden; } .header-tabs { padding:0 10px; gap:6px; } .tabs { width:100%; flex:1 1 100%; order:1; } .history-buttons,.export-btn { display:none; } .musteri-panel,.mail-panel,.link-panel { grid-template-columns:1fr; } .musteri-listesi { max-height:none; } .tab-content { padding:20px 12px; } .kanban-board { display:flex; align-items:stretch; overflow-x:auto; scroll-snap-type:x proximity; padding:12px 4px 18px; } .kanban-sutun { flex:0 0 82vw; max-width:320px; scroll-snap-align:start; } .ciro-ozet { grid-template-columns:1fr 1fr; } .is-table { min-width:760px; } .is-table-wrap { overflow-x:auto; } .mail-panel textarea { min-height:180px; } }
+        @media (max-width:520px) { .header-tabs { min-height:58px; padding:0 8px; } .tabs { gap:0; } .tab-btn { padding:16px 12px 13px; font-size:12px; } .tab-content { padding:16px 10px; } h2 { font-size:20px; margin-bottom:16px; } .musteri-panel { gap:12px; } .musteri-listesi,.filtre-alani,.kanban-board,.mail-panel,.ciro-ozet,.link-panel { border-radius:12px; padding:12px; } .ciro-ozet { grid-template-columns:1fr; } .musteri-card { padding:12px; } .musteri-butonlar { display:grid; grid-template-columns:1fr; gap:6px; } .musteri-butonlar .btn { width:100%; } input,select,textarea { width:100%; max-width:100%; font-size:16px; } .modal-content { width:calc(100% - 20px); max-height:90dvh; overflow-y:auto; } }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- ÜST KISIM: SEKMELER + DIŞA AKTAR BUTONU + İLERİ/GERİ -->
+        <div class="header-tabs">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="tab1">📋 Müşteri Veri Tabanı</button>
+                <button class="tab-btn" data-tab="tab2">📊 Aktif Süreçler (Kanban)</button>
+                <button class="tab-btn" data-tab="tab3">✉️ Mail Oluştur</button>
+                <button class="tab-btn" data-tab="tab4">💰 Ciro & Kar</button>
+                <button class="tab-btn" data-tab="tab5">🔗 Müşteri Linkleri</button>
+            </div>
+            <!-- YENİ: İleri/Geri butonları -->
+            <div class="history-buttons">
+                <button class="history-btn" id="undoBtn" title="Geri Al">↩ Geri</button>
+                <button class="history-btn" id="redoBtn" title="İleri Al">↪ İleri</button>
+            </div>
+            <button class="export-btn" id="exportData">📥 Tüm Veriyi Dışa Aktar</button>
+        </div>
+
+        <!-- 1. SEKM E: MÜŞTERİ VERİ TABANI -->
+        <div id="tab1" class="tab-content active">
+            <h2>🔷 Müşteri Veri Tabanı</h2>
+            <div class="musteri-panel">
+                <!-- MÜŞTERİ LİSTESİ -->
+                <div class="musteri-listesi" id="musteriListesi"></div>
+                <!-- FİLTRELEME ALANI -->
+                <div class="filtre-alani">
+                    <h3>🔍 Filtrele & Ara</h3>
+                    <div class="filtre-grup">
+                        <label>Firma / Kişi ara</label>
+                        <input type="text" id="arama" placeholder="İsim girin...">
+                    </div>
+                    <div class="filtre-grup">
+                        <label>Faaliyet Alanı</label>
+                        <select id="filtreFaaliyet">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label>📍 İlçe</label>
+                        <select id="filtreIlce">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label>Son Durum (CRM)</label>
+                        <select id="filtreDurum">
+                            <option value="">Tümü</option>
+                            <option value="sari">İletişim geçildi (Sarı)</option>
+                            <option value="yesil">İlgili (Yeşil)</option>
+                            <option value="kirmizi">Olumsuz (Kırmızı)</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label>🏢 Şirket Durumu (JSON)</label>
+                        <select id="filtreJsonDurum">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                    <!-- YENİ: Son Görüşme Tarihi filtresi -->
+                    <div class="filtre-grup">
+                        <label>Son Görüşme Tarihi</label>
+                        <select id="filtreTarih">
+                            <option value="">Tümü</option>
+                            <option value="son1hafta">Son 1 hafta</option>
+                            <option value="son1ay">Son 1 ay</option>
+                            <option value="eskı1ay">1 aydan eski</option>
+                            <option value="hic">Hiç görüşülmemiş</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-mavi" id="filtreUygula" style="width:100%;">Filtrele</button>
+                    <hr>
+                    <p class="text-small">* Her müşteri kartında son durum notu ekleyebilir, 3 butonla durumu
+                        değiştirebilirsiniz. Tarih otomatik kaydedilir.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. SEKM E: KANBAN -->
+        <div id="tab2" class="tab-content">
+            <h2>🔷 Aktif Süreçler (Kanban)</h2>
+            <div class="kanban-board" id="kanbanBoard"></div>
+            <button class="yeni-is-btn" id="yeniIsEkle">➕ Yeni İş / Teklif Ekle (Müşteri Seç)</button>
+        </div>
+
+        <!-- 3. SEKM E: MAİL OLUŞTURMA -->
+        <div id="tab3" class="tab-content">
+            <h2>🔷 Mail Oluşturma (Makine Mühendisliği Şablonları)</h2>
+            <div class="mail-panel">
+                <div class="mail-sablon">
+                    <label>👥 Müşteri Ara ve Seç</label>
+                    <input type="text" id="mailMusteriAra" placeholder="Müşteri adını veya sicilini yazın...">
+                    <div id="mailMusteriSonuclari" class="customer-search-results"></div>
+                    <input type="hidden" id="mailMusteri">
+
+                    <label>🎯 Amaç</label>
+                    <select id="mailAmac">
+                        <option value="tanitim">Tanıtım (Mekanik Tasarım Hizmetleri)</option>
+                        <option value="yazilim">Yazılım Satışı (Mekanik Yazılım Lisansı)</option>
+                        <option value="hizmet">Hizmet Satışı (Mühendislik Desteği)</option>
+                        <option value="teklif">Fiyat Teklifi Sunma</option>
+                        <option value="durum">İş Durumu Belirtme</option>
+                        <option value="odeme">Ödeme Talebi</option>
+                    </select>
+
+                    <label>📎 PDF Eki (Seçiniz)</label>
+                    <select id="pdfSec">
+                        <option value="">PDF seçilmedi</option>
+                    </select>
+
+                    <label>📝 Oluşturulan Taslak (Düzenleyebilirsiniz)</label>
+                    <textarea id="mailTaslak" placeholder="Şablon burada görünecek..."></textarea>
+
+                    <button class="btn btn-mavi" id="mailOlustur" style="width:100%;">✍️ Taslak Oluştur</button>
+                    <button class="btn btn-secondary" id="mailKaydet" style="width:100%; margin-top:10px;">💾 Taslağı
+                        Kaydet (localStorage)</button>
+                </div>
+                <div class="pdf-list">
+                    <h3>📂 Yüklenen PDF'ler</h3>
+                    <div id="pdfListesi"></div>
+                    <div class="pdf-yukle">
+                        <input type="file" id="pdfYukle" accept=".pdf" multiple>
+                        <p class="text-small" style="margin-top:12px;">*PDF içerikleri saklanmaz, sadece isim
+                            listelenir.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. SEKM E: CİRO HESABI -->
+        <div id="tab4" class="tab-content">
+            <h2>🔷 Ciro & Kar Hesaplama (Mekanik Projeler)</h2>
+            <div class="ciro-ozet">
+                <div class="ozet-kart" id="aylikCiro">📆 Aylık Ciro: ₺0</div>
+                <div class="ozet-kart" id="haftalikCiro">📅 Haftalık Ciro: ₺0</div>
+                <div class="ozet-kart" id="yillikCiro">📈 Yıllık Ciro: ₺0</div>
+                <div class="ozet-kart vergi" id="toplamVergi">🧾 Toplam Vergi: ₺0</div>
+                <div class="ozet-kart kar" id="toplamKar">💰 Net Kar: ₺0</div>
+            </div>
+            <h3>📋 Alınan İşler ve Finansal Bilgiler</h3>
+            <table class="is-table" id="ciroTable">
+                <thead>
+                    <tr>
+                        <th>İş Adı</th>
+                        <th>Müşteri</th>
+                        <th>Alınma Tarihi</th>
+                        <th>Tutar (₺)</th>
+                        <th>Masraf (₺)</th>
+                        <th>Vergi %</th>
+                        <th>Vergi (₺)</th>
+                        <th>Kar (₺)</th>
+                        <th>Ödeme Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody id="ciroTbody"></tbody>
+            </table>
+            <button class="btn btn-mavi" id="ciroHesapla" style="margin-top:20px;">🔄 Yeniden Hesapla ve Kaydet</button>
+        </div>
+
+        <!-- 5. SEKM E: MÜŞTERİ LİNKLERİ -->
+        <div id="tab5" class="tab-content">
+            <h2>🔷 Müşteri Özel Linkleri</h2>
+            <div class="link-panel">
+                <div class="aktif-isler">
+                    <h3>✅ Tamamlanan İşler (Ödemesi Alınan)</h3>
+                    <div id="tamamlananIsler"></div>
+                </div>
+                <div class="link-list">
+                    <h3>🔗 Oluşturulan Linkler</h3>
+                    <div id="linkListesi"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- YENİ İŞ MODALI -->
+    <div id="isModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>➕ Yeni İş / Teklif Ekle</span>
+                <span class="modal-close" id="isModalClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <label>🔍 Müşteri Ara (İsim veya Sicil)</label>
+                <input type="text" id="modalMusteriAra" placeholder="Müşteri adını yazın...">
+                <div id="modalMusteriSonuclari" class="customer-search-results"></div>
+                <input type="hidden" id="modalSeciliMusteriId">
+
+                <label>📝 İşin Adı</label>
+                <input type="text" id="modalIsAdi" placeholder="Örn: 3D Tasarım Hizmeti">
+
+                <label>💰 Tutar (TL)</label>
+                <input type="number" id="modalIsTutar" placeholder="0.00">
+
+                <label>📌 Açıklama / Not</label>
+                <textarea id="modalIsNot"
+                    style="height: 80px; border-radius: 12px; padding: 12px 16px; width: 100%; font-size: 15px; border: 1px solid #d4dee8;"
+                    placeholder="İşe dair kısa bilgiler..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="isModalIptal">İptal</button>
+                <button class="btn btn-yesil" id="isModalKaydet">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // ==================== VERİ YAPILARI VE LOCALSTORAGE ====================
+            // ==================== VERİ YAPILARI VE LOCALSTORAGE ====================
+            let musteriler = [];
+            let pdfDosyalari = [];     // { ad: 'dosya.pdf' } sadece isim
+
+            // Yardımcı: isler ve linkler'i musteriler'den toplayıp döndüren getter'lar
+            function getTumIsler() {
+                return musteriler.flatMap(m => (m.isler || []).map(is => ({ ...is, musteriId: m.id })));
+            }
+            function getTumLinkler() {
+                return musteriler.flatMap(m => (m.linkler || []).map(l => ({ ...l, musteriId: m.id })));
+            }
+
+            // YENİ: History değişkenleri
+            let historyStack = [];
+            let historyIndex = -1;
+            const MAX_HISTORY = 50;
+
+            // JSON'dan müşteri listesini çek ve yerel veriyle birleştir
+            async function loadData() {
+                let jsonMusteriler = [];
+                try {
+                    const response = await fetch('musteri_listesi.json');
+                    const data = await response.json();
+                    jsonMusteriler = data.map(item => ({
+                        id: item["Sicil No"],
+                        ad: item["Ünvan"],
+                        adres: item["Adres"],
+                        ilce: item["İlçe"],
+                        durum: item["Durum"],
+                        faaliyet: "Genel", // Varsayılan
+                        telefon: "-",
+                        email: "-",
+                        sonDurum: "",
+                        sonNot: "",
+                        sonTarih: "",
+                        sonTarihISO: "",
+                        isler: [],
+                        linkler: []
+                    }));
+                } catch (e) {
+                    console.error("JSON yüklenemedi:", e);
+                }
+
+                let stored = localStorage.getItem('mekanikCRM_v2'); // 'v2' ile yeni yapıya geçiyoruz
+                if (stored) {
+                    try {
+                        let localData = JSON.parse(stored);
+                        let localMusteriler = localData.musteriler || [];
+                        pdfDosyalari = localData.pdfDosyalari || [];
+
+                        // JSON verisi ile yerel veriyi birleştir (Sicil No / ID bazlı)
+                        musteriler = jsonMusteriler.map(jm => {
+                            let lm = localMusteriler.find(m => m.id === jm.id);
+                            if (lm) {
+                                // Yerel verideki CRM alanlarını ve nested verileri koru
+                                return {
+                                    ...jm,
+                                    telefon: lm.telefon || jm.telefon,
+                                    email: lm.email || jm.email,
+                                    faaliyet: lm.faaliyet || jm.faaliyet,
+                                    sonDurum: lm.sonDurum || "",
+                                    sonNot: lm.sonNot || "",
+                                    sonTarih: lm.sonTarih || "",
+                                    sonTarihISO: lm.sonTarihISO || "",
+                                    isler: lm.isler || [],
+                                    linkler: lm.linkler || []
+                                };
+                            }
+                            return jm;
+                        });
+
+                        // Eğer JSON'da olmayan ama yerel veride olan müşteri varsa (manuel eklenmiş olabilir) onları da koru
+                        localMusteriler.forEach(lm => {
+                            if (!musteriler.some(m => m.id === lm.id)) {
+                                musteriler.push(lm);
+                            }
+                        });
+
+                    } catch (e) {
+                        console.error("Yerel veri yükleme hatası:", e);
+                        musteriler = jsonMusteriler;
+                    }
+                } else {
+                    musteriler = jsonMusteriler;
+                }
+
+                // İlk açılışta render
+                renderAll();
+                pushHistory();
+            }
+
+            // YENİ: History ekleme fonksiyonu
+            function pushHistory() {
+                if (historyIndex < historyStack.length - 1) {
+                    historyStack = historyStack.slice(0, historyIndex + 1);
+                }
+                let snapshot = {
+                    musteriler: JSON.parse(JSON.stringify(musteriler)),
+                    pdfDosyalari: JSON.parse(JSON.stringify(pdfDosyalari))
+                };
+                historyStack.push(snapshot);
+                if (historyStack.length > MAX_HISTORY) historyStack.shift();
+                historyIndex = historyStack.length - 1;
+            }
+
+            // YENİ: History'den yükleme
+            function loadFromHistory(index) {
+                if (index < 0 || index >= historyStack.length) return false;
+                let snap = historyStack[index];
+                musteriler = JSON.parse(JSON.stringify(snap.musteriler));
+                pdfDosyalari = JSON.parse(JSON.stringify(snap.pdfDosyalari));
+                historyIndex = index;
+                saveAll(false);
+                return true;
+            }
+
+            function saveAll(addToHistory = true) {
+                if (addToHistory) pushHistory();
+                let data = { musteriler, pdfDosyalari };
+                localStorage.setItem('mekanikCRM_v2', JSON.stringify(data));
+                renderAll();
+            }
+
+            // ==================== RENDER FONKSİYONLARI ====================
+            function renderAll() {
+                renderMusteriListesi();
+                renderFiltreSecenekleri();
+                renderKanban();
+                renderMailMusteriVePdf();
+                renderCiroTablo();
+                renderLinkler();
+            }
+
+            // ---------- 1. SEKM E : MÜŞTERİ LİSTESİ ----------
+            function renderMusteriListesi() {
+                let arama = document.getElementById('arama')?.value.toLocaleLowerCase('tr-TR') || '';
+                let faaliyetFiltre = document.getElementById('filtreFaaliyet')?.value || '';
+                let ilceFiltre = document.getElementById('filtreIlce')?.value || '';
+                let durumFiltre = document.getElementById('filtreDurum')?.value || '';
+                let jsonDurumFiltre = document.getElementById('filtreJsonDurum')?.value || '';
+                let tarihFiltre = document.getElementById('filtreTarih')?.value || '';
+
+                let filtreli = musteriler.filter(m => {
+                    if (arama && !(m.ad.toLocaleLowerCase('tr-TR').includes(arama) || String(m.id).toLocaleLowerCase('tr-TR').includes(arama) || (m.ilce || '').toLocaleLowerCase('tr-TR').includes(arama))) return false;
+                    if (faaliyetFiltre && m.faaliyet !== faaliyetFiltre) return false;
+                    if (ilceFiltre && m.ilce !== ilceFiltre) return false;
+                    if (durumFiltre && m.sonDurum !== durumFiltre) return false;
+                    if (jsonDurumFiltre && m.durum !== jsonDurumFiltre) return false;
+
+                    // Tarih filtresi
+                    if (tarihFiltre) {
+                        let bugun = new Date();
+                        let birHaftaOnce = new Date(bugun.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        let birAyOnce = new Date(bugun.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        if (tarihFiltre === 'son1hafta') {
+                            if (!m.sonTarihISO) return false;
+                            let tarih = new Date(m.sonTarihISO);
+                            if (tarih < birHaftaOnce) return false;
+                        } else if (tarihFiltre === 'son1ay') {
+                            if (!m.sonTarihISO) return false;
+                            let tarih = new Date(m.sonTarihISO);
+                            if (tarih < birAyOnce) return false;
+                        } else if (tarihFiltre === 'eskı1ay') {
+                            if (!m.sonTarihISO) return false;
+                            let tarih = new Date(m.sonTarihISO);
+                            if (tarih >= birAyOnce) return false;
+                        } else if (tarihFiltre === 'hic') {
+                            if (m.sonTarihISO && m.sonTarihISO !== '') return false;
+                        }
+                    }
+                    return true;
+                });
+
+                let html = '';
+                filtreli.forEach(m => {
+                    let durumClass = m.sonDurum || '';
+                    let tarihGoster = m.sonTarih ? `<div class="son-tarih-buyuk">📅 ${m.sonTarih}</div>` : '<div class="son-tarih-buyuk">📅 Görüşme yok</div>';
+                    html += `<div class="musteri-card ${durumClass}">`;
+                    html += `<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">`;
+                    html += `<div class="musteri-info"><strong>${m.ad}</strong><small>Sicil: ${m.id} | ${m.ilce} | ${m.telefon}</small></div>`;
+                    html += `<div class="musteri-not"><input type="text" placeholder="Son durum notu" value="${m.sonNot || ''}" data-id="${m.id}" class="notInput"></div>`;
+                    html += `<div class="musteri-butonlar">`;
+                    html += `<button class="btn btn-sari" data-id="${m.id}" data-durum="sari">📞 İletişim</button>`;
+                    html += `<button class="btn btn-yesil" data-id="${m.id}" data-durum="yesil">✅ İlgili</button>`;
+                    html += `<button class="btn btn-kirmizi" data-id="${m.id}" data-durum="kirmizi">❌ Olumsuz</button>`;
+                    html += `</div>`;
+                    html += `</div>`;
+                    html += tarihGoster;
+                    html += `</div>`;
+                });
+                document.getElementById('musteriListesi').innerHTML = html || '<p style="text-align:center; color:#999;">Müşteri bulunamadı.</p>';
+
+                // Not input değişim olayı
+                document.querySelectorAll('.notInput').forEach(inp => {
+                    inp.addEventListener('change', function () {
+                        let id = this.dataset.id;
+                        let musteri = musteriler.find(m => m.id === id);
+                        if (musteri) { musteri.sonNot = this.value; saveAll(); }
+                    });
+                });
+
+                // Butonlar
+                document.querySelectorAll('.musteri-butonlar .btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        let id = this.dataset.id;
+                        let durum = this.dataset.durum;
+                        let musteri = musteriler.find(m => m.id === id);
+                        if (musteri) {
+                            if (musteri.sonDurum === durum) musteri.sonDurum = '';
+                            else musteri.sonDurum = durum;
+                            musteri.sonTarih = new Date().toLocaleString('tr-TR');
+                            musteri.sonTarihISO = new Date().toISOString();
+                            saveAll();
+                        }
+                    });
+                });
+            }
+
+            function renderFiltreSecenekleri() {
+                // Faaliyet Alanları
+                let faaliyetler = [...new Set(musteriler.map(m => m.faaliyet).filter(f => f))].sort();
+                let fSelect = document.getElementById('filtreFaaliyet');
+                if (fSelect) {
+                    let mevcut = fSelect.value;
+                    fSelect.innerHTML = '<option value="">Tümü</option>' + faaliyetler.map(f => `<option value="${f}">${f}</option>`).join('');
+                    fSelect.value = mevcut;
+                }
+
+                // İlçeler
+                let ilceler = [...new Set(musteriler.map(m => m.ilce).filter(i => i))].sort();
+                let iSelect = document.getElementById('filtreIlce');
+                if (iSelect) {
+                    let mevcut = iSelect.value;
+                    iSelect.innerHTML = '<option value="">Tümü</option>' + ilceler.map(i => `<option value="${i}">${i}</option>`).join('');
+                    iSelect.value = mevcut;
+                }
+
+                // JSON'dan gelen şirket durumları (Faal vb.)
+                let dDurumlar = [...new Set(musteriler.map(m => m.durum).filter(d => d))].sort();
+                let jdSelect = document.getElementById('filtreJsonDurum');
+                if (jdSelect) {
+                    let mevcut = jdSelect.value;
+                    jdSelect.innerHTML = '<option value="">Tümü</option>' + dDurumlar.map(d => `<option value="${d}">${d}</option>`).join('');
+                    jdSelect.value = mevcut;
+                }
+            }
+
+            // ---------- 2. SEKM E : KANBAN ----------
+            function renderKanban() {
+                let isler = getTumIsler();
+                let sutunlar = [
+                    { baslik: "📞 İletişim & Tanıtım", durum: 0 },
+                    { baslik: "📄 Teklif Aşaması", durum: 1 },
+                    { baslik: "✅ Alınan İş", durum: 2 },
+                    { baslik: "📦 Teslim Edilen (Ödeme Bekleyen)", durum: 3 },
+                    { baslik: "💰 Ödemesi Alınan", durum: 4 }
+                ];
+                let boardHtml = '';
+                sutunlar.forEach(s => {
+                    let sutunIsler = isler.filter(i => i.durum === s.durum);
+                    let kartHtml = '';
+                    sutunIsler.forEach(i => {
+                        let musteri = musteriler.find(m => m.id === i.musteriId) || { ad: 'Bilinmeyen' };
+                        kartHtml += `<div class="kanban-kart" draggable="true" data-id="${i.id}" data-mid="${i.musteriId}">`;
+                        kartHtml += `<div class="kart-baslik">${i.isAdi}</div>`;
+                        kartHtml += `<div class="kart-detay">${musteri.ad} - ${i.aciklama || ''}</div>`;
+                        kartHtml += `</div>`;
+                    });
+                    boardHtml += `<div class="kanban-sutun" data-durum="${s.durum}">`;
+                    boardHtml += `<div class="sutun-baslik">${s.baslik} <span>${sutunIsler.length}</span></div>`;
+                    boardHtml += `<div class="sutun-icerik" data-durum="${s.durum}">${kartHtml || '<p style="color:#aaa; text-align:center; padding:20px;">Boş</p>'}</div>`;
+                    boardHtml += `</div>`;
+                });
+                document.getElementById('kanbanBoard').innerHTML = boardHtml;
+
+                document.querySelectorAll('.kanban-kart').forEach(k => {
+                    k.addEventListener('dragstart', handleDragStart);
+                    k.addEventListener('dragend', handleDragEnd);
+                });
+                document.querySelectorAll('.sutun-icerik').forEach(s => {
+                    s.addEventListener('dragover', (e) => e.preventDefault());
+                    s.addEventListener('drop', handleDrop);
+                });
+            }
+
+            // MODAL YÖNETİMİ
+            function openIsModal() {
+                document.getElementById('modalMusteriAra').value = '';
+                document.getElementById('modalMusteriSonuclari').style.display = 'none';
+                document.getElementById('modalSeciliMusteriId').value = '';
+                document.getElementById('modalIsAdi').value = '';
+                document.getElementById('modalIsTutar').value = '';
+                document.getElementById('modalIsNot').value = '';
+                document.getElementById('isModal').style.display = 'flex';
+            }
+
+            function closeIsModal() {
+                document.getElementById('isModal').style.display = 'none';
+            }
+
+            function searchMusteriInModal(val, type = 'job') {
+                let resultsDiv = (type === 'job') ? document.getElementById('modalMusteriSonuclari') : document.getElementById('mailMusteriSonuclari');
+                let targetInputId = (type === 'job') ? 'modalSeciliMusteriId' : 'mailMusteri';
+                let searchInputId = (type === 'job') ? 'modalMusteriAra' : 'mailMusteriAra';
+
+                if (val.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+                let query = val.toLocaleLowerCase('tr-TR');
+                let matches = musteriler.filter(m => m.ad.toLocaleLowerCase('tr-TR').includes(query) || String(m.id).toLocaleLowerCase('tr-TR').includes(query)).slice(0, 10);
+
+                if (matches.length > 0) {
+                    resultsDiv.innerHTML = matches.map(m => `<div class="search-item" data-id="${m.id}" data-ad="${m.ad}">${m.ad} (${m.id})</div>`).join('');
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.querySelectorAll('.search-item').forEach(item => {
+                        item.addEventListener('click', function () {
+                            document.getElementById(targetInputId).value = this.dataset.id;
+                            document.getElementById(searchInputId).value = this.dataset.ad;
+                            resultsDiv.style.display = 'none';
+                            if (type === 'mail') renderMailMusteriVePdf(); // Mail için PDF'leri vb. de güncellemek gerekebilir (opsiyonel)
+                        });
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<div class="search-item">Sonuç bulunamadı</div>';
+                    resultsDiv.style.display = 'block';
+                }
+            }
+
+            function saveNewJobFromModal() {
+                let mid = document.getElementById('modalSeciliMusteriId').value;
+                let ad = document.getElementById('modalIsAdi').value;
+                let tutar = parseFloat(document.getElementById('modalIsTutar').value) || 0;
+                let not = document.getElementById('modalIsNot').value;
+
+                if (!mid) { alert('Lütfen bir müşteri seçin!'); return; }
+                if (!ad) { alert('Lütfen iş adı girin!'); return; }
+
+                let m = musteriler.find(x => x.id === mid);
+                if (m) {
+                    let yeniId = Date.now();
+                    m.isler.push({
+                        id: yeniId,
+                        isAdi: ad,
+                        alinmaTarihi: new Date().toLocaleDateString('tr-TR'),
+                        durum: 0,
+                        musteriId: mid,
+                        tutar: tutar,
+                        masraf: 0,
+                        vergiOran: 20,
+                        notlar: not
+                    });
+                    saveAll();
+                    closeIsModal();
+                }
+            }
+
+            let draggedId = null, draggedMid = null;
+            function handleDragStart(e) {
+                draggedId = this.dataset.id;
+                draggedMid = this.dataset.mid;
+                e.dataTransfer.setData('text/p-id', draggedId);
+                e.dataTransfer.setData('text/p-mid', draggedMid);
+            }
+            function handleDragEnd() { draggedId = null; draggedMid = null; }
+            function handleDrop(e) {
+                e.preventDefault();
+                let targetSutun = e.currentTarget.closest('.kanban-sutun');
+                if (!targetSutun) return;
+                let yeniDurum = parseInt(targetSutun.dataset.durum);
+                let id = parseInt(e.dataTransfer.getData('text/p-id'));
+                let mid = e.dataTransfer.getData('text/p-mid');
+
+                let m = musteriler.find(x => x.id === mid);
+                if (m && m.isler) {
+                    let is = m.isler.find(y => y.id === id);
+                    if (is && is.durum !== yeniDurum) {
+                        is.durum = yeniDurum;
+                        if (yeniDurum === 4 && !is.odemeTarihi) is.odemeTarihi = new Date().toISOString().split('T')[0];
+                        saveAll();
+                    }
+                }
+            }
+
+            document.getElementById('yeniIsEkle').addEventListener('click', openIsModal);
+            document.getElementById('isModalClose').addEventListener('click', closeIsModal);
+            document.getElementById('isModalIptal').addEventListener('click', closeIsModal);
+            document.getElementById('isModalKaydet').addEventListener('click', saveNewJobFromModal);
+            document.getElementById('modalMusteriAra').addEventListener('input', function (e) {
+                searchMusteriInModal(e.target.value, 'job');
+            });
+            document.getElementById('mailMusteriAra').addEventListener('input', function (e) {
+                searchMusteriInModal(e.target.value, 'mail');
+            });
+
+            // ---------- 3. SEKM E : MAIL ----------
+            function renderMailMusteriVePdf() {
+                // Not: Artık mailMusteri select değil hidden input, o yüzden mSel.innerHTML gerek yok.
+                let pSel = document.getElementById('pdfSec');
+                if (pSel) pSel.innerHTML = '<option value="">PDF seçilmedi</option>' + pdfDosyalari.map(p => `<option value="${p.ad}">${p.ad}</option>`).join('');
+                let pCont = document.getElementById('pdfListesi');
+                if (pCont) pCont.innerHTML = pdfDosyalari.map(p => `<div class="pdf-item">📄 ${p.ad} <span class="text-small">yüklü</span></div>`).join('') || '<p class="text-small">Henüz PDF yüklenmemiş.</p>';
+            }
+
+            document.getElementById('pdfYukle')?.addEventListener('change', function (e) {
+                Array.from(e.target.files).forEach(file => {
+                    if (!pdfDosyalari.some(p => p.ad === file.name)) pdfDosyalari.push({ ad: file.name });
+                });
+                saveAll();
+            });
+
+            document.getElementById('mailOlustur')?.addEventListener('click', function () {
+                let mid = document.getElementById('mailMusteri')?.value;
+                let amac = document.getElementById('mailAmac')?.value;
+                let pdfAd = document.getElementById('pdfSec')?.value;
+                let m = musteriler.find(x => x.id === mid);
+                if (!m) { alert('Müşteri seçin'); return; }
+                let metin = `Sayın ${m.ad} yetkilisi,\n\n`;
+                switch (amac) {
+                    case 'tanitim':
+                        metin += `Firmamız, mekanik tasarım ve mühendislik çözümleri konusunda uzmanlaşmıştır. Size özel tasarım hizmetlerimiz hakkında bilgi vermek isteriz.\n\n`;
+                        metin += `• 3D katı modelleme (SolidWorks, Catia, NX)\n`;
+                        metin += `• Sonlu elemanlar analizi (ANSYS, Abaqus)\n`;
+                        metin += `• Mekanik sistem tasarımı ve optimizasyonu\n`;
+                        metin += `• Prototip üretim ve test destek hizmetleri\n\n`;
+                        metin += `Detaylı bilgi ve referanslarımız için ekteki dosyayı inceleyebilirsiniz.`;
+                        break;
+                    case 'yazilim':
+                        metin += `Mekanik yazılım (CAD/CAM/CAE) lisansları ve satışı konusunda size özel bir teklif hazırladık. Yazılımlarımız ile üretim verimliliğinizi artırabilirsiniz.\n\n`;
+                        metin += `• SolidWorks Professional - %20 indirimli\n`;
+                        metin += `• ANSYS Workbench - Eğitim paketi hediye\n`;
+                        metin += `• MasterCAM - 3 yıllık lisans avantajı\n\n`;
+                        metin += `Teklif detaylarını ekte bulabilirsiniz.`;
+                        break;
+                    case 'hizmet':
+                        metin += `Mühendislik danışmanlığı, analiz ve simülasyon hizmetlerimizle yanınızdayız. Size nasıl katkı sağlayabileceğimizi anlatmak isteriz.\n\n`;
+                        metin += `• Tasarım danışmanlığı (haftalık/aylık)\n`;
+                        metin += `• Tersine mühendislik hizmetleri\n`;
+                        metin += `• Maliyet düşürme ve optimizasyon çalışmaları\n\n`;
+                        metin += `Referans projelerimiz ve hizmet kataloğumuz ekte sunulmuştur.`;
+                        break;
+                    case 'teklif':
+                        metin += `Talep ettiğiniz proje için fiyat teklifimizi hazırladık. Teklif detaylarını ekte bulabilirsiniz.\n\n`;
+                        metin += `Proje: Mekanik tasarım ve analiz\n`;
+                        metin += `Toplam tutar: 45.000 ₺ + KDV\n`;
+                        metin += `Teslim süresi: 6 hafta\n\n`;
+                        metin += `Ödeme planı: %30 peşin, %70 teslimatta.\n`;
+                        metin += `Teklifimizin geçerlilik süresi 15 gündür.`;
+                        break;
+                    case 'durum':
+                        metin += `Devam eden projeniz hakkında güncel durum bilgisi vermek isteriz.\n\n`;
+                        metin += `• Tasarım aşaması: %80 tamamlandı\n`;
+                        metin += `• Analizler: Devam ediyor\n`;
+                        metin += `• Tahmini teslim: 2 hafta içinde\n\n`;
+                        metin += `Detaylı rapor ekteki PDF'te yer almaktadır.`;
+                        break;
+                    case 'odeme':
+                        metin += `Fatura ödeme vadesi hakkında bilgilendirme.\n\n`;
+                        metin += `Ödeme bilgileri:\n`;
+                        metin += `Banka: Garanti BBVA\n`;
+                        metin += `IBAN: TR12 0006 2000 1234 5678 9012 34\n\n`;
+                        metin += `Ödemenizi en kısa sürede bekler, dekontu tarafımıza iletebilirsiniz.`;
+                        break;
+                    default: metin += `İletişime geçmek isteriz.`;
+                }
+                if (pdfAd && pdfAd !== '') metin += `\n\nEk: ${pdfAd}`;
+                metin += `\n\nSaygılarımızla,\nMekanik Mühendislik Ekibi`;
+                document.getElementById('mailTaslak').value = metin;
+            });
+
+            // ---------- 4. SEKM E : CİRO HESAPLARI ----------
+            function renderCiroTablo() {
+                let tbody = document.getElementById('ciroTbody');
+                if (!tbody) return;
+                let html = '';
+                let isler = getTumIsler().filter(i => i.durum >= 2);
+                isler.forEach(i => {
+                    let musteri = musteriler.find(m => m.id === i.musteriId) || { ad: '?' };
+                    let vTut = (i.tutar * (i.vergiOran || 0) / 100) || 0;
+                    let kar = (i.tutar - (i.masraf || 0) - vTut) || 0;
+                    html += `<tr><td>${i.isAdi}</td><td>${musteri.ad}</td><td>${i.alinmaTarihi || ''}</td>
+                        <td><input type="number" value="${i.tutar || 0}" step="0.01" data-id="${i.id}" data-mid="${i.musteriId}" class="tutarInput"></td>
+                        <td><input type="number" value="${i.masraf || 0}" step="0.01" data-id="${i.id}" data-mid="${i.musteriId}" class="masrafInput"></td>
+                        <td><input type="number" value="${i.vergiOran || 0}" step="0.1" data-id="${i.id}" data-mid="${i.musteriId}" class="vergiOranInput"> %</td>
+                        <td>${vTut.toFixed(2)} ₺</td><td>${kar.toFixed(2)} ₺</td>
+                        <td><input type="date" value="${i.odemeTarihi || ''}" data-id="${i.id}" data-mid="${i.musteriId}" class="odemeTarihiInput"></td></tr>`;
+                });
+                tbody.innerHTML = html || '<tr><td colspan="9">Ciroya dahil iş bulunamadı.</td></tr>';
+
+                document.querySelectorAll('.tutarInput, .masrafInput, .vergiOranInput, .odemeTarihiInput').forEach(inp => {
+                    inp.addEventListener('change', function () {
+                        let id = parseInt(this.dataset.id), mid = this.dataset.mid;
+                        let m = musteriler.find(x => x.id === mid);
+                        if (m) {
+                            let is = m.isler.find(y => y.id === id);
+                            if (is) {
+                                if (this.classList.contains('tutarInput')) is.tutar = parseFloat(this.value) || 0;
+                                if (this.classList.contains('masrafInput')) is.masraf = parseFloat(this.value) || 0;
+                                if (this.classList.contains('vergiOranInput')) is.vergiOran = parseFloat(this.value) || 0;
+                                if (this.classList.contains('odemeTarihiInput')) is.odemeTarihi = this.value;
+                                saveAll();
+                            }
+                        }
+                    });
+                });
+
+                let ciro = 0, masraf = 0, vergi = 0;
+                getTumIsler().filter(i => i.durum >= 2).forEach(i => {
+                    ciro += (i.tutar || 0); masraf += (i.masraf || 0); vergi += (i.tutar || 0) * (i.vergiOran || 0) / 100;
+                });
+                document.getElementById('aylikCiro').innerText = `📆 Toplam Ciro: ₺${ciro.toFixed(2)}`;
+                document.getElementById('toplamVergi').innerText = `🧾 Toplam Vergi: ₺${vergi.toFixed(2)}`;
+                document.getElementById('toplamKar').innerText = `💰 Net Kar: ₺${(ciro - masraf - vergi).toFixed(2)}`;
+            }
+
+            // ---------- 5. SEKM E : LİNKLER ----------
+            function renderLinkler() {
+                let tamDiv = document.getElementById('tamamlananIsler'), lDiv = document.getElementById('linkListesi');
+                if (!tamDiv) return;
+                let tamamlanan = getTumIsler().filter(i => i.durum === 4);
+                tamDiv.innerHTML = tamamlanan.map(i => {
+                    let m = musteriler.find(x => x.id === i.musteriId) || { ad: '?' };
+                    return `<div class="link-item"><span><strong>${i.isAdi}</strong> (${m.ad})</span>
+                        <button class="btn-link" data-id="${i.id}" data-mid="${i.musteriId}">🔗 Link Oluştur</button></div>`;
+                }).join('') || '<p class="text-small">Tamamlanmış iş yok.</p>';
+
+                document.querySelectorAll('.btn-link').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        let id = parseInt(this.dataset.id), mid = this.dataset.mid;
+                        let m = musteriler.find(x => x.id === mid), is = m?.isler.find(y => y.id === id);
+                        if (!m || !is) return;
+                        let link = prompt('Link (URL) girin:', 'https://...');
+                        if (link) {
+                            if (!m.linkler) m.linkler = [];
+                            m.linkler.push({ isId: id, link, aciklama: is.isAdi, tarih: new Date().toLocaleString('tr-TR') });
+                            saveAll();
+                        }
+                    });
+                });
+
+                lDiv.innerHTML = getTumLinkler().map(l => {
+                    let m = musteriler.find(x => x.id === l.musteriId) || { ad: '?' };
+                    return `<div class="link-item"><span>${m.ad} - ${l.aciklama}: <a href="${l.link}" target="_blank">${l.link}</a></span>
+                        <span class="text-small">${l.tarih}</span></div>`;
+                }).join('') || '<p class="text-small">Hiç link oluşturulmamış.</p>';
+            }
+
+            // ==================== SEKMELER VE DİĞER OLAYLAR ====================
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    renderAll();
+                });
+            });
+
+            document.getElementById('filtreUygula')?.addEventListener('click', renderMusteriListesi);
+            document.getElementById('arama')?.addEventListener('input', renderMusteriListesi);
+            document.getElementById('ciroHesapla')?.addEventListener('click', saveAll);
+
+            document.getElementById('exportData').addEventListener('click', function () {
+                let blob = new Blob([JSON.stringify({ musteriler, pdfDosyalari }, null, 2)], { type: 'application/json' });
+                let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'crm_yedek.json'; a.click();
+            });
+
+            document.getElementById('undoBtn').addEventListener('click', () => historyIndex > 0 ? loadFromHistory(historyIndex - 1) : alert('İşlem yok.'));
+            document.getElementById('redoBtn').addEventListener('click', () => historyIndex < historyStack.length - 1 ? loadFromHistory(historyIndex + 1) : alert('İşlem yok.'));
+
+            // ==================== BAŞLANGIÇ ====================
+            loadData();
+        })();
+    </script>
+    <!-- 
+    ÖRNEK CSV (kopyalamak için):
+    müşteri_id,ad,telefon,email,adres,faaliyet_alani
+    1,Alpha Makine Tasarım,0212 345 67 89,info@alphamakine.com,İstanbul Dudullu OSB,Mekanik Tasarım
+    2,Beta Yazılım Mühendislik,0312 456 78 90,beta@yazilim.com,Ankara ODTÜ Teknokent,Yazılım Satışı
+    3,Gamma CNC Teknoloji,0232 567 89 01,info@gammacnc.com,İzmir Atatürk OSB,Mekanik Tasarım
+    4,Delta Endüstriyel Otomasyon,0262 678 90 12,delta@otomasyon.com,Kocaeli Gebze OSB,Yazılım Satışı
+    5,Epsilon Kalıp Sanayi,0224 789 01 23,info@epsilonkalip.com,Bursa Nilüfer,Mekanik Tasarım
+    6,Zeta Mühendislik Danışmanlık,0216 890 12 34,zeta@danismanlik.com,İstanbul Kadıköy,Hizmet Satışı
+    7,Eta Robotik Sistemler,0312 901 23 45,info@etarobotik.com,Ankara Sincan,Yazılım Satışı
+    8,Theta Havacılık ve Savunma,0242 012 34 56,theta@havacilik.com,Antalya Serbest Bölge,Mekanik Tasarım
+    9,Iota Enerji Sistemleri,0264 123 45 67,iota@enerji.com,Sakarya Hendek,Hizmet Satışı
+    10,Kappa Yazılım ve Tasarım,0212 234 56 78,info@kappayazilim.com,İstanbul Maslak,Yazılım Satışı
+    11, Lambda Hidrolik Pnömatik,0216 345 67 89,info@lambdahidrolik.com,İstanbul Tuzla OSB,Mekanik Tasarım
+    12, Mu Montaj Sistemleri,0224 456 78 90,mu@montaj.com,Bursa OSB,Hizmet Satışı
+    13, Nu Analiz Mühendislik,0312 567 89 01,nu@analiz.com,Ankara Teknokent,Yazılım Satışı
+    14, Xi Prototip Üretim,0232 678 90 12,xi@prototip.com,İzmir Kemalpaşa,Mekanik Tasarım
+    15, Omicron Kalıp Tasarım,0262 789 01 23,omicron@kalip.com,Kocaeli Gebze,Mekanik Tasarım
+    16, Pi Yazılım ve Otomasyon,0212 890 12 34,pi@yazilim.com,İstanbul Ataşehir,Yazılım Satışı
+    17, Rho Mekatronik,0312 901 23 45,rho@mekatronik.com,Ankara OSTİM,Hizmet Satışı
+    18, Sigma Enerji Makine,0242 012 34 56,sigma@enerji.com,Antalya OSB,Mekanik Tasarım
+    19, Tau Test ve Simülasyon,0264 123 45 67,tau@test.com,Sakarya Hendek,Yazılım Satışı
+    20, Upsilon Mühendislik,0212 345 67 00,upsilon@muhendislik.com,İstanbul Maslak,Hizmet Satışı
+-->
+</body>
+
+</html>

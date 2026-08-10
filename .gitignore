@@ -1,0 +1,7 @@
+business_manager/data/business_manager.db
+business_manager/data/uploads/*
+business_manager/data/backups/*
+business_manager/__pycache__/
+business_manager/**/*.pyc
+.DS_Store
+Thumbs.db

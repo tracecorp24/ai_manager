@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ProSunum Endüstriyel | Profesyonel Sunum Tasarımcısı</title>
+    <!-- Kütüphaneler -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #0a0c10;
+        }
+
+        /* ========== GELİŞMİŞ TEMA DEĞİŞKENLERİ ========== */
+        :root {
+            --theme-primary: #1a2a3a;
+            --theme-primary-dark: #0f1a24;
+            --theme-accent: #2c7da0;
+            --theme-border: #2c7da0;
+            --theme-gradient-start: #1e2f3f;
+            --theme-gradient-end: #0f1a24;
+            --theme-card-bg: #ffffff;
+            --theme-text-light: #ffffff;
+            --theme-text-dark: #1a2a3a;
+            --theme-shadow: 0 25px 45px -12px rgba(0,0,0,0.35);
+            --theme-glow: 0 0 0 1px rgba(44,125,160,0.2);
+        }
+        body.theme-dark {
+            --theme-primary: #1e1e2f;
+            --theme-primary-dark: #0f0f1a;
+            --theme-accent: #6c5ce7;
+            --theme-border: #6c5ce7;
+            --theme-gradient-start: #2d2f3a;
+            --theme-gradient-end: #1a1b26;
+        }
+        body.theme-grey {
+            --theme-primary: #2c3e50;
+            --theme-primary-dark: #1a2632;
+            --theme-accent: #95a5a6;
+            --theme-border: #95a5a6;
+            --theme-gradient-start: #34495e;
+            --theme-gradient-end: #2c3e50;
+        }
+        body.theme-green {
+            --theme-primary: #1e4a3b;
+            --theme-primary-dark: #0f2e24;
+            --theme-accent: #2ecc71;
+            --theme-border: #2ecc71;
+            --theme-gradient-start: #2c5e2e;
+            --theme-gradient-end: #1e3a1e;
+        }
+        body.theme-gold {
+            --theme-primary: #7d5d3b;
+            --theme-primary-dark: #5a3e22;
+            --theme-accent: #f39c12;
+            --theme-border: #f39c12;
+            --theme-gradient-start: #b8860b;
+            --theme-gradient-end: #8b5a2b;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            background: #eef2f5;
+        }
+
+        /* Sol Panel - Medya Kütüphanesi */
+        .media-panel {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e0e4e8;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.05);
+            z-index: 2;
+        }
+        .panel-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--theme-gradient-start) 0%, var(--theme-gradient-end) 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .panel-header::after {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 160px;
+            height: 160px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .panel-header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            backdrop-filter: blur(4px);
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-2px);
+        }
+        .folder-list {
+            flex: 1;
+            padding: 15px;
+        }
+        .folder-item {
+            background: #f8f9fa;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .folder-header {
+            background: #fff;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .folder-content {
+            padding: 12px;
+            background: #fefefe;
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .folder-content.hidden {
+            display: none;
+        }
+        .image-thumb {
+            display: inline-block;
+            margin: 5px;
+            cursor: move;
+            transition: transform 0.2s;
+        }
+        .image-thumb img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 2px solid #ddd;
+            transition: all 0.2s;
+        }
+        .image-thumb img:hover {
+            border-color: var(--theme-border);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .upload-btn {
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            padding: 8px;
+            text-align: center;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .upload-btn:hover {
+            background: #dee2e6;
+            border-color: var(--theme-border);
+        }
+
+        /* Orta Panel - Sunum Tuvali */
+        .canvas-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            background: #e2e6ea;
+        }
+        .slides-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 45px;
+        }
+        .slide {
+            background: white;
+            width: 950px;
+            min-height: 712px;
+            border-radius: 28px;
+            box-shadow: var(--theme-shadow);
+            position: relative;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+        .slide-cover {
+            background: linear-gradient(135deg, var(--theme-gradient-start) 0%, var(--theme-gradient-end) 100%);
+            color: white;
+            padding: 50px;
+            position: relative;
+        }
+        .slide-title {
+            text-align: center;
+            margin-top: 180px;
+        }
+        .slide-title h1 {
+            font-size: 3.8rem;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+            font-weight: 700;
+        }
+        .slide-title p {
+            font-size: 1.4rem;
+            opacity: 0.9;
+        }
+
+        /* İçerik sayfaları - KALIN ÇERÇEVE 6px Alt: 50px */
+        .content-slide {
+            border: 6px solid var(--theme-border);
+            border-bottom: 50px solid var(--theme-border); /* Alt kenar daha kalın */
+            background: white;
+            padding: 0;
+            position: relative;
+        }
+
+        /* Layout konteynerleri */
+        .slide-layout {
+            flex: 1;
+            display: flex;
+            width: 100%;
+            height: 100%;
+            min-height: 712px;
+        }
+        .layout-full {
+            width: 100%;
+            height: 100%;
+        }
+        .layout-split {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+        .layout-split .drop-zone {
+            flex: 1;
+            margin: 0;
+            border-radius: 0;
+            border-right: 4px solid var(--theme-border);
+        }
+        .layout-split .drop-zone:last-child {
+            border-right: none;
+        }
+
+        /* ÜÇLÜ LAYOUT: solda iki alan (her biri 1/4 alan), sağda bir büyük alan (1/2) */
+        .layout-triple {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+        .layout-triple .left-stack {
+            flex: 1;  /* toplam genişliğin yarısı */
+            display: flex;
+            flex-direction: column;
+            border-right: 4px solid var(--theme-border);
+        }
+        .layout-triple .right-big {
+            flex: 1;  /* toplam genişliğin yarısı */
+            display: flex;
+            flex-direction: column;
+        }
+        .layout-triple .right-big .drop-zone {
+            flex: 1;
+            border-bottom: none;
+        }
+        .layout-triple .drop-zone {
+            flex: 1;
+            margin: 0;
+            border-radius: 0;
+            border-bottom: 4px solid var(--theme-border);
+        }
+        .layout-triple .left-stack .drop-zone:last-child {
+            border-bottom: none;
+        }
+
+        .layout-quad {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            width: 100%;
+            height: 100%;
+        }
+        .layout-quad .drop-zone {
+            margin: 0;
+            border-radius: 0;
+            border-right: 4px solid var(--theme-border);
+            border-bottom: 4px solid var(--theme-border);
+        }
+        .layout-quad .drop-zone:nth-child(2) {
+            border-right: none;
+        }
+        .layout-quad .drop-zone:nth-child(3) {
+            border-bottom: none;
+        }
+        .layout-quad .drop-zone:nth-child(4) {
+            border-right: none;
+            border-bottom: none;
+        }
+
+        /* Drop zone – görsel + metin alanı */
+        .drop-zone {
+            background: #fcfcfc;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .drop-zone.drag-over {
+            background: #eef2ff;
+            box-shadow: inset 0 0 0 3px var(--theme-border);
+        }
+        .drop-image {
+            flex: 1;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            min-height: 160px;
+        }
+        .drop-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .drop-placeholder {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 20px;
+        }
+        .drop-caption {
+            padding: 12px 14px;
+            background: rgba(0,0,0,0.02);
+            border-top: 1px solid #eee;
+            font-size: 0.85rem;
+        }
+        .drop-caption input, .drop-caption textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            background: white;
+            resize: vertical;
+            transition: 0.2s;
+        }
+        .drop-caption input:focus, .drop-caption textarea:focus {
+            outline: none;
+            border-color: var(--theme-border);
+            box-shadow: 0 0 0 2px rgba(44,125,160,0.2);
+        }
+
+        .slide-controls {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            display: flex;
+            gap: 12px;
+            z-index: 25;
+        }
+        .btn-icon {
+            background: rgba(0,0,0,0.65);
+            color: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+        .btn-icon:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.07);
+        }
+
+        .company-watermark {
+            position: absolute;
+            bottom: -45px; /* Kalın alt kenarın içinde */
+            right: 24px;
+            font-size: 22px; /* Daha büyük ve okunur */
+            color: #ffffff; /* Kenarlık rengi üzerinde beyaz */
+            font-weight: 800;
+            pointer-events: none;
+            z-index: 12;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-style: italic;
+        }
+        .slide-watermark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 20px;
+            pointer-events: none;
+            z-index: 100;
+            overflow: hidden;
+            opacity: 0.12;
+            transform: rotate(-15deg) scale(1.2);
+            user-select: none;
+        }
+        .wm-item {
+            font-size: 18px;
+            font-weight: 800;
+            color: #000;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sağ Panel - Ayarlar */
+        .settings-panel {
+            width: 330px;
+            background: white;
+            border-left: 1px solid #e0e4e8;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 28px 24px;
+            gap: 22px;
+        }
+        .setting-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        .setting-group input, .setting-group select {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #ced4da;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            background: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .export-section {
+            border-top: 2px solid #e9ecef;
+            padding-top: 20px;
+            margin-top: 8px;
+        }
+        button {
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .layout-selector, .template-selector {
+            margin-top: 4px;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b3b3b3;
+            border-radius: 10px;
+        }
+        /* Mobile workspace */
+        html,body { min-width:0; overflow-x:hidden; }
+        body { overflow-y:auto; height:auto; min-height:100dvh; }
+        .app-container { min-height:100dvh; height:auto; display:grid; grid-template-columns:minmax(180px,240px) minmax(0,1fr) minmax(250px,310px); }
+        .media-panel,.settings-panel { min-width:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+        .canvas-panel { min-width:0; overflow:auto; -webkit-overflow-scrolling:touch; }
+        .slides-container { padding:20px; align-items:flex-start; }
+        @media (max-width:1000px) { .app-container { grid-template-columns:200px minmax(0,1fr); } .settings-panel { grid-column:1 / -1; max-height:none; overflow:visible; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:16px; } .settings-panel>* { min-width:0; } .export-section { grid-column:1 / -1; } }
+        @media (max-width:680px) { .app-container { display:flex; flex-direction:column; min-height:100dvh; } .media-panel { order:2; max-height:none; overflow:visible; border-top:1px solid #283646; } .canvas-panel { order:1; min-height:62dvh; max-height:none; } .settings-panel { order:3; display:flex; flex-direction:column; padding:14px; } .slides-container { padding:12px 8px 24px; align-items:flex-start; overflow-x:auto; } .slide { flex:0 0 min(92vw,560px); transform-origin:top left; } .panel-header { padding:12px 14px; } .panel-header h3 { font-size:14px; } .btn-primary,.btn-secondary { min-height:42px; touch-action:manipulation; } .folder-list { max-height:260px; overflow-y:auto; } .drop-zone { min-height:120px; } }
+    </style>
+    <style>
+        /* ========== NEW GEOMETRIC TEMPLATES (USER STYLE) ========== */
+        .text-dark { color: #1e1e1e; }
+        .text-light { color: white; }
+        .text-accent { color: #ffd700; }
+        .bg-dark { background: #1e1e1e; }
+        .bg-accent { background: #ffd700; }
+
+        /* Template 1: Kapak */
+        .t1-diagonal-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(0 0, 70% 0, 50% 100%, 0 100%);
+            z-index: 1;
+        }
+        .t1-content {
+            position: relative;
+            z-index: 2;
+            padding: 50px;
+            width: 50%;
+        }
+        .t1-title {
+            font-size: 54px;
+            font-weight: 800;
+            margin-top: 50px;
+        }
+        .t1-company {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        .t1-mask {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60%;
+            height: 100%;
+            clip-path: polygon(35% 0, 100% 0, 100% 100%, 75% 100%);
+            z-index: 1;
+        }
+        .t1-accent-mask {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 65%;
+            height: 100%;
+            clip-path: polygon(30% 0, 100% 0, 100% 100%, 70% 100%);
+            z-index: 0;
+        }
+
+        /* Template 2: Diagonal Split */
+        .t2-image-mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 70%;
+            height: 100%;
+            clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+            z-index: 1;
+        }
+        .t2-accent-bar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 35%;
+            height: 100%;
+            z-index: 0;
+        }
+        .t2-content {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 40%;
+            height: auto;
+            padding: 40px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: -10px 10px 20px rgba(0,0,0,0.1);
+            clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        .t2-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 0;
+        }
+        .t2-subtitle {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        /* Template 3: Gallery Grid */
+        .t3-img-1 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            clip-path: polygon(0 0, 100% 0, 75% 100%, 0% 100%);
+        }
+        .t3-img-2 {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 55%;
+            height: 55%;
+            clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        .t3-img-3 {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 55%;
+            height: 50%;
+            clip-path: polygon(10% 0, 100% 0, 100% 100%, 40% 100%);
+        }
+
+        /* Template 4: Focus Point */
+        .t4-dark-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+        }
+        .t4-accent-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 10px;
+            height: 100px;
+        }
+        .t4-image-mask {
+            position: absolute;
+            top: 50%;
+            right: 50px;
+            transform: translateY(-50%);
+            width: 40%;
+            height: 80%;
+            border: 10px solid #ffd700;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 30% 100%);
+        }
+        .t4-content {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 40%;
+            color: white;
+        }
+        .t4-quote {
+            font-size: 24px;
+            font-weight: 700;
+            border-left: 5px solid #ffd700;
+            padding-left: 15px;
+        }
+
+        /* Template 5: Showcase Card */
+        .t5-card {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 860px;
+            height: 440px;
+            background: #fcfcfc;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            overflow: hidden;
+        }
+        .t5-image-mask {
+            width: 50%;
+            height: 100%;
+            clip-path: polygon(0 0, 100% 0, 70% 100%, 0% 100%);
+        }
+        .t5-content {
+            width: 50%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .t5-meta-accent {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 50px;
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .t5-price {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+        }
+        .t5-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-right: 5px;
+        }
+
+        .drop-zone.active-hover {
+            border: 4px dashed #ffd700 !important;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Sol Panel: Medya Kütüphanesi -->
+    <div class="media-panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-cubes"></i> Medya Kütüphanesi</h3>
+            <button class="btn-primary" id="addFolderBtn"><i class="fas fa-folder-plus"></i> Yeni Klasör</button>
+        </div>
+        <div class="folder-list" id="folderList"></div>
+    </div>
+
+    <!-- Orta Panel: Slaytlar -->
+    <div class="canvas-panel">
+        <div class="slides-container" id="slidesContainer"></div>
+    </div>
+
+    <!-- Sağ Panel: Ayarlar ve Dışa Aktarım -->
+    <div class="settings-panel">
+        <div class="setting-group">
+            <label><i class="fas fa-heading"></i> Sunum Başlığı</label>
+            <input type="text" id="titleInput" placeholder="Sunum Başlığı">
+        </div>
+        <div class="setting-group">
+            <label><i class="fas fa-building"></i> Şirket Adı</label>
+            <input type="text" id="companyInput" placeholder="Şirket Adı">
+        </div>
+        <div class="setting-group">
+            <label><i class="fas fa-calendar"></i> Tarih</label>
+            <input type="text" id="dateInput" placeholder="Tarih">
+        </div>
+        <div class="setting-group">
+            <label><i class="fas fa-palette"></i> Tema Seç</label>
+            <select id="themeSelect">
+                <option value="default">Endüstriyel Mavi</option>
+                <option value="dark">Koyu Endüstriyel</option>
+                <option value="grey">Gri Metalik</option>
+                <option value="green">Doğal Yeşil</option>
+                <option value="gold">Premium Altın</option>
+            </select>
+        </div>
+
+        <div class="layout-selector">
+            <label><i class="fas fa-layout"></i> Yeni Sayfa Layout</label>
+            <select id="layoutSelect">
+                <option value="full">Tam sayfa (1 görsel)</option>
+                <option value="split">Yarı yarıya (2 görsel)</option>
+                <option value="triple">Üçlü (2+1 dikey oranlı)</option>
+                <option value="quad">Dörtlü (2x2)</option>
+                <option disabled>─ MODERN ŞABLONLAR ─</option>
+                <option value="t1_cover">Template 1: Kapak</option>
+                <option value="t2_diagonal">Template 2: Eğimli Panel</option>
+                <option value="t3_gallery">Template 3: Galeri</option>
+                <option value="t4_focus">Template 4: Kilit Vurgu</option>
+                <option value="t5_showcase">Template 5: Vitrin</option>
+            </select>
+        </div>
+        <button class="btn-secondary" id="addSlideBtn"><i class="fas fa-plus-circle"></i> Yeni Sayfa Ekle</button>
+
+        <div class="template-selector">
+            <label><i class="fas fa-copy"></i> Hazır Şablon Ekle</label>
+            <select id="templateSelect">
+                <option value="product">Ürün Galerisi (2 görsel + açıklama)</option>
+                <option value="team">Ekip Üyesi (1 görsel + isim/görev)</option>
+                <option value="tech">Teknik Çizim (1 görsel + teknik not)</option>
+            </select>
+            <button class="btn-secondary" id="addTemplateBtn" style="margin-top: 8px;"><i class="fas fa-star"></i> Şablon Ekle</button>
+        </div>
+
+        <button class="btn-secondary" id="toggleWatermarkBtn"><i class="fas fa-water"></i> Filigran Ekle/Kaldır</button>
+
+        <div class="export-section">
+            <h4><i class="fas fa-download"></i> Dışa Aktar</h4>
+            <button class="btn-secondary btn-success" id="exportPdfBtn" style="background: #dc3545;"><i class="fas fa-file-pdf"></i> PDF İndir</button>
+            <button class="btn-secondary btn-success" id="exportPptxBtn" style="background: #28a745;"><i class="fas fa-file-powerpoint"></i> PPTX İndir</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ------------------- VERİ YAPISI -------------------
+    let folders = [];
+    let slides = [];
+    let nextFolderId = 1, nextImageId = 1, nextSlideId = 2, nextZoneId = 1;
+    let watermarkEnabled = false;
+    let draggedImageData = null;
+
+    // LocalStorage işlemleri
+    function saveState() {
+        localStorage.setItem('prosunum_folders', JSON.stringify(folders));
+        localStorage.setItem('prosunum_slides', JSON.stringify(slides));
+        localStorage.setItem('prosunum_ids', JSON.stringify({ nextFolderId, nextImageId, nextSlideId, nextZoneId }));
+        localStorage.setItem('prosunum_watermark', JSON.stringify(watermarkEnabled));
+    }
+
+    function loadState() {
+        const f = localStorage.getItem('prosunum_folders');
+        const s = localStorage.getItem('prosunum_slides');
+        const ids = localStorage.getItem('prosunum_ids');
+        const w = localStorage.getItem('prosunum_watermark');
+        if (f) folders = JSON.parse(f);
+        if (s) slides = JSON.parse(s);
+        if (ids) { const d = JSON.parse(ids); nextFolderId = d.nextFolderId; nextImageId = d.nextImageId; nextSlideId = d.nextSlideId; nextZoneId = d.nextZoneId; }
+        if (w) watermarkEnabled = JSON.parse(w);
+        if (!folders.length) initDefaultData();
+    }
+
+    function initDefaultData() {
+        folders = [{ id: nextFolderId++, name: "Örnek Görseller", images: [] }];
+        slides = [{ id: 1, type: 'cover', title: 'Endüstriyel Tasarım', company: 'ProSunum Endüstriyel', date: '2025' }];
+        addContentSlideWithLayout('split');
+    }
+
+    function addContentSlideWithLayout(layoutType, customZones = null) {
+        let zones = [];
+        let textData = {};
+        if (customZones) {
+            zones = customZones;
+        } else {
+            let count = 0;
+            if (layoutType === 'full') count = 1;
+            else if (layoutType === 'split') count = 2;
+            else if (layoutType === 'triple') count = 3;
+            else if (layoutType === 'quad') count = 4;
+            else if (layoutType === 't1_cover') { count = 1; textData = { title: 'SUNUM BAŞLIĞI', company: 'Şirket Adı' }; }
+            else if (layoutType === 't2_diagonal') { count = 1; textData = { title: 'Dinamik Özellik', subtitle: 'Buraya detaylı bir açıklama metni gelecek.' }; }
+            else if (layoutType === 't3_gallery') count = 3;
+            else if (layoutType === 't4_focus') { count = 1; textData = { quote: 'Kilit Nokta / Temel Fikir', description: 'Buraya görselin önemi hakkında açıklama gelecek.' }; }
+            else if (layoutType === 't5_showcase') { count = 1; textData = { title: 'Öne Çıkan Başlık', description: 'Ürün veya kilit datayı göstermek için ideal.', extra: '15%' }; }
+            
+            for (let i = 0; i < count; i++) zones.push({ id: nextZoneId++, imageData: null, caption: '' });
+        }
+        slides.push({ id: nextSlideId++, type: 'content', layout: layoutType, dropZones: zones, textData: textData });
+        saveState();
+        renderAll();
+    }
+
+    // Şablonlar
+    const templates = {
+        product: {
+            layout: 'split',
+            zones: [
+                { id: null, imageData: null, caption: 'ÜRÜN ADI 1\nYüksek performans, dayanıklı tasarım' },
+                { id: null, imageData: null, caption: 'ÜRÜN ADI 2\nEndüstriyel standartlarda üretim' }
+            ]
+        },
+        team: {
+            layout: 'full',
+            zones: [
+                { id: null, imageData: null, caption: 'AHMET YILMAZ\nKıdemli Endüstriyel Tasarımcı' }
+            ]
+        },
+        tech: {
+            layout: 'full',
+            zones: [
+                { id: null, imageData: null, caption: 'Teknik Çizim Detayı\nÖlçüler: 125x80x45 mm\nMalzeme: Alüminyum 6061' }
+            ]
+        }
+    };
+
+    function addTemplate(templateKey) {
+        const t = templates[templateKey];
+        if (!t) return;
+        const zones = t.zones.map(z => ({ id: nextZoneId++, imageData: z.imageData, caption: z.caption }));
+        slides.push({ id: nextSlideId++, type: 'content', layout: t.layout, dropZones: zones });
+        saveState();
+        renderAll();
+    }
+
+    function deleteSlide(slideId) {
+        const idx = slides.findIndex(s => s.id === slideId);
+        if (idx !== -1 && slides[idx].type !== 'cover') {
+            slides.splice(idx, 1);
+            saveState();
+            renderAll();
+        } else {
+            alert("Kapak sayfası silinemez!");
+        }
+    }
+
+    // Klasör yönetimi
+    function addFolder() {
+        let name = prompt("Klasör adı girin:", "Yeni Klasör");
+        if (name) {
+            folders.push({ id: nextFolderId++, name, images: [] });
+            saveState();
+            renderMediaPanel();
+        }
+    }
+
+    function uploadImagesToFolder(folderId, files) {
+        const folder = folders.find(f => f.id === folderId);
+        if (!folder) return;
+        Array.from(files).forEach(file => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    folder.images.push({ id: nextImageId++, dataUrl: e.target.result });
+                    saveState();
+                    renderMediaPanel();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Sol panel render
+    function renderMediaPanel() {
+        const container = document.getElementById('folderList');
+        container.innerHTML = '';
+        folders.forEach(folder => {
+            const folderDiv = document.createElement('div');
+            folderDiv.className = 'folder-item';
+            const header = document.createElement('div');
+            header.className = 'folder-header';
+            header.innerHTML = `<span><i class="fas fa-folder"></i> ${folder.name} (${folder.images.length})</span><i class="fas fa-chevron-down"></i>`;
+            const content = document.createElement('div');
+            content.className = 'folder-content';
+            folder.images.forEach(img => {
+                const thumb = document.createElement('div');
+                thumb.className = 'image-thumb';
+                thumb.draggable = true;
+                const imgEl = document.createElement('img');
+                imgEl.src = img.dataUrl;
+                imgEl.style.width = '70px';
+                imgEl.style.height = '70px';
+                thumb.appendChild(imgEl);
+                thumb.addEventListener('dragstart', (e) => {
+                    draggedImageData = img.dataUrl;
+                    e.dataTransfer.setData('text/plain', img.dataUrl);
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+                content.appendChild(thumb);
+            });
+            const uploadDiv = document.createElement('div');
+            uploadDiv.className = 'upload-btn';
+            uploadDiv.innerHTML = '<i class="fas fa-upload"></i> Görsel Yükle';
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.multiple = true;
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+            uploadDiv.onclick = () => fileInput.click();
+            fileInput.onchange = (e) => uploadImagesToFolder(folder.id, e.target.files);
+            content.appendChild(uploadDiv);
+            content.appendChild(fileInput);
+            let open = true;
+            header.onclick = () => {
+                open = !open;
+                content.classList.toggle('hidden', !open);
+                header.querySelector('i:last-child').style.transform = open ? 'rotate(0)' : 'rotate(-90deg)';
+            };
+            folderDiv.appendChild(header);
+            folderDiv.appendChild(content);
+            container.appendChild(folderDiv);
+        });
+    }
+
+    // Drop zone oluşturucu (görsel + metin alanı)
+    function createDropZone(zone, slideId, options = {}) {
+        const container = document.createElement('div');
+        container.className = 'drop-zone ' + (options.customClass || '');
+        container.setAttribute('data-zone-id', zone.id);
+        container.setAttribute('data-slide-id', slideId);
+
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'drop-image';
+        
+        const updateBackground = (url) => {
+            if (options.customClass) {
+                container.style.backgroundImage = `url('${url}')`;
+                container.style.backgroundSize = 'cover';
+                container.style.backgroundPosition = 'center';
+                imageDiv.style.opacity = '0';
+            } else {
+                imageDiv.innerHTML = `<img src="${url}">`;
+            }
+        };
+
+        if (zone.imageData) {
+            updateBackground(zone.imageData);
+        } else {
+            if (!options.customClass) {
+                imageDiv.innerHTML = '<div class="drop-placeholder"><i class="fas fa-image"></i><br>Görsel sürükleyin</div>';
+            } else {
+                container.innerText = options.placeholder || 'GÖRSEL';
+                container.style.display = 'flex';
+                container.style.alignItems = 'center';
+                container.style.justifyContent = 'center';
+                container.style.color = '#aaa';
+                container.style.fontWeight = 'bold';
+            }
+        }
+
+        container.appendChild(imageDiv);
+
+        if (!options.hideCaption) {
+            const captionDiv = document.createElement('div');
+            captionDiv.className = 'drop-caption';
+            const captionInput = document.createElement('textarea');
+            captionInput.rows = 2;
+            captionInput.placeholder = 'Başlık / Açıklama yazın...';
+            captionInput.value = zone.caption || '';
+            captionInput.addEventListener('input', (e) => {
+                const targetSlide = slides.find(s => s.id === slideId);
+                if (targetSlide && targetSlide.type === 'content') {
+                    const targetZone = targetSlide.dropZones.find(z => z.id === zone.id);
+                    if (targetZone) targetZone.caption = e.target.value;
+                    saveState();
+                }
+            });
+            captionDiv.appendChild(captionInput);
+            container.appendChild(captionDiv);
+        }
+
+        // Drag & Drop
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            container.classList.add('active-hover');
+        });
+        container.addEventListener('dragleave', () => {
+            container.classList.remove('active-hover');
+        });
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            container.classList.remove('active-hover');
+            if (draggedImageData) {
+                const targetSlide = slides.find(s => s.id === slideId);
+                if (targetSlide && targetSlide.type === 'content') {
+                    const targetZone = targetSlide.dropZones.find(z => z.id === zone.id);
+                    if (targetZone) {
+                        targetZone.imageData = draggedImageData;
+                        saveState();
+                        renderSlides();
+                    }
+                }
+            }
+        });
+        return container;
+    }
+
+    // Slaytları render et
+    function renderSlides() {
+        const container = document.getElementById('slidesContainer');
+        container.innerHTML = '';
+        const companyName = document.getElementById('companyInput').value;
+
+        slides.forEach(slide => {
+            if (slide.type === 'cover') {
+                const coverSlide = document.createElement('div');
+                coverSlide.className = 'slide slide-cover';
+                coverSlide.innerHTML = `18:48 21.03.2026
+                    <div class="slide-title">
+                        <h1>${escapeHtml(slide.title)}</h1>
+                        <p>${escapeHtml(slide.company)}</p>
+                        <p>${escapeHtml(slide.date)}</p>
+                    </div>
+                `;
+                if (watermarkEnabled) {
+                    const wm = document.createElement('div');
+                    wm.className = 'slide-watermark';
+                    for(let i=0; i<24; i++) {
+                        const item = document.createElement('div');
+                        item.className = 'wm-item';
+                        item.textContent = companyName;
+                        wm.appendChild(item);
+                    }
+                    coverSlide.appendChild(wm);
+                }
+                container.appendChild(coverSlide);
+            } 
+            else {
+                const contentSlide = document.createElement('div');
+                contentSlide.className = 'slide content-slide';
+                contentSlide.setAttribute('data-slide-id', slide.id);
+
+                const controls = document.createElement('div');
+                controls.className = 'slide-controls';
+                controls.innerHTML = `<button class="btn-icon delete-slide-btn" data-id="${slide.id}"><i class="fas fa-trash"></i></button>`;
+                contentSlide.appendChild(controls);
+
+                const layoutDiv = document.createElement('div');
+                layoutDiv.className = `slide-layout layout-${slide.layout}`;
+
+                if (slide.layout === 'full') {
+                    layoutDiv.appendChild(createDropZone(slide.dropZones[0], slide.id));
+                } 
+                else if (slide.layout === 'split') {
+                    slide.dropZones.forEach(zone => layoutDiv.appendChild(createDropZone(zone, slide.id)));
+                } 
+                else if (slide.layout === 'triple') {
+                    const leftStack = document.createElement('div');
+                    leftStack.className = 'left-stack';
+                    leftStack.appendChild(createDropZone(slide.dropZones[0], slide.id));
+                    leftStack.appendChild(createDropZone(slide.dropZones[1], slide.id));
+                    const rightBig = document.createElement('div');
+                    rightBig.className = 'right-big';
+                    rightBig.appendChild(createDropZone(slide.dropZones[2], slide.id));
+                    layoutDiv.appendChild(leftStack);
+                    layoutDiv.appendChild(rightBig);
+                } 
+                else if (slide.layout === 'quad') {
+                    slide.dropZones.forEach(zone => layoutDiv.appendChild(createDropZone(zone, slide.id)));
+                }
+                else if (slide.layout === 't1_cover') {
+                    layoutDiv.innerHTML = `
+                        <div class="t1-diagonal-bg bg-dark"></div>
+                        <div class="t1-accent-mask bg-accent"></div>
+                        <div class="t1-content">
+                            <h1 class="t1-title text-accent" contenteditable="true" data-key="title">${escapeHtml(slide.textData.title)}</h1>
+                            <p class="t1-company text-light" contenteditable="true" data-key="company">${escapeHtml(slide.textData.company)}</p>
+                        </div>
+                    `;
+                    layoutDiv.appendChild(createDropZone(slide.dropZones[0], slide.id, { customClass: 't1-mask', hideCaption: true, placeholder: 'GÖRSEL 1' }));
+                }
+                else if (slide.layout === 't2_diagonal') {
+                    layoutDiv.innerHTML = `
+                        <div class="t2-accent-bar bg-accent"></div>
+                        <div class="t2-content bg-dark">
+                            <h2 class="t2-title text-accent" contenteditable="true" data-key="title">${escapeHtml(slide.textData.title)}</h2>
+                            <p class="t2-subtitle text-light" contenteditable="true" data-key="subtitle">${escapeHtml(slide.textData.subtitle)}</p>
+                        </div>
+                    `;
+                    layoutDiv.insertBefore(createDropZone(slide.dropZones[0], slide.id, { customClass: 't2-image-mask', hideCaption: true, placeholder: 'GÖRSEL 2' }), layoutDiv.firstChild);
+                }
+                else if (slide.layout === 't3_gallery') {
+                    layoutDiv.appendChild(createDropZone(slide.dropZones[0], slide.id, { customClass: 't3-img-1', hideCaption: true, placeholder: 'GÖRSEL 3.1' }));
+                    layoutDiv.appendChild(createDropZone(slide.dropZones[1], slide.id, { customClass: 't3-img-2 bg-accent', hideCaption: true, placeholder: 'GÖRSEL 3.2' }));
+                    layoutDiv.appendChild(createDropZone(slide.dropZones[2], slide.id, { customClass: 't3-img-3 bg-dark', hideCaption: true, placeholder: 'GÖRSEL 3.3' }));
+                }
+                else if (slide.layout === 't4_focus') {
+                    layoutDiv.innerHTML = `
+                        <div class="t4-dark-bg bg-dark"></div>
+                        <div class="t4-accent-bar bg-accent"></div>
+                        <div class="t4-content">
+                            <h2 class="t4-quote" contenteditable="true" data-key="quote">${escapeHtml(slide.textData.quote)}</h2>
+                            <p contenteditable="true" data-key="description">${escapeHtml(slide.textData.description)}</p>
+                        </div>
+                    `;
+                    layoutDiv.appendChild(createDropZone(slide.dropZones[0], slide.id, { customClass: 't4-image-mask', hideCaption: true, placeholder: 'GÖRSEL 4' }));
+                }
+                else if (slide.layout === 't5_showcase') {
+                    const card = document.createElement('div');
+                    card.className = 't5-card';
+                    card.innerHTML = `
+                        <div class="t5-content">
+                            <h2 class="text-dark" contenteditable="true" data-key="title">${escapeHtml(slide.textData.title)}</h2>
+                            <p class="text-dark" contenteditable="true" data-key="description">${escapeHtml(slide.textData.description)}</p>
+                        </div>
+                        <div class="t5-meta-accent bg-dark text-accent">
+                            <p class="t5-price"><span class="t5-label">DETAY:</span> <span contenteditable="true" data-key="extra">${escapeHtml(slide.textData.extra)}</span></p>
+                        </div>
+                    `;
+                    card.insertBefore(createDropZone(slide.dropZones[0], slide.id, { customClass: 't5-image-mask bg-accent', hideCaption: true, placeholder: 'ÜRÜN / PROJE' }), card.firstChild);
+                    layoutDiv.appendChild(card);
+                }
+
+                // Handle contenteditable for new templates
+                layoutDiv.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                    el.addEventListener('input', (e) => {
+                        const key = el.getAttribute('data-key');
+                        if (!slide.textData) slide.textData = {};
+                        slide.textData[key] = el.innerText;
+                        saveState();
+                    });
+                });
+
+                contentSlide.appendChild(layoutDiv);
+
+                // Şirket adı sağ alt köşe
+                const corner = document.createElement('div');
+                corner.className = 'company-watermark';
+                corner.textContent = companyName;
+                contentSlide.appendChild(corner);
+
+                // Filigran (Desen/Izgara)
+                if (watermarkEnabled) {
+                    const wm = document.createElement('div');
+                    wm.className = 'slide-watermark';
+                    for(let i=0; i<24; i++) {
+                        const item = document.createElement('div');
+                        item.className = 'wm-item';
+                        item.textContent = companyName;
+                        wm.appendChild(item);
+                    }
+                    contentSlide.appendChild(wm);
+                }
+
+                container.appendChild(contentSlide);
+            }
+        });
+
+        // Silme butonları
+        document.querySelectorAll('.delete-slide-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                deleteSlide(id);
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function updateCoverFromInputs() {
+        const cover = slides.find(s => s.type === 'cover');
+        if (cover) {
+            cover.title = document.getElementById('titleInput').value;
+            cover.company = document.getElementById('companyInput').value;
+            cover.date = document.getElementById('dateInput').value;
+            saveState();
+            renderSlides();
+        }
+    }
+
+    function applyTheme(theme) {
+        document.body.className = '';
+        if (theme === 'dark') document.body.classList.add('theme-dark');
+        else if (theme === 'grey') document.body.classList.add('theme-grey');
+        else if (theme === 'green') document.body.classList.add('theme-green');
+        else if (theme === 'gold') document.body.classList.add('theme-gold');
+    }
+
+    function toggleWatermark() {
+        watermarkEnabled = !watermarkEnabled;
+        saveState();
+        renderSlides();
+    }
+
+    // PDF dışa aktarma
+    async function exportToPDF() {
+        const slidesElements = document.querySelectorAll('.slide');
+        if (slidesElements.length === 0) {
+            alert("Slayt bulunamadı!");
+            return;
+        }
+
+        const btn = document.getElementById('exportPdfBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Hazırlanıyor...';
+        btn.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = 297;
+            const pageHeight = 210;
+
+            for (let i = 0; i < slidesElements.length; i++) {
+                const canvas = await html2canvas(slidesElements[i], {
+                    scale: 2, // Yüksek çözünürlük
+                    useCORS: true, // Uzak görseller için
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: 950,
+                    height: 712 + 50 // Alt çerçeve dahil
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                
+                if (i !== 0) pdf.addPage();
+                
+                // Görüntüyü sayfaya tam sığdır
+                pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+            }
+
+            pdf.save('sunum.pdf');
+        } catch (error) {
+            console.error("PDF Hatası:", error);
+            alert("PDF oluşturulurken bir hata oluştu.");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // PPTX dışa aktarma
+    async function exportToPPTX() {
+        const PptxGenJS = window.PptxGenJS;
+        const pptx = new PptxGenJS();
+        pptx.defineLayout({ name: 'WIDE', width: 10, height: 5.63 });
+        pptx.layout = 'WIDE';
+        for (const slide of slides) {
+            if (slide.type === 'cover') {
+                const s = pptx.addSlide();
+                s.addText(slide.title, { x: 1, y: 2, w: 8, h: 1, fontSize: 32, bold: true, align: 'center' });
+                s.addText(slide.company, { x: 1, y: 3.2, w: 8, h: 0.5, fontSize: 18, align: 'center' });
+                s.addText(slide.date, { x: 1, y: 3.8, w: 8, h: 0.5, fontSize: 14, align: 'center' });
+            } else {
+                const s = pptx.addSlide();
+                let yPos = 0.5;
+                for (let i = 0; i < slide.dropZones.length; i++) {
+                    const zone = slide.dropZones[i];
+                    if (zone.imageData) {
+                        try {
+                            const blob = await (await fetch(zone.imageData)).blob();
+                            s.addImage({ data: blob, x: 1, y: yPos, w: 8, h: 2.2 });
+                        } catch(e) { console.warn("Resim eklenemedi", e); }
+                    } else {
+                        s.addText(`[Görsel Alanı ${i+1}]`, { x: 1, y: yPos, w: 8, h: 2.2, fill: { color: 'F0F0F0' }, align: 'center', valign: 'middle' });
+                    }
+                    if (zone.caption) {
+                        s.addText(zone.caption, { x: 1, y: yPos + 2.3, w: 8, h: 0.7, fontSize: 10 });
+                    }
+                    yPos += 3.1;
+                }
+            }
+        }
+        pptx.writeFile({ fileName: 'sunum.pptx' });
+    }
+
+    function renderAll() {
+        renderMediaPanel();
+        renderSlides();
+    }
+
+    // Eventler ve başlangıç
+    document.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        renderAll();
+
+        const titleInput = document.getElementById('titleInput');
+        const companyInput = document.getElementById('companyInput');
+        const dateInput = document.getElementById('dateInput');
+        const coverSlide = slides.find(s => s.type === 'cover');
+        if (coverSlide) {
+            titleInput.value = coverSlide.title;
+            companyInput.value = coverSlide.company;
+            dateInput.value = coverSlide.date;
+        }
+
+        titleInput.addEventListener('input', updateCoverFromInputs);
+        companyInput.addEventListener('input', updateCoverFromInputs);
+        dateInput.addEventListener('input', updateCoverFromInputs);
+
+        document.getElementById('themeSelect').addEventListener('change', (e) => applyTheme(e.target.value));
+        applyTheme(document.getElementById('themeSelect').value);
+
+        document.getElementById('addSlideBtn').addEventListener('click', () => {
+            const layout = document.getElementById('layoutSelect').value;
+            addContentSlideWithLayout(layout);
+        });
+        document.getElementById('addFolderBtn').addEventListener('click', addFolder);
+        document.getElementById('toggleWatermarkBtn').addEventListener('click', toggleWatermark);
+        document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+        document.getElementById('exportPptxBtn').addEventListener('click', exportToPPTX);
+        document.getElementById('addTemplateBtn').addEventListener('click', () => {
+            const tpl = document.getElementById('templateSelect').value;
+            addTemplate(tpl);
+        });
+
+        document.body.addEventListener('dragover', (e) => e.preventDefault());
+        document.body.addEventListener('drop', (e) => e.preventDefault());
+    });
+</script>
+</body>
+</html>

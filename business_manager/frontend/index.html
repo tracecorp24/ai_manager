@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Business Manager</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-mark">BM</span><span><b>Business Manager</b><small>Yerel İşletme Yönetim Merkezi</small></span></div><span id="health" class="status">Bağlanıyor…</span></header>
+  <div class="layout">
+    <nav class="sidebar">
+      <button class="nav active" data-view="dashboard">⌂ Genel Bakış</button>
+      <button class="nav" data-view="crm">▣ Müşteri CRM</button>
+      <button class="nav" data-view="companies">▣ Şirketler</button>
+      <button class="nav" data-view="services">◈ Hizmetler ve İşler</button>
+      <button class="nav" data-view="marketing">✦ Marketing Stüdyosu</button>
+    </nav>
+    <main id="app" class="content"></main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
