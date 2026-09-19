@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş — AI Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .card {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo { font-size: 2.5rem; margin-bottom: 8px; }
+        h1 { font-size: 1.5rem; margin-bottom: 4px; }
+        p.sub { color: rgba(255,255,255,0.6); margin-bottom: 32px; font-size: 0.9rem; }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
+        input::placeholder { color: rgba(255,255,255,0.4); }
+        input:focus { border-color: rgba(255,255,255,0.5); }
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .msg { margin-top: 16px; font-size: 0.9rem; color: rgba(255,255,255,0.7); }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">🚀</div>
+    <h1>AI Manager</h1>
+    <p class="sub">tracecorp24 iş yönetim platformu</p>
+
+    <input type="email" id="email" placeholder="E-posta adresiniz" autocomplete="email" />
+    <button id="loginBtn" onclick="login()">Magic Link Gönder</button>
+    <div id="msg" class="msg"></div>
+</div>
+
+<script>
+async function login() {
+    const email = document.getElementById('email').value.trim()
+    const btn = document.getElementById('loginBtn')
+    const msg = document.getElementById('msg')
+
+    if (!email) {
+        msg.textContent = 'Lütfen e-posta adresinizi girin.'
+        msg.className = 'msg error'
+        return
+    }
+
+    btn.disabled = true
+    btn.textContent = 'Gönderiliyor...'
+    msg.textContent = ''
+
+    const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + '/index.html' }
+    })
+
+    if (error) {
+        msg.textContent = 'Hata: ' + error.message
+        msg.className = 'msg error'
+        btn.disabled = false
+        btn.textContent = 'Magic Link Gönder'
+    } else {
+        msg.textContent = '✅ E-postanıza giriş linki gönderildi!'
+        msg.className = 'msg success'
+        btn.textContent = 'Gönderildi'
+    }
+}
+
+// Zaten giriş yapmışsa yönlendir
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = '/index.html'
+})
+
+// Enter tuşu ile giriş
+document.getElementById('email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login()
+})
+</script>
+</body>
+</html>
