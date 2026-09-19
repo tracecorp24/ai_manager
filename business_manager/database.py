@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
 DB_PATH = DATA_DIR / "business_manager.db"
 SCHEMA_PATH = ROOT / "schema.sql"
-LEGACY_JSON = ROOT.parent / "musteri_listesi.json"
+LEGACY_JSON = ROOT / "frontend" / "musteri_listesi.json"
 
 
 def connect() -> sqlite3.Connection:
