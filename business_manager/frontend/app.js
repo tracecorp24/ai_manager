@@ -1308,6 +1308,31 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
     // 8. EVENT DİNLEYİCİLERİ
     // ==========================================================================
     function initEventHandlers() {
+        // Mobil Çekmece Menü Kontrolü (Hamburger & Backdrop)
+        const toggleBtn = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.getElementById('sidebarRail');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        function toggleMobileSidebar(open) {
+            const isOpen = (open !== undefined) ? open : !sidebar?.classList.contains('mobile-open');
+            if (isOpen) {
+                sidebar?.classList.add('mobile-open');
+                backdrop?.classList.add('active');
+            } else {
+                sidebar?.classList.remove('mobile-open');
+                backdrop?.classList.remove('active');
+            }
+        }
+
+        toggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMobileSidebar();
+        });
+
+        backdrop?.addEventListener('click', () => {
+            toggleMobileSidebar(false);
+        });
+
         // Sol Menü Sekme Değişimi
         document.querySelectorAll('.sidebar-rail .nav-item[data-tab]').forEach(btn => {
             btn.addEventListener('click', function () {
@@ -1318,6 +1343,11 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
                 state.activeTab = this.dataset.tab;
                 const pane = document.getElementById(this.dataset.tab);
                 if (pane) pane.classList.add('active');
+
+                // Mobilde sekmeye geçince çekmeceyi otomatik kapat
+                if (window.innerWidth <= 800) {
+                    toggleMobileSidebar(false);
+                }
 
                 renderAll();
             });

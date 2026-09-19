@@ -1115,6 +1115,40 @@ body {
     width: 100%;
 }
 
+.two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.finance-metrics-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    margin-bottom: 24px;
+}
+
+/* Mobil Çekmece Arka Planı (Sidebar Backdrop) */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 1090;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.sidebar-backdrop.active {
+    display: block;
+    opacity: 1;
+}
+
 @media (max-width: 1560px) {
     .kpi-metrics-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -1127,6 +1161,9 @@ body {
     }
     .tracking-full-grid {
         grid-template-columns: 1fr;
+    }
+    .finance-metrics-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
     }
 }
 
@@ -1143,37 +1180,238 @@ body {
     .mail-studio-layout {
         grid-template-columns: 1fr;
     }
+    .two-col-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .finance-metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
 }
 
 @media (max-width: 800px) {
+    /* Mobil Çekmece Menü (Mobile Drawer Navigation) */
     .sidebar-rail {
-        width: 68px;
-        padding: 12px 6px;
+        position: fixed;
+        top: 60px;
+        left: -270px;
+        width: 260px;
+        height: calc(100vh - 60px);
+        z-index: 1100;
+        background: #ffffff;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+        transition: left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        padding: 16px 12px;
+        overflow-y: auto;
     }
+
+    .sidebar-rail.mobile-open {
+        left: 0;
+    }
+
     .sidebar-rail .nav-item span.nav-label {
-        display: none;
+        display: inline !important;
     }
     .sidebar-rail .nav-item {
-        justify-content: center;
-        padding: 12px;
+        justify-content: flex-start !important;
+        padding: 12px 14px !important;
     }
     .sidebar-rail .nav-section-title {
-        display: none;
+        display: block !important;
     }
+
     .topbar-center {
         display: none;
     }
+
+    .main-viewport {
+        padding: 18px 14px;
+        width: 100%;
+        max-width: 100vw;
+    }
+
+    /* KPI Header & 2x2 Filter Pills on mobile */
+    .kpi-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .kpi-title-area h1 {
+        font-size: 18px;
+    }
+    .kpi-subtitle {
+        font-size: 11.5px;
+    }
+    .kpi-filters-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+    }
+    .filter-pill {
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* CRM & Table adjustments on mobile */
+    .crm-header-action {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .crm-header-action > div:last-child {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .crm-header-action .btn-g-primary,
+    .crm-header-action .btn-export-csv {
+        width: 100%;
+        justify-content: center;
+    }
+    .table-toolbar {
+        padding: 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .table-filters-group {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 8px;
+    }
+    .table-filters-group .g-input,
+    .table-filters-group .g-select,
+    .table-filters-group .g-page-btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .g-pagination {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* Mobil Kaydırılabilir Kanban (Swipeable Kanban Board) */
+    .kanban-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 16px;
+        gap: 12px;
+    }
+    .kanban-column {
+        width: 82vw;
+        min-width: 82vw;
+        scroll-snap-align: center;
+    }
+
+    /* Sektör tablosu mobil kompakt */
+    .drivers-table th, .drivers-table td {
+        padding: 8px 4px;
+        font-size: 11.5px;
+    }
+    .topic-title {
+        max-width: 140px;
+    }
 }
 
-@media (max-width: 580px) {
-    .main-viewport {
-        padding: 16px 12px;
+@media (max-width: 600px) {
+    .topbar {
+        padding: 0 12px;
+        height: 56px;
     }
+    .brand span:nth-child(2) {
+        font-size: 14.5px;
+    }
+    .brand-sub {
+        display: none;
+    }
+    .user-info {
+        display: none;
+    }
+    .user-profile {
+        padding-left: 6px;
+        border-left: none;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .kpi-card {
+        padding: 12px 10px;
+    }
+    .kpi-card-label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+    .kpi-card-value {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+    .kpi-trend {
+        font-size: 10px;
+    }
+
+    .finance-metrics-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Modallar Mobil */
+    .g-modal-box {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 8px;
+        border-radius: 12px;
+    }
+    .g-modal-header {
+        padding: 14px 16px;
+    }
+    .g-modal-header h3 {
+        font-size: 14.5px;
+    }
+    .g-modal-body {
+        padding: 14px;
+        max-height: 72vh;
+        gap: 12px;
+    }
+    .g-modal-footer {
+        padding: 12px 14px;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .g-modal-footer button {
+        width: 100%;
+        justify-content: center;
+    }
+    .cust-action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .cust-action-buttons a,
+    .cust-action-buttons button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 360px) {
     .kpi-metrics-grid {
         grid-template-columns: 1fr;
     }
-    .filter-pill {
-        width: 100%;
+    .kpi-filters-bar {
+        grid-template-columns: 1fr;
     }
 }
 

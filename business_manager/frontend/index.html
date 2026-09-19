@@ -47,6 +47,9 @@
         </div>
     </header>
 
+    <!-- MOBİL ÇEKMECE ARKA PLANI (BACKDROP) -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <!-- APP LAYOUT (Sidebar Rail + Main Content) -->
     <div class="app-layout">
         <!-- SOL NAVİGASYON (PowerBI / Google Rail) -->
@@ -531,7 +534,7 @@
                     </div>
                 </div>
 
-                <div class="kpi-metrics-grid" style="grid-template-columns:repeat(5, 1fr); margin-bottom:24px;">
+                <div class="kpi-metrics-grid finance-metrics-grid">
                     <div class="kpi-card">
                         <div class="kpi-card-label">Toplam Gerçekleşen Ciro</div>
                         <div class="kpi-card-value" id="aylikCiro">₺0</div>
@@ -584,7 +587,7 @@
                         <p style="font-size:12.5px; color:#64748b;">Teslim edilen projelerin canlı indirme ve takip bağlantıları</p>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                <div class="two-col-grid">
                     <div class="studio-card">
                         <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">✅ Tamamlanan İşler (Ödemesi Alınan)</h3>
                         <div id="tamamlananIsler"></div>
@@ -658,7 +661,7 @@
                     <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Firma / Şirket Ünvanı *</label>
                     <input type="text" id="ym_ad" class="g-input" style="width:100%;" placeholder="Örn: Atlas Makine Teknolojileri A.Ş." required>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-grid-2">
                     <div>
                         <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Sicil / Vergi No</label>
                         <input type="text" id="ym_sicil" class="g-input" style="width:100%;" placeholder="1009842">
@@ -668,7 +671,7 @@
                         <input type="text" id="ym_ilce" class="g-input" style="width:100%;" placeholder="İstanbul / Tuzla">
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-grid-2">
                     <div>
                         <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Faaliyet Alanı</label>
                         <input type="text" id="ym_faaliyet" class="g-input" style="width:100%;" placeholder="Mekanik Tasarım">
