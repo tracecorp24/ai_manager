@@ -48,8 +48,9 @@
             if (response.ok) {
                 const data = await response.json();
                 const varsayilanSektorler = [
-                    'Mekanik Tasarım', 'Kalıp İmalatı', 'Endüstriyel Otomasyon', 
-                    'Sac Metal & Talaşlı İmalat', 'Yazılım & Robotik', 'Mühendislik Danışmanlığı'
+                    'Mobil Uygulama (iOS & Android)', 'UI/UX Tasarım & Figma Prototip', 
+                    'Full-Stack Web (React & Next.js)', 'E-Ticaret & Shopify / Stripe', 
+                    'Yapay Zeka & Otomasyon Botları', 'SEO & Performans Pazarlaması'
                 ];
                 jsonMusteriler = data.map((item, idx) => ({
                     id: String(item["Sicil No"] || `CUST-${idx + 1}`),
@@ -58,10 +59,10 @@
                     ilce: item["İlçe"] || 'İstanbul',
                     durum: item["Durum"] || 'Faal',
                     faaliyet: varsayilanSektorler[idx % varsayilanSektorler.length],
-                    telefon: item["Telefon"] || `0212 ${Math.floor(100 + Math.random() * 899)} ${Math.floor(10 + Math.random() * 89)} ${Math.floor(10 + Math.random() * 89)}`,
+                    telefon: item["Telefon"] || `0532 ${Math.floor(100 + Math.random() * 899)} ${Math.floor(10 + Math.random() * 89)} ${Math.floor(10 + Math.random() * 89)}`,
                     email: item["Email"] || `info@${(item["Ünvan"] || 'firma').split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}.com.tr`,
                     sonDurum: (idx % 7 === 0) ? 'yesil' : ((idx % 11 === 0) ? 'sari' : ((idx % 23 === 0) ? 'kirmizi' : '')),
-                    sonNot: (idx % 7 === 0) ? 'Teklif detayları görüşüldü' : ((idx % 11 === 0) ? 'Katalog gönderildi' : ''),
+                    sonNot: (idx % 7 === 0) ? 'Teklif detayları görüşüldü' : ((idx % 11 === 0) ? 'Portfolyo & demo iletildi' : ''),
                     sonTarih: (idx % 7 === 0 || idx % 11 === 0) ? new Date(Date.now() - (idx % 20) * 86400000).toLocaleDateString('tr-TR') : '',
                     sonTarihISO: (idx % 7 === 0 || idx % 11 === 0) ? new Date(Date.now() - (idx % 20) * 86400000).toISOString() : '',
                     isler: [],
@@ -113,18 +114,18 @@
             musteriler = jsonMusteriler;
         }
 
-        // Zengin gerçekçi veri yoksa kurumsal örnek süreçleri ekle (görsel zenginlik için)
+        // Zengin gerçekçi veri yoksa freelance stüdyo örnek süreçlerini ekle
         if (getTumIsler().length < 6 && musteriler.length >= 10) {
-            musteriler[0].isler = [{ id: 101, isAdi: '5 Eksen CNC Freze Kalıp Projesi', tutar: 120000, masraf: 32000, vergiOran: 20, alinmaTarihi: '2026-09-02', deadline: '2026-09-30', durum: 0, aciklama: 'Teknik şartname inceleniyor' }];
-            musteriler[1].isler = [{ id: 102, isAdi: 'Sac Metal Şasi Kaynak Fikstürü', tutar: 65000, masraf: 15000, vergiOran: 20, alinmaTarihi: '2026-09-05', deadline: '2026-09-28', durum: 0, aciklama: 'Ön görüşme tamamlandı' }];
-            musteriler[2].isler = [{ id: 103, isAdi: 'Robotik Paletleme ve Konveyör Otomasyonu', tutar: 240000, masraf: 75000, vergiOran: 20, alinmaTarihi: '2026-09-08', deadline: '2026-09-26', durum: 1, aciklama: 'Teklif revize edildi' }];
-            musteriler[3].isler = [{ id: 104, isAdi: 'SolidWorks & CAD/CAM Lisans Paketi', tutar: 45000, masraf: 12000, vergiOran: 20, alinmaTarihi: '2026-09-12', deadline: '2026-10-05', durum: 1, aciklama: 'Yönetim onayında' }];
-            musteriler[4].isler = [{ id: 105, isAdi: '3D Mekanik Gövde & Tersine Mühendislik', tutar: 85000, masraf: 22000, vergiOran: 20, alinmaTarihi: '2026-09-01', deadline: '2026-09-24', durum: 2, aciklama: 'Modelleme aşamasında' }];
-            musteriler[5].isler = [{ id: 106, isAdi: 'Hidrolik Güç Ünitesi İmalat Çizimleri', tutar: 55000, masraf: 14000, vergiOran: 20, alinmaTarihi: '2026-09-04', deadline: '2026-09-21', durum: 2, aciklama: 'İmalat paftaları hazırlanıyor' }];
-            musteriler[6].isler = [{ id: 107, isAdi: 'FEA Dayanım ve Yorulma Analizi Raporu', tutar: 38000, masraf: 8000, vergiOran: 20, alinmaTarihi: '2026-08-28', deadline: '2026-09-18', durum: 3, aciklama: 'Müşteri onayı bekleniyor' }];
-            musteriler[7].isler = [{ id: 108, isAdi: 'Otomotiv Pres Kalıp İmalat Paftaları', tutar: 160000, masraf: 42000, vergiOran: 20, alinmaTarihi: '2026-08-20', odemeTarihi: '2026-09-15', deadline: '2026-09-14', durum: 4, aciklama: 'Teslim edildi ve tahsilat alındı' }];
-            musteriler[8].isler = [{ id: 109, isAdi: 'Plastik Enjeksiyon Kalıp Tasarımı', tutar: 92000, masraf: 24000, vergiOran: 20, alinmaTarihi: '2026-08-15', odemeTarihi: '2026-09-16', deadline: '2026-09-15', durum: 4, aciklama: 'Fatura ödendi' }];
-            musteriler[9].isler = [{ id: 110, isAdi: 'Savunma Sanayii Titanyum Parça Simülasyonu', tutar: 145000, masraf: 36000, vergiOran: 20, alinmaTarihi: '2026-08-10', odemeTarihi: '2026-09-18', deadline: '2026-09-17', durum: 4, aciklama: 'Nihai rapor teslim edildi' }];
+            musteriler[0].isler = [{ id: 101, isAdi: 'B2B SaaS Analytics Dashboard (Figma UI/UX)', tutar: 85000, masraf: 12000, vergiOran: 20, alinmaTarihi: '2026-09-02', deadline: '2026-09-30', durum: 0, aciklama: 'Wireframe ve kullanıcı akışları onaylandı', revizyon: '1/2', gorevSayi: '4/5' }];
+            musteriler[1].isler = [{ id: 102, isAdi: 'iOS & Android E-Ticaret Mobil Uygulaması', tutar: 160000, masraf: 35000, vergiOran: 20, alinmaTarihi: '2026-09-05', deadline: '2026-09-28', durum: 0, aciklama: 'Sepet ve ödeme adımları kodlanıyor', revizyon: '0/2', gorevSayi: '3/6' }];
+            musteriler[2].isler = [{ id: 103, isAdi: 'Next.js & Supabase Kurumsal Web Portalı', tutar: 120000, masraf: 24000, vergiOran: 20, alinmaTarihi: '2026-09-08', deadline: '2026-09-26', durum: 1, aciklama: 'Teklif revize edildi, sözleşme aşamasında', revizyon: '1/2', gorevSayi: '5/5' }];
+            musteriler[3].isler = [{ id: 104, isAdi: 'AI Destekli Akıllı Müşteri Destek Botu (LLM)', tutar: 95000, masraf: 18000, vergiOran: 20, alinmaTarihi: '2026-09-12', deadline: '2026-10-05', durum: 1, aciklama: 'RAG entegrasyonu ve test senaryoları', revizyon: '0/2', gorevSayi: '2/4' }];
+            musteriler[4].isler = [{ id: 105, isAdi: 'Headless Shopify & Global Stripe Ödeme Altyapısı', tutar: 140000, masraf: 30000, vergiOran: 20, alinmaTarihi: '2026-09-01', deadline: '2026-09-24', durum: 2, aciklama: 'Staging ortamında ödeme testleri yapılıyor', revizyon: '2/2', gorevSayi: '4/4' }];
+            musteriler[5].isler = [{ id: 106, isAdi: 'Figma Design System & React Bileşen Kütüphanesi', tutar: 75000, masraf: 15000, vergiOran: 20, alinmaTarihi: '2026-09-04', deadline: '2026-09-21', durum: 2, aciklama: 'Storybook dokümantasyonu tamamlanıyor', revizyon: '1/2', gorevSayi: '3/4' }];
+            musteriler[6].isler = [{ id: 107, isAdi: 'SEO & Core Web Vitals Hız Optimizasyonu', tutar: 42000, masraf: 6000, vergiOran: 20, alinmaTarihi: '2026-08-28', deadline: '2026-09-18', durum: 3, aciklama: 'Lighthouse skoru 98/100, onay bekleniyor', revizyon: '1/2', gorevSayi: '3/3' }];
+            musteriler[7].isler = [{ id: 108, isAdi: 'Fintech Mobil Cüzdan & KYC Doğrulama Akışı', tutar: 185000, masraf: 40000, vergiOran: 20, alinmaTarihi: '2026-08-20', odemeTarihi: '2026-09-15', deadline: '2026-09-14', durum: 4, aciklama: 'Proje teslim edildi ve hakediş tahsil edildi', revizyon: '2/2', gorevSayi: '6/6' }];
+            musteriler[8].isler = [{ id: 109, isAdi: 'Kripto Portföy Takip Web3 Uygulaması', tutar: 110000, masraf: 22000, vergiOran: 20, alinmaTarihi: '2026-08-15', odemeTarihi: '2026-09-16', deadline: '2026-09-15', durum: 4, aciklama: 'Fatura ve hakediş kapatıldı', revizyon: '1/2', gorevSayi: '4/4' }];
+            musteriler[9].isler = [{ id: 110, isAdi: 'Kurumsal Rebranding & Vektörel İllüstrasyon Seti', tutar: 68000, masraf: 10000, vergiOran: 20, alinmaTarihi: '2026-08-10', odemeTarihi: '2026-09-18', deadline: '2026-09-17', durum: 4, aciklama: 'Tüm kaynak SVG/AI dosyaları teslim edildi', revizyon: '2/2', gorevSayi: '3/3' }];
         }
 
         // Supabase durum kontrolü
@@ -245,12 +246,12 @@
 
         // Sektörel Dağılım Tablosu (Enriched Corporate Breakdown)
         const sectorData = [
-            { sec: 'Endüstriyel Mekanik Tasarım', pct: '28.4', count: 463, rev: 420300, margin: '44.2', mom: '+18.2%' },
-            { sec: 'Sac Metal & Lazer Kesim', pct: '22.1', count: 360, rev: 327000, margin: '38.6', mom: '+16.4%' },
-            { sec: 'CNC Kalıp & Talaşlı İmalat', pct: '18.5', count: 301, rev: 273800, margin: '46.0', mom: '+24.1%' },
-            { sec: 'Otomasyon & Robotik Sistemler', pct: '14.2', count: 231, rev: 210100, margin: '41.5', mom: '+29.8%' },
-            { sec: 'Hidrolik & Pnömatik Güç', pct: '10.6', count: 173, rev: 156800, margin: '36.2', mom: '+12.5%' },
-            { sec: 'Simülasyon & FEA Danışmanlığı', pct: '6.2', count: 101, rev: 91700, margin: '52.8', mom: '+21.0%' }
+            { sec: 'Mobil Uygulama (iOS & Android)', pct: '28.4', count: 463, rev: 420300, margin: '48.2', mom: '+24.5%' },
+            { sec: 'UI/UX Tasarım & Figma Prototip', pct: '22.1', count: 360, rev: 327000, margin: '52.6', mom: '+19.8%' },
+            { sec: 'Full-Stack Web (React & Next.js)', pct: '18.5', count: 301, rev: 273800, margin: '46.0', mom: '+21.4%' },
+            { sec: 'E-Ticaret & Shopify / Stripe', pct: '14.2', count: 231, rev: 210100, margin: '43.5', mom: '+31.2%' },
+            { sec: 'Yapay Zeka & Otomasyon Botları', pct: '10.6', count: 173, rev: 156800, margin: '58.4', mom: '+38.0%' },
+            { sec: 'SEO & Performans Pazarlaması', pct: '6.2', count: 101, rev: 91700, margin: '62.8', mom: '+18.5%' }
         ];
 
         const driversTbody = document.getElementById('driversTableBody');
@@ -362,10 +363,21 @@
                         </div>
                         <div style="text-align:right;">
                             <div style="font-weight:800; color:#b45309;">₺${tutar.toLocaleString('tr-TR')}</div>
-                            <button class="g-page-btn btn-quick-collect" data-id="${i.id}" data-mid="${i.musteriId}" style="padding:2px 6px; font-size:10.5px; color:#16a34a; font-weight:700; margin-top:3px;">Tahsil Et ✓</button>
+                            <div style="display:flex; gap:6px; margin-top:3px; justify-content:flex-end;">
+                                <button class="btn-whatsapp-collect btn-whatsapp-remind" data-id="${i.id}" data-mid="${i.musteriId}" title="WhatsApp'tan IBAN ve hakediş hatırlat">💬 WhatsApp</button>
+                                <button class="g-page-btn btn-quick-collect" data-id="${i.id}" data-mid="${i.musteriId}" style="padding:2px 6px; font-size:10.5px; color:#16a34a; font-weight:700;">Tahsil Et ✓</button>
+                            </div>
                         </div>
                     </div>`;
                 }).join('');
+
+                receivablesEl.querySelectorAll('.btn-whatsapp-remind').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const id = parseInt(this.dataset.id);
+                        const mid = this.dataset.mid;
+                        sendWhatsAppReminder(id, mid);
+                    });
+                });
 
                 receivablesEl.querySelectorAll('.btn-quick-collect').forEach(btn => {
                     btn.addEventListener('click', function () {
@@ -384,6 +396,22 @@
                 });
             }
         }
+    }
+
+    function sendWhatsAppReminder(jobId, musteriId) {
+        const m = musteriler.find(x => String(x.id) === String(musteriId));
+        const is = (m?.isler || []).find(y => y.id === jobId);
+        if (!m || !is) return;
+
+        let tel = (m.telefon || '').replace(/[^0-9]/g, '');
+        if (tel.startsWith('0')) tel = '90' + tel.slice(1);
+        else if (!tel.startsWith('90')) tel = '90' + tel;
+
+        const tutarStr = Number(is.tutar || 0).toLocaleString('tr-TR');
+        const msg = `Merhaba ${m.ad} yetkilisi,\n\n"${is.isAdi}" projemizin teslim / hakediş aşamasına ait ₺${tutarStr} tutarındaki ödemeniz için şirket IBAN bilgilerimiz aşağıdadır:\n\n🏦 QNB Finansbank\n👤 Alıcı: Emin A. (Freelance Studio)\n💳 IBAN: TR84 0006 1005 1234 5678 9012 34\n\nDekontu bu hattan iletmeniz durumunda muhasebe süreç kaydı tamamlanacaktır. İlginiz ve iş birliğiniz için teşekkür ederiz.`;
+
+        const url = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
     }
 
     // ==========================================================================
@@ -590,7 +618,11 @@
                     <div style="font-weight:700; color:#1e293b; font-size:13.5px; margin-bottom:3px;">${esc(i.isAdi)}</div>
                     <div style="font-size:12px; color:#0284c7; font-weight:600;">${esc(musteri.ad)}</div>
                     ${i.aciklama ? `<div style="font-size:11.5px; color:#64748b; margin-top:4px;">${esc(i.aciklama)}</div>` : ''}
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin: 6px 0 2px 0;">
+                        <span class="kanban-rev-badge" title="Müşteri Revizyon Durumu">🔄 Rev: ${i.revizyon || '1/2'}</span>
+                        <span class="kanban-sub-badge" title="Alt Görev Checklist">☑️ ${i.gorevSayi || '3/4 Görev'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                         <span style="font-weight:800; font-size:12.5px; color:#16a34a;">₺${Number(i.tutar || 0).toLocaleString('tr-TR')}</span>
                         <select class="g-select kanban-mobile-stage" data-id="${i.id}" data-mid="${i.musteriId}" style="padding:2px 4px; font-size:11px;">
                             <option value="0" ${s.durum === 0 ? 'selected' : ''}>Aşama 1</option>
@@ -1859,7 +1891,128 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
                 });
             }
         }
+
+        // ==========================================================================
+        // 9. FREELANCE İŞLETİM SİSTEMİ ARAÇLARI (Zaman Sayacı, Scratchpad, Dark Mode)
+        // ==========================================================================
+        function initFreelanceTools() {
+            // 1. Dark Mode Yönetimi
+            const savedTheme = localStorage.getItem('ai_manager_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+            themeBtn?.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme') || 'light';
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('ai_manager_theme', next);
+                if (themeIcon) themeIcon.textContent = next === 'dark' ? '☀️' : '🌙';
+            });
+
+            // 2. Canlı Zaman Sayacı (Time Tracker)
+            let trackerRunning = false;
+            let trackerSeconds = parseInt(localStorage.getItem('freelance_tracker_seconds') || '0', 10);
+            let trackerInterval = null;
+
+            function formatTime(totalSec) {
+                const h = Math.floor(totalSec / 3600);
+                const m = Math.floor((totalSec % 3600) / 60);
+                const s = totalSec % 60;
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+
+            const displayEl = document.getElementById('trackerDisplay');
+            const playBtn = document.getElementById('trackerPlayBtn');
+            const resetBtn = document.getElementById('trackerResetBtn');
+            const pillEl = document.getElementById('timeTrackerPill');
+
+            if (displayEl) displayEl.textContent = formatTime(trackerSeconds);
+
+            function updateDisplay() {
+                if (displayEl) displayEl.textContent = formatTime(trackerSeconds);
+                localStorage.setItem('freelance_tracker_seconds', trackerSeconds);
+            }
+
+            playBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (trackerRunning) {
+                    clearInterval(trackerInterval);
+                    trackerRunning = false;
+                    playBtn.textContent = '▶️';
+                    pillEl?.classList.remove('active');
+                } else {
+                    trackerRunning = true;
+                    playBtn.textContent = '⏸️';
+                    pillEl?.classList.add('active');
+                    trackerInterval = setInterval(() => {
+                        trackerSeconds++;
+                        updateDisplay();
+                    }, 1000);
+                }
+            });
+
+            resetBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Aktif zaman sayacı sıfırlansın mı?')) {
+                    clearInterval(trackerInterval);
+                    trackerRunning = false;
+                    trackerSeconds = 0;
+                    if (playBtn) playBtn.textContent = '▶️';
+                    pillEl?.classList.remove('active');
+                    updateDisplay();
+                }
+            });
+
+            // 3. Hızlı Karalama & Toplantı Notları (Scratchpad)
+            const scratchToggleBtn = document.getElementById('scratchpadToggleBtn');
+            const scratchModal = document.getElementById('scratchpadModal');
+            const closeScratchBtn = document.getElementById('closeScratchpadBtn');
+            const scratchTextarea = document.getElementById('scratchpadTextarea');
+            const scratchCharCount = document.getElementById('scratchpadCharCount');
+            const scratchCopyBtn = document.getElementById('scratchpadCopyBtn');
+            const scratchClearBtn = document.getElementById('scratchpadClearBtn');
+
+            if (scratchTextarea) {
+                const savedNotes = localStorage.getItem('freelance_scratchpad_note') || '';
+                scratchTextarea.value = savedNotes;
+                if (scratchCharCount) scratchCharCount.textContent = `${savedNotes.length} karakter · Otomatik kaydedildi`;
+
+                scratchTextarea.addEventListener('input', () => {
+                    localStorage.setItem('freelance_scratchpad_note', scratchTextarea.value);
+                    if (scratchCharCount) scratchCharCount.textContent = `${scratchTextarea.value.length} karakter · Otomatik kaydedildi`;
+                });
+            }
+
+            scratchToggleBtn?.addEventListener('click', () => {
+                if (scratchModal) scratchModal.style.display = 'flex';
+            });
+
+            closeScratchBtn?.addEventListener('click', () => {
+                if (scratchModal) scratchModal.style.display = 'none';
+            });
+
+            scratchCopyBtn?.addEventListener('click', () => {
+                if (scratchTextarea && scratchTextarea.value) {
+                    navigator.clipboard.writeText(scratchTextarea.value).then(() => {
+                        scratchCopyBtn.textContent = '✓ Kopyalandı!';
+                        setTimeout(() => scratchCopyBtn.textContent = '📋 Kopyala', 2000);
+                    });
+                }
+            });
+
+            scratchClearBtn?.addEventListener('click', () => {
+                if (confirm('Tüm karalama notları silinsin mi?')) {
+                    if (scratchTextarea) scratchTextarea.value = '';
+                    localStorage.removeItem('freelance_scratchpad_note');
+                    if (scratchCharCount) scratchCharCount.textContent = '0 karakter · Temizlendi';
+                }
+            });
+        }
+
         initAIAssistant();
+        initFreelanceTools();
     }
 
     // Başlat
