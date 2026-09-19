@@ -2,10 +2,21 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Business Manager</title><link rel="stylesheet" href="style.css">
+  <meta name="description" content="Business Manager — İşletme yönetim merkezi">
+  <title>Business Manager — AI Manager</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar"><div class="brand"><span class="brand-mark">BM</span><span><b>Business Manager</b><small>Yerel İşletme Yönetim Merkezi</small></span></div><span id="health" class="status">Bağlanıyor…</span></header>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">BM</span>
+      <span><b>Business Manager</b><small>AI Manager Platformu</small></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="health" class="status">Bağlanıyor…</span>
+      <button id="signOutBtn" style="display:none;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.8);cursor:pointer;font-size:0.8rem" onclick="handleSignOut()">Çıkış</button>
+    </div>
+  </header>
   <div class="layout">
     <nav class="sidebar">
       <button class="nav active" data-view="dashboard">⌂ Genel Bakış</button>
@@ -16,6 +27,34 @@
     </nav>
     <main id="app" class="content"></main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    // Auth Guard — Supabase giriş kontrolü
+    async function initAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = '/login.html';
+        return false;
+      }
+      // Kullanıcı giriş yapmış
+      const signOutBtn = document.getElementById('signOutBtn');
+      if (signOutBtn) signOutBtn.style.display = 'block';
+      return true;
+    }
+
+    async function handleSignOut() {
+      await supabaseClient.auth.signOut();
+      window.location.href = '/login.html';
+    }
+
+    // Auth durumu değişikliğini izle
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        window.location.href = '/login.html';
+      }
+    });
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
