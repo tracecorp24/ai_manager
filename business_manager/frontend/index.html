@@ -1,49 +1,331 @@
-<!doctype html>
-<html lang="tr">
+<!DOCTYPE html>
+<html lang="tr" class="auth-pending">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Business Manager — İşletme yönetim merkezi">
-  <title>Business Manager — AI Manager</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Manager — AI Manager Platformu</title>
+    <meta name="description" content="Business Manager — AI Manager CRM ve İşletme Yönetim Platformu">
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS CDN (Canlı veritabanı desteği için) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
 </head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">BM</span>
-      <span><b>Business Manager</b><small>AI Manager Platformu</small></span>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span id="health" class="status">Bağlanıyor…</span>
-      <button id="signOutBtn" style="display:none;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.8);cursor:pointer;font-size:0.8rem" onclick="handleSignOut()">Çıkış</button>
-    </div>
-  </header>
-  <div class="layout">
-    <nav class="sidebar">
-      <button class="nav active" data-view="dashboard">⌂ Genel Bakış</button>
-      <button class="nav" data-view="crm">▣ Müşteri CRM</button>
-      <button class="nav" data-view="companies">▣ Şirketler</button>
-      <button class="nav" data-view="services">◈ Hizmetler ve İşler</button>
-      <button class="nav" data-view="marketing">✦ Marketing Stüdyosu</button>
-    </nav>
-    <main id="app" class="content"></main>
-  </div>
-  <script>
-    // Test sitesi: admin adıyla açılan demo oturumu.
-    function initAuth() {
-      if (sessionStorage.getItem('ai_manager_demo_admin') !== '1') {
-        window.location.href = '/login.html';
-        return false;
-      }
-      const signOutBtn = document.getElementById('signOutBtn');
-      if (signOutBtn) signOutBtn.style.display = 'block';
-      return true;
-    }
+<body class="auth-pending">
+    <div id="app">
+        <!-- ÜST KISIM: SEKMELER + DURUM + DIŞA AKTAR BUTONU + İLERİ/GERİ -->
+        <header class="header-tabs">
+            <div class="brand-badge">
+                <span class="brand-icon">BM</span>
+                <span>Business Manager</span>
+            </div>
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="tab1">📋 Müşteri Veri Tabanı</button>
+                <button class="tab-btn" data-tab="tab2">📊 Aktif Süreçler (Kanban)</button>
+                <button class="tab-btn" data-tab="tab3">✉️ Mail & AI İletişim</button>
+                <button class="tab-btn" data-tab="tab4">💰 Ciro & Kar</button>
+                <button class="tab-btn" data-tab="tab5">🔗 Müşteri Linkleri</button>
+                <button class="tab-btn" data-tab="tab6">🎨 Sunum & Marketing</button>
+            </nav>
+            <div class="header-actions">
+                <span id="backendStatusBadge" class="status-badge">● Bağlanıyor...</span>
+                <div class="history-buttons">
+                    <button class="history-btn" id="undoBtn" title="Geri Al">↩ Geri</button>
+                    <button class="history-btn" id="redoBtn" title="İleri Al">↪ İleri</button>
+                </div>
+                <button class="export-btn" id="exportData">📥 Tüm Veriyi Dışa Aktar</button>
+                <button class="logout-btn" id="signOutBtn" onclick="handleSignOut()" title="Oturumu Kapat">Çıkış</button>
+            </div>
+        </header>
 
-    function handleSignOut() {
-      sessionStorage.removeItem('ai_manager_demo_admin');
-      window.location.href = '/login.html';
-    }
-  </script>
-  <script src="app.js"></script>
+        <!-- 1. SEKME: MÜŞTERİ VERİ TABANI -->
+        <main id="tab1" class="tab-content active">
+            <h2>
+                <span>🔷 Müşteri Veri Tabanı</span>
+                <button class="btn btn-accent" id="yeniMusteriBtn" style="font-size:13px; padding:8px 16px;">➕ Yeni Müşteri Ekle</button>
+            </h2>
+            <div class="musteri-panel">
+                <!-- MÜŞTERİ LİSTESİ VE SAYFALAMA -->
+                <div class="musteri-listesi-container">
+                    <div class="musteri-listesi-toolbar">
+                        <span id="listTitleBadge" style="font-weight:600; font-size:14px; color:#1e293b;">Kayıtlar</span>
+                        <span id="filterStatsBadge" style="font-size:12px; color:#64748b;">Yükleniyor...</span>
+                    </div>
+                    <div class="musteri-listesi" id="musteriListesi"></div>
+                    <!-- HIZLI SAYFALAMA BAR (PAGINATION) -->
+                    <div class="pagination-wrap" id="musteriPagination">
+                        <span class="pagination-info" id="paginationInfo">Toplam 0 müşteri</span>
+                        <div class="pagination-controls">
+                            <button id="prevPageBtn" class="pagination-btn">« Önceki</button>
+                            <span id="pageNumberIndicator" style="font-size:13px; font-weight:700; padding:0 6px;">Sayfa 1 / 1</span>
+                            <button id="nextPageBtn" class="pagination-btn">Sonraki »</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FİLTRELEME ALANI -->
+                <aside class="filtre-alani">
+                    <h3>🔍 Filtrele & Ara</h3>
+                    <div class="filtre-grup">
+                        <label for="arama">Firma / Sicil Ara</label>
+                        <input type="text" id="arama" placeholder="Firma veya sicil yazın...">
+                    </div>
+                    <div class="filtre-grup">
+                        <label for="filtreFaaliyet">Faaliyet Alanı</label>
+                        <select id="filtreFaaliyet">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label for="filtreIlce">📍 İlçe</label>
+                        <select id="filtreIlce">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label for="filtreDurum">Son Durum (CRM)</label>
+                        <select id="filtreDurum">
+                            <option value="">Tümü</option>
+                            <option value="sari">İletişim geçildi (Sarı)</option>
+                            <option value="yesil">İlgili (Yeşil)</option>
+                            <option value="kirmizi">Olumsuz (Kırmızı)</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label for="filtreJsonDurum">🏢 Şirket Durumu</label>
+                        <select id="filtreJsonDurum">
+                            <option value="">Tümü</option>
+                        </select>
+                    </div>
+                    <div class="filtre-grup">
+                        <label for="filtreTarih">Son Görüşme Tarihi</label>
+                        <select id="filtreTarih">
+                            <option value="">Tümü</option>
+                            <option value="son1hafta">Son 1 hafta</option>
+                            <option value="son1ay">Son 1 ay</option>
+                            <option value="eskı1ay">1 aydan eski</option>
+                            <option value="hic">Hiç görüşülmemiş</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-mavi" id="filtreUygula" style="width:100%; justify-content:center; padding:10px;">Filtreleri Temizle / Yenile</button>
+                    <hr style="margin:16px 0; border:none; border-top:1px solid #e2e8f0;">
+                    <p style="font-size:12px; color:#64748b; line-height:1.4;">* Müşteri kartındaki renkli butonlara basarak son temas durumunu ve notunu anında güncelleyebilirsiniz.</p>
+                </aside>
+            </div>
+        </main>
+
+        <!-- 2. SEKME: KANBAN -->
+        <section id="tab2" class="tab-content">
+            <h2>🔷 Aktif Süreçler & Teklif Pipeline (Kanban)</h2>
+            <div class="kanban-board" id="kanbanBoard"></div>
+            <button class="yeni-is-btn" id="yeniIsEkle">➕ Yeni İş / Teklif Ekle (Müşteri Seç)</button>
+        </section>
+
+        <!-- 3. SEKME: MAİL OLUŞTURMA & AI ASİSTANI -->
+        <section id="tab3" class="tab-content">
+            <h2>🔷 AI Destekli E-Posta & İletişim Stüdyosu</h2>
+            <div class="mail-panel">
+                <div class="mail-sablon">
+                    <label for="mailMusteriAra">👥 Müşteri Ara ve Seç</label>
+                    <input type="text" id="mailMusteriAra" placeholder="Müşteri adını veya sicil no yazın...">
+                    <div id="mailMusteriSonuclari" class="customer-search-results"></div>
+                    <input type="hidden" id="mailMusteri">
+
+                    <div style="display:flex; gap:16px;">
+                        <div style="flex:1;">
+                            <label for="mailAmac">🎯 İletişim Amacı</label>
+                            <select id="mailAmac">
+                                <option value="tanitim">Tanıtım (Mekanik Tasarım & Mühendislik)</option>
+                                <option value="yazilim">Yazılım Satışı (CAD/CAM Lisans Teklifi)</option>
+                                <option value="hizmet">Mühendislik Danışmanlığı & Analiz</option>
+                                <option value="teklif">Fiyat Teklifi & İş Kapsamı</option>
+                                <option value="durum">Proje İlerleme Durumu Bilgilendirme</option>
+                                <option value="odeme">Ödeme & Fatura Hatırlatma</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label for="pdfSec">📎 PDF Eki (Katalog / Teklif)</label>
+                            <select id="pdfSec">
+                                <option value="">PDF seçilmedi</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label for="mailTaslak">📝 E-Posta Taslağı (Düzenlenebilir)</label>
+                    <textarea id="mailTaslak" placeholder="Müşteri seçip 'Taslak Oluştur' veya 'AI ile Kişiselleştir' butonuna basın..."></textarea>
+
+                    <div class="mail-actions">
+                        <button class="btn btn-mavi" id="mailOlustur">✍️ Standart Taslak</button>
+                        <button class="btn-ai" id="mailAiBtn">✨ AI ile Güçlendir & Kişiselleştir</button>
+                        <button class="btn btn-accent" id="mailGonderBtn">🚀 E-Postada Aç (Mailto)</button>
+                        <button class="btn btn-secondary" id="mailKopyalaBtn">📋 Panoya Kopyala</button>
+                        <button class="btn btn-secondary" id="mailKaydet">💾 Taslağı Sakla</button>
+                    </div>
+                </div>
+
+                <div class="pdf-list">
+                    <h3>📂 Ekli Belgeler & PDF Kataloğu</h3>
+                    <div id="pdfListesi"></div>
+                    <div class="pdf-yukle" style="margin-top:16px;">
+                        <input type="file" id="pdfYukle" accept=".pdf" multiple>
+                        <p style="font-size:12px; color:#64748b; margin-top:8px;">* Yüklediğiniz PDF'lerin adları listelenir ve hazırladığınız e-posta taslağına otomatik referans eklenir.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. SEKME: CİRO & KAR HESABI -->
+        <section id="tab4" class="tab-content">
+            <h2>🔷 Ciro, Finans & Karlılık Tablosu</h2>
+            <div class="ciro-ozet">
+                <div class="ozet-kart" id="aylikCiro">📆 Toplam Ciro: ₺0</div>
+                <div class="ozet-kart haftalik" id="haftalikCiro">📅 Bu Haftaki Ciro: ₺0</div>
+                <div class="ozet-kart yillik" id="yillikCiro">📈 Bu Yılki Ciro: ₺0</div>
+                <div class="ozet-kart vergi" id="toplamVergi">🧾 Toplam Vergi: ₺0</div>
+                <div class="ozet-kart kar" id="toplamKar">💰 Net Kar: ₺0</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 style="margin-bottom:0;">📋 Alınan İşler ve Karlılık Detayları</h3>
+                <button class="btn btn-mavi" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
+            </div>
+            <div class="is-table-wrap">
+                <table class="is-table" id="ciroTable">
+                    <thead>
+                        <tr>
+                            <th>İş Adı</th>
+                            <th>Müşteri</th>
+                            <th>Alınma Tarihi</th>
+                            <th>Tutar (₺)</th>
+                            <th>Masraf (₺)</th>
+                            <th>Vergi %</th>
+                            <th>Vergi (₺)</th>
+                            <th>Kar (₺)</th>
+                            <th>Ödeme Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ciroTbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 5. SEKME: MÜŞTERİ LİNKLERİ -->
+        <section id="tab5" class="tab-content">
+            <h2>🔷 Müşteri Özel Linkleri & Portfolyo</h2>
+            <div class="link-panel">
+                <div class="aktif-isler">
+                    <h3>✅ Tamamlanan İşler (Ödemesi Alınan)</h3>
+                    <div id="tamamlananIsler"></div>
+                </div>
+                <div class="link-list">
+                    <h3>🔗 Oluşturulan Paylaşım Linkleri</h3>
+                    <div id="linkListesi"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. SEKME: MARKETING & SUNUM STÜDYOSU -->
+        <section id="tab6" class="tab-content">
+            <h2>🔷 Marketing & ProSunum Stüdyosu</h2>
+            <div class="marketing-frame-wrap">
+                <iframe src="marketing.html" title="ProSunum Endüstriyel Sunum Stüdyosu"></iframe>
+            </div>
+        </section>
+    </div>
+
+    <!-- YENİ İŞ / TEKLİF EKLEME MODALI -->
+    <div id="isModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>➕ Yeni İş / Teklif Ekle</span>
+                <span class="modal-close" id="isModalClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <label for="modalMusteriAra">🔍 Müşteri Ara (İsim veya Sicil)</label>
+                <input type="text" id="modalMusteriAra" placeholder="Müşteri adını yazmaya başlayın...">
+                <div id="modalMusteriSonuclari" class="customer-search-results"></div>
+                <input type="hidden" id="modalSeciliMusteriId">
+
+                <label for="modalIsAdi">📝 İşin Adı</label>
+                <input type="text" id="modalIsAdi" placeholder="Örn: 3D Mekanik Tasarım & Simülasyon">
+
+                <label for="modalIsTutar">💰 Tutar (TL)</label>
+                <input type="number" id="modalIsTutar" placeholder="45000">
+
+                <label for="modalIsNot">📌 Not / Proje Detayı</label>
+                <textarea id="modalIsNot" style="height:80px;" placeholder="İşe dair önemli notlar ve teslim tarihi..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="isModalIptal">İptal</button>
+                <button class="btn btn-yesil" id="isModalKaydet">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- YENİ MÜŞTERİ EKLEME MODALI -->
+    <div id="yeniMusteriModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>➕ Yeni Müşteri / Şirket Ekle</span>
+                <span class="modal-close" id="yeniMusteriClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <label for="ym_ad">Şirket / Müşteri Adı *</label>
+                <input type="text" id="ym_ad" placeholder="Örn: Atlas Makine Teknolojileri A.Ş." required>
+
+                <label for="ym_sicil">Sicil No / Vergi No</label>
+                <input type="text" id="ym_sicil" placeholder="Örn: 1009842">
+
+                <label for="ym_ilce">İlçe / Şehir</label>
+                <input type="text" id="ym_ilce" placeholder="İstanbul / Tuzla">
+
+                <label for="ym_faaliyet">Faaliyet / Sektör</label>
+                <input type="text" id="ym_faaliyet" placeholder="Mekanik Tasarım / Otomasyon">
+
+                <label for="ym_telefon">Telefon</label>
+                <input type="text" id="ym_telefon" placeholder="0216 123 45 67">
+
+                <label for="ym_email">E-Posta</label>
+                <input type="email" id="ym_email" placeholder="info@atlasmakine.com">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="yeniMusteriIptal">İptal</button>
+                <button class="btn btn-accent" id="yeniMusteriKaydet">Müşteriyi Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI PROMPT / AYARLAR MODALI -->
+    <div id="aiModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>✨ AI Satış & İletişim Asistanı</span>
+                <span class="modal-close" id="aiModalClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:13px; color:#475569; margin-bottom:14px;">
+                    Yapay zekâ seçilen müşterinin sektörünü, geçmiş notlarını ve iş amacını analiz ederek özel bir teklif mektubu hazırlar.
+                </p>
+                <label for="aiTone">Yazım Tonu</label>
+                <select id="aiTone">
+                    <option value="kurumsal">Kurumsal & Profesyonel</option>
+                    <option value="sicak">Sıcak & Çözüm Odaklı</option>
+                    <option value="ikna">Yüksek İkna & Satış Odaklı (İndirim/Fırsat Vurgulu)</option>
+                    <option value="teknik">Teknik & Mühendislik Odaklı</option>
+                </select>
+
+                <label for="aiEkstraNot">Ekstra İsteğiniz (Opsiyonel)</label>
+                <input type="text" id="aiEkstraNot" placeholder="Örn: %15 lansman indirimimizden ve hızlı teslimatımızdan bahset">
+
+                <label for="aiApiKey">OpenRouter / OpenAI API Anahtarı (Opsiyonel)</label>
+                <input type="password" id="aiApiKey" placeholder="sk-or-... (Boş bırakılırsa yerel akıllı AI motoru çalışır)">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="aiModalIptal">İptal</button>
+                <button class="btn-ai" id="aiModalUret">✨ Metni Üret</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANA UYGULAMA MANTIĞI -->
+    <script src="app.js"></script>
 </body>
 </html>
