@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giriş — AI Manager</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -68,53 +66,32 @@
     <h1>AI Manager</h1>
     <p class="sub">tracecorp24 iş yönetim platformu</p>
 
-    <input type="email" id="email" placeholder="E-posta adresiniz" autocomplete="email" />
-    <button id="loginBtn" onclick="login()">Magic Link Gönder</button>
+    <form id="loginForm">
+        <input type="text" id="identifier" placeholder="Kullanıcı adı" autocomplete="username" required />
+        <button id="loginBtn" type="submit">Giriş Yap</button>
+    </form>
     <div id="msg" class="msg"></div>
 </div>
 
 <script>
-async function login() {
-    const email = document.getElementById('email').value.trim()
-    const btn = document.getElementById('loginBtn')
+// Kullanıcı isteği: test sitesinde yalnızca admin adıyla demo girişi.
+function login(event) {
+    event.preventDefault()
+    const identifier = document.getElementById('identifier').value.trim()
     const msg = document.getElementById('msg')
 
-    if (!email) {
-        msg.textContent = 'Lütfen e-posta adresinizi girin.'
+    if (identifier.toLowerCase() !== 'admin') {
+        msg.textContent = 'Giriş için admin yazın.'
         msg.className = 'msg error'
         return
     }
-
-    btn.disabled = true
-    btn.textContent = 'Gönderiliyor...'
-    msg.textContent = ''
-
-    const { error } = await supabaseClient.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: window.location.origin + '/index.html' }
-    })
-
-    if (error) {
-        msg.textContent = 'Hata: ' + error.message
-        msg.className = 'msg error'
-        btn.disabled = false
-        btn.textContent = 'Magic Link Gönder'
-    } else {
-        msg.textContent = '✅ E-postanıza giriş linki gönderildi!'
-        msg.className = 'msg success'
-        btn.textContent = 'Gönderildi'
-    }
+    sessionStorage.setItem('ai_manager_demo_admin', '1')
+    window.location.href = '/index.html'
 }
 
-// Zaten giriş yapmışsa yönlendir
-supabaseClient.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = '/index.html'
-})
+if (sessionStorage.getItem('ai_manager_demo_admin') === '1') window.location.href = '/index.html'
 
-// Enter tuşu ile giriş
-document.getElementById('email').addEventListener('keydown', e => {
-    if (e.key === 'Enter') login()
-})
+document.getElementById('loginForm').addEventListener('submit', login)
 </script>
 </body>
 </html>

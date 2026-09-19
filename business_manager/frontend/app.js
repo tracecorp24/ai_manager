@@ -6,55 +6,81 @@ const esc = (v = '') => String(v).replace(/[&<>"']/g, c =>
 
 const state = { view: 'dashboard' };
 
-// ─── Supabase API Katmanı ─────────────────────────────────────────
+// ─── Demo veri katmanı ────────────────────────────────────────────
+
+const DEMO_COMPANIES_KEY = 'ai_manager_demo_companies';
+const DEMO_OPPORTUNITIES_KEY = 'ai_manager_demo_opportunities';
+
+function savedCompanies() {
+  try { return JSON.parse(localStorage.getItem(DEMO_COMPANIES_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function savedOpportunities() {
+  try { return JSON.parse(localStorage.getItem(DEMO_OPPORTUNITIES_KEY) || '[]'); }
+  catch { return []; }
+}
+
+let sampleCompaniesPromise;
+function sampleCompanies() {
+  if (!sampleCompaniesPromise) {
+    sampleCompaniesPromise = fetch('musteri_listesi.json')
+      .then(response => {
+        if (!response.ok) throw new Error('Örnek şirket listesi yüklenemedi.');
+        return response.json();
+      })
+      .then(rows => rows.map((row, id) => ({
+        id,
+        name: row['Ünvan'],
+        registration_no: row['Sicil No'],
+        district: row['İlçe'],
+        sector: '',
+        status: row['Durum'] || 'Faal',
+      })));
+  }
+  return sampleCompaniesPromise;
+}
 
 async function sbDashboard() {
-  const { data, error } = await supabaseClient
-    .from('dashboard_stats')
-    .select('*')
-    .single();
-  if (error) throw new Error(error.message);
+  const companies = await sbCompanies();
+  const opportunities = savedOpportunities();
   return {
-    companies: data.total_companies || 0,
-    opportunities: data.total_opportunities || 0,
-    demo_companies: data.demo_companies || 0,
-    active_jobs: data.active_jobs || 0,
+    companies: companies.length,
+    opportunities: opportunities.length,
+    active_jobs: opportunities.filter(opportunity => !['Kazanıldı', 'Kaybedildi'].includes(opportunity.stage)).length,
   };
 }
 
 async function sbCompanies(q = '') {
-  let query = supabaseClient.from('companies').select('*').order('name').limit(200);
-  if (q) query = query.or(`name.ilike.%${q}%,registration_no.ilike.%${q}%`);
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  return data || [];
+  const list = [...savedCompanies(), ...await sampleCompanies()];
+  if (!q) return list;
+  const needle = q.toLocaleLowerCase('tr-TR');
+  return list.filter(company => `${company.name} ${company.registration_no || ''}`
+    .toLocaleLowerCase('tr-TR').includes(needle));
 }
 
 async function sbOpportunities(q = '') {
-  const { data, error } = await supabaseClient
-    .from('opportunities')
-    .select('*, companies(name)')
-    .order('id', { ascending: false });
-  if (error) throw new Error(error.message);
-  const list = (data || []).map(o => ({
-    ...o,
-    company_name: o.companies?.name || '-',
+  const companies = await sbCompanies();
+  const list = savedOpportunities().map(opportunity => ({
+    ...opportunity,
+    company_name: companies.find(company => String(company.id) === String(opportunity.company_id))?.name || '-',
   }));
   if (!q) return list;
-  const lq = q.toLocaleLowerCase('tr-TR');
-  return list.filter(x => `${x.name} ${x.company_name}`.toLocaleLowerCase('tr-TR').includes(lq));
+  const needle = q.toLocaleLowerCase('tr-TR');
+  return list.filter(opportunity => `${opportunity.name} ${opportunity.company_name}`
+    .toLocaleLowerCase('tr-TR').includes(needle));
 }
 
 async function sbInsertCompany(payload) {
-  const { data, error } = await supabaseClient.from('companies').insert(payload).select().single();
-  if (error) throw new Error(error.message);
-  return data;
+  const company = { ...payload, id: Date.now() };
+  localStorage.setItem(DEMO_COMPANIES_KEY, JSON.stringify([company, ...savedCompanies()]));
+  return company;
 }
 
 async function sbInsertOpportunity(payload) {
-  const { data, error } = await supabaseClient.from('opportunities').insert(payload).select().single();
-  if (error) throw new Error(error.message);
-  return data;
+  const opportunity = { ...payload, id: Date.now() };
+  localStorage.setItem(DEMO_OPPORTUNITIES_KEY, JSON.stringify([opportunity, ...savedOpportunities()]));
+  return opportunity;
 }
 
 // ─── Sayfalar ────────────────────────────────────────────────────
@@ -70,7 +96,7 @@ async function dashboard() {
       <div class="card">Toplam Şirket<strong>${d.companies}</strong></div>
       <div class="card">Aktif İş İlanı<strong>${d.active_jobs}</strong></div>
       <div class="card">Fırsatlar<strong>${d.opportunities}</strong></div>
-      <div class="card">Veritabanı<strong>Supabase</strong></div>
+      <div class="card">Çalışma Modu<strong>Demo</strong></div>
     </div>
     <div class="grid">
       <div class="panel">
@@ -90,7 +116,7 @@ async function companies() {
   const list = await sbCompanies(q);
   app.innerHTML = `
     <section class="hero">
-      <div><h1>Şirketler</h1><span class="muted">Supabase'deki şirket kayıtları</span></div>
+      <div><h1>Şirketler</h1><span class="muted">Örnek şirket listesi ve bu tarayıcıdaki kayıtlar</span></div>
     </section>
     <div class="panel">
       <div class="toolbar">
@@ -131,6 +157,7 @@ async function services() {
       <div class="toolbar">
         <input id="search" class="input" placeholder="Hizmet veya şirket ara…" value="${esc(q)}">
         <button class="btn" id="searchBtn">Ara</button>
+        <button class="btn" id="addOpportunityBtn" style="margin-left:auto">+ Fırsat Ekle</button>
       </div>
       <div class="job-list">
         ${list.length ? list.map(j => `
@@ -145,6 +172,7 @@ async function services() {
 
   document.getElementById('searchBtn').onclick = () => { state.q = document.getElementById('search').value; services(); };
   document.getElementById('search').onkeydown = e => { if (e.key === 'Enter') document.getElementById('searchBtn').click(); };
+  document.getElementById('addOpportunityBtn').onclick = () => showAddOpportunityModal();
 }
 
 function marketing() { app.innerHTML = '<iframe class="marketing-frame" src="marketing.html" title="Marketing Sunum Stüdyosu"></iframe>'; }
@@ -202,6 +230,41 @@ function showAddCompanyModal() {
   };
 }
 
+async function showAddOpportunityModal() {
+  const companies = await sbCompanies();
+  if (!companies.length) { alert('Önce bir şirket ekleyin.'); return; }
+  const modal = document.createElement('div');
+  modal.id = 'addOpportunityModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000';
+  modal.innerHTML = `
+    <div style="background:#1e2535;border-radius:16px;padding:32px;width:100%;max-width:440px;color:#fff">
+      <h2 style="margin:0 0 20px">Yeni Fırsat</h2>
+      <label>Şirket</label><select id="mo_company" style="width:100%;margin:7px 0 12px;padding:10px;border-radius:8px">${companies.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
+      <label>Fırsat adı *</label><input id="mo_name" style="width:100%;margin:7px 0 12px;padding:10px;border-radius:8px" placeholder="Örn. Tasarım projesi">
+      <label>Aşama</label><select id="mo_stage" style="width:100%;margin:7px 0 12px;padding:10px;border-radius:8px"><option>Yeni</option><option>Teklif</option><option>Görüşme</option><option>Kazanıldı</option><option>Kaybedildi</option></select>
+      <label>Tutar (₺)</label><input id="mo_amount" type="number" min="0" step="0.01" value="0" style="width:100%;margin:7px 0 12px;padding:10px;border-radius:8px">
+      <label>Not</label><textarea id="mo_notes" style="width:100%;margin:7px 0 18px;padding:10px;border-radius:8px"></textarea>
+      <div id="mo_error" style="color:#f87171;margin-bottom:12px;display:none"></div>
+      <div style="display:flex;justify-content:flex-end;gap:12px"><button id="mo_cancel">İptal</button><button class="btn" id="mo_save">Kaydet</button></div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('mo_cancel').onclick = () => modal.remove();
+  document.getElementById('mo_save').onclick = async () => {
+    const name = document.getElementById('mo_name').value.trim();
+    const error = document.getElementById('mo_error');
+    if (!name) { error.textContent = 'Fırsat adı zorunludur.'; error.style.display = 'block'; return; }
+    await sbInsertOpportunity({
+      company_id: document.getElementById('mo_company').value,
+      name,
+      stage: document.getElementById('mo_stage').value,
+      amount: Number(document.getElementById('mo_amount').value) || 0,
+      notes: document.getElementById('mo_notes').value.trim(),
+    });
+    modal.remove();
+    await services();
+  };
+}
+
 // ─── Render ──────────────────────────────────────────────────────
 
 async function render() {
@@ -232,25 +295,17 @@ app.addEventListener('click', e => {
   }
 });
 
-// ─── Başlatma: Auth + Supabase Bağlantı Kontrolü ────────────────
+// ─── Başlatma: demo giriş kontrolü ────────────────────────────────
 
 (async () => {
   // Auth guard
   const authed = await initAuth();
   if (!authed) return;
 
-  // Supabase health check
   const healthEl = document.getElementById('health');
-  try {
-    const { error } = await supabaseClient.from('companies').select('id').limit(1);
-    healthEl.textContent = error ? '● Supabase bağlantı hatası' : '● Supabase bağlı';
-    healthEl.style.color = error ? '#f87171' : '#4ade80';
-  } catch {
-    healthEl.textContent = '● Bağlantı bekleniyor';
-    healthEl.style.color = '#fbbf24';
-  }
+  healthEl.textContent = '● Demo modu';
+  healthEl.style.color = '#4ade80';
 
   // İlk render
   render();
 })();
-

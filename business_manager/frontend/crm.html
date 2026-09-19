@@ -711,6 +711,7 @@
         .history-buttons { margin-left:auto; margin-right:0; flex:0 0 auto; }
         .history-btn { padding:9px 12px; font-size:12px; background:rgba(255,255,255,.12); }
         .export-btn { padding:10px 14px; font-size:12px; white-space:nowrap; }
+        .auth-pending { visibility:hidden; }
         .tab-content { padding:32px clamp(18px,4vw,48px); background:var(--bm-bg); }
         h2 { font-size:24px; margin:0 0 22px; padding-left:14px; border-left-width:4px; }
         h3 { font-size:17px; color:var(--bm-ink); }
@@ -736,7 +737,7 @@
     </style>
 </head>
 
-<body>
+<body class="auth-pending">
     <div id="app">
         <!-- ÜST KISIM: SEKMELER + DIŞA AKTAR BUTONU + İLERİ/GERİ -->
         <div class="header-tabs">
@@ -942,8 +943,10 @@
         </div>
     </div>
 
+    <script src="supabase.js"></script>
     <script>
-        (function () {
+        (async function () {
+            if (!await guardProtectedPage()) return;
             // ==================== VERİ YAPILARI VE LOCALSTORAGE ====================
             // ==================== VERİ YAPILARI VE LOCALSTORAGE ====================
             let musteriler = [];
@@ -1413,6 +1416,16 @@
                 if (pdfAd && pdfAd !== '') metin += `\n\nEk: ${pdfAd}`;
                 metin += `\n\nSaygılarımızla,\nMekanik Mühendislik Ekibi`;
                 document.getElementById('mailTaslak').value = metin;
+            });
+
+            const savedDraft = localStorage.getItem('mekanikCRM_mail_taslagi');
+            if (savedDraft) document.getElementById('mailTaslak').value = savedDraft;
+            document.getElementById('mailKaydet')?.addEventListener('click', function () {
+                const draft = document.getElementById('mailTaslak').value.trim();
+                if (!draft) { alert('Kaydedilecek bir taslak yok.'); return; }
+                localStorage.setItem('mekanikCRM_mail_taslagi', draft);
+                this.textContent = '✓ Taslak Kaydedildi';
+                setTimeout(() => { this.textContent = '💾 Taslağı Kaydet (localStorage)'; }, 1800);
             });
 
             // ---------- 4. SEKM E : CİRO HESAPLARI ----------
