@@ -22,6 +22,9 @@
         faaliyet: '',
         ilce: '',
         durum: '',
+        custQuickFilter: 'all',
+        kanbanQuickFilter: 'all',
+        kanbanSearch: '',
         kpiPeriod: '1m',
         kpiSector: '',
         kpiDistrict: '',
@@ -31,6 +34,24 @@
     // 3. Yardımcı Fonksiyonlar
     const esc = (v = '') => String(v ?? '').replace(/[&<>"']/g, c =>
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function showToast(msg = '', duration = 2500) {
+        let toast = document.getElementById('aiGlobalToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'aiGlobalToast';
+            toast.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f172a; color:#f8fafc; padding:10px 20px; border-radius:30px; font-size:13px; font-weight:600; box-shadow:0 10px 25px rgba(0,0,0,0.3); z-index:999999; display:flex; align-items:center; gap:8px; border:1px solid #334155; transition:opacity 0.2s;';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        toast.style.display = 'flex';
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.style.display = 'none', 200);
+        }, duration);
+    }
 
     function getTumIsler() {
         return musteriler.flatMap(m => (m.isler || []).map(is => ({ ...is, musteriId: m.id })));
@@ -124,8 +145,19 @@
             musteriler[5].isler = [{ id: 106, isAdi: 'Figma Design System & React Bileşen Kütüphanesi', tutar: 75000, masraf: 15000, vergiOran: 20, alinmaTarihi: '2026-09-04', deadline: '2026-09-21', durum: 2, aciklama: 'Storybook dokümantasyonu tamamlanıyor', revizyon: '1/2', gorevSayi: '3/4' }];
             musteriler[6].isler = [{ id: 107, isAdi: 'SEO & Core Web Vitals Hız Optimizasyonu', tutar: 42000, masraf: 6000, vergiOran: 20, alinmaTarihi: '2026-08-28', deadline: '2026-09-18', durum: 3, aciklama: 'Lighthouse skoru 98/100, onay bekleniyor', revizyon: '1/2', gorevSayi: '3/3' }];
             musteriler[7].isler = [{ id: 108, isAdi: 'Fintech Mobil Cüzdan & KYC Doğrulama Akışı', tutar: 185000, masraf: 40000, vergiOran: 20, alinmaTarihi: '2026-08-20', odemeTarihi: '2026-09-15', deadline: '2026-09-14', durum: 4, aciklama: 'Proje teslim edildi ve hakediş tahsil edildi', revizyon: '2/2', gorevSayi: '6/6' }];
+            musteriler[7].linkler = [
+                { isId: 108, link: 'https://figma.com/@studio/fintech-wallet-v2', aciklama: 'Fintech Mobil UI/UX Tasarım Paftası', kategori: 'figma', tarih: '2026-09-15' },
+                { isId: 108, link: 'https://github.com/freelance-studio/fintech-wallet-app', aciklama: 'React Native & iOS TestFlight Repo', kategori: 'github', tarih: '2026-09-15' }
+            ];
             musteriler[8].isler = [{ id: 109, isAdi: 'Kripto Portföy Takip Web3 Uygulaması', tutar: 110000, masraf: 22000, vergiOran: 20, alinmaTarihi: '2026-08-15', odemeTarihi: '2026-09-16', deadline: '2026-09-15', durum: 4, aciklama: 'Fatura ve hakediş kapatıldı', revizyon: '1/2', gorevSayi: '4/4' }];
+            musteriler[8].linkler = [
+                { isId: 109, link: 'https://crypto-portfolio-preview.vercel.app', aciklama: 'Web3 Portföy Staging Canlı Demo', kategori: 'github', tarih: '2026-09-16' },
+                { isId: 109, link: 'https://loom.com/share/crypto-demo-walkthrough', aciklama: 'Teslimat & Yönetici Sunum Videosu', kategori: 'loom', tarih: '2026-09-16' }
+            ];
             musteriler[9].isler = [{ id: 110, isAdi: 'Kurumsal Rebranding & Vektörel İllüstrasyon Seti', tutar: 68000, masraf: 10000, vergiOran: 20, alinmaTarihi: '2026-08-10', odemeTarihi: '2026-09-18', deadline: '2026-09-17', durum: 4, aciklama: 'Tüm kaynak SVG/AI dosyaları teslim edildi', revizyon: '2/2', gorevSayi: '3/3' }];
+            musteriler[9].linkler = [
+                { isId: 110, link: 'https://drive.google.com/drive/folders/brand-identity-v1', aciklama: 'Vektörel Kurumsal Logo & SVG İkon Paketi', kategori: 'drive', tarih: '2026-09-18' }
+            ];
         }
 
         // Supabase durum kontrolü
@@ -427,11 +459,44 @@
             if (state.faaliyet && m.faaliyet !== state.faaliyet) return false;
             if (state.ilce && m.ilce !== state.ilce) return false;
             if (state.durum && m.sonDurum !== state.durum) return false;
+
+            // Hızlı Çip Filtresi
+            if (state.custQuickFilter === 'vip') {
+                const totalVol = (m.isler || []).reduce((sum, i) => sum + Number(i.tutar || 0), 0);
+                if (totalVol < 100000) return false;
+            } else if (state.custQuickFilter === 'active_job') {
+                const hasActive = (m.isler || []).some(i => Number(i.durum) < 4);
+                if (!hasActive) return false;
+            } else if (state.custQuickFilter === 'warm') {
+                if (m.sonDurum !== 'yesil' && m.sonDurum !== 'sari') return false;
+            }
             return true;
         });
     }
 
+    function updateCustomerChipCounts() {
+        const cAll = document.getElementById('chipCustAll');
+        const cVip = document.getElementById('chipCustVip');
+        const cActive = document.getElementById('chipCustActive');
+        const cWarm = document.getElementById('chipCustWarm');
+
+        if (cAll) cAll.textContent = musteriler.length.toLocaleString('tr-TR');
+        if (cVip) {
+            const vipCount = musteriler.filter(m => (m.isler || []).reduce((sum, i) => sum + Number(i.tutar || 0), 0) >= 100000).length;
+            cVip.textContent = vipCount.toLocaleString('tr-TR');
+        }
+        if (cActive) {
+            const activeCount = musteriler.filter(m => (m.isler || []).some(i => Number(i.durum) < 4)).length;
+            cActive.textContent = activeCount.toLocaleString('tr-TR');
+        }
+        if (cWarm) {
+            const warmCount = musteriler.filter(m => m.sonDurum === 'yesil' || m.sonDurum === 'sari').length;
+            cWarm.textContent = warmCount.toLocaleString('tr-TR');
+        }
+    }
+
     function renderMusteriTable() {
+        updateCustomerChipCounts();
         const filtered = getFilteredCustomers();
         const total = filtered.length;
         const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
@@ -467,7 +532,7 @@
         if (!tbody) return;
 
         if (pageRows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color:#64748b;">Arama kriterlerine uygun müşteri kaydı bulunamadı.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:#64748b;">Arama kriterlerine uygun müşteri kaydı bulunamadı.</td></tr>`;
             return;
         }
 
@@ -477,6 +542,27 @@
             else if (m.sonDurum === 'sari') chipHtml = `<span class="status-chip sari">● İletişimde</span>`;
             else if (m.sonDurum === 'kirmizi') chipHtml = `<span class="status-chip kirmizi">● Olumsuz</span>`;
 
+            // Müşteri Ciro & Proje Özeti
+            const custIsler = m.isler || [];
+            const totalVol = custIsler.reduce((sum, i) => sum + Number(i.tutar || 0), 0);
+            const isCount = custIsler.length;
+            const isVip = totalVol >= 100000;
+            let volHtml = `<span class="cust-vol-badge empty">İş Yok</span>`;
+            if (isCount > 0) {
+                volHtml = `<span class="cust-vol-badge">₺${totalVol.toLocaleString('tr-TR')} · ${isCount} İş</span>`;
+                if (isVip) volHtml += `<span class="vip-pill">⭐ VIP</span>`;
+            }
+
+            // Temiz Telefon & Hızlı Aksiyon URL'leri
+            const rawPhone = String(m.telefon || '').replace(/\D/g, '');
+            let cleanPhone = rawPhone;
+            if (cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.slice(1);
+            else if (cleanPhone && !cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
+
+            const waText = encodeURIComponent(`Merhaba ${m.ad} yetkilisi, kurumsal iş süreçleriniz ve projeleriniz hakkında görüşmek isteriz.`);
+            const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waText}` : '';
+            const telUrl = rawPhone ? `tel:${rawPhone}` : '';
+
             return `
             <tr>
                 <td style="font-family:monospace; font-weight:700; color:#0284c7;">#${esc(m.id)}</td>
@@ -484,6 +570,7 @@
                     <a href="javascript:void(0)" class="btn-open-cust" data-id="${esc(m.id)}" style="color:#1e293b; text-decoration:none; font-size:14px; font-weight:700; cursor:pointer;" title="Müşteri 360° Profilini ve Geçmişini Aç">${esc(m.ad)}</a>
                     <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Tel: ${esc(m.telefon || '-')} · ${esc(m.email || '')}</div>
                 </td>
+                <td>${volHtml}</td>
                 <td><span style="font-weight:600; color:#334155;">${esc(m.ilce || 'İstanbul')}</span></td>
                 <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600; color:#475569;">${esc(m.faaliyet || 'Mekanik')}</span></td>
                 <td>
@@ -498,9 +585,11 @@
                         <button class="g-page-btn btn-durum-toggle" data-id="${esc(m.id)}" data-val="kirmizi" title="Olumsuz olarak işaretle" style="padding:4px 7px; color:#d93025;">❌</button>
                     </div>
                 </td>
-                <td style="text-align:right;">
-                    <button class="g-page-btn btn-open-cust" data-id="${esc(m.id)}" title="Müşteri 360° Profil & Düzenle" style="padding:4px 8px; color:#1a73e8; margin-right:4px;">👁️ Profil</button>
-                    <button class="g-page-btn btn-del-cust" data-id="${esc(m.id)}" title="Sil" style="padding:4px 8px; color:#ef4444;">🗑️</button>
+                <td style="text-align:right; white-space:nowrap;">
+                    ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn-row-action btn-row-wa" title="WhatsApp Mesajı Başlat" style="margin-right:4px;">💬</a>` : ''}
+                    ${telUrl ? `<a href="${telUrl}" class="btn-row-action btn-row-call" title="Telefonla Ara" style="margin-right:4px;">📞</a>` : ''}
+                    <button class="btn-row-action btn-open-cust" data-id="${esc(m.id)}" title="Müşteri 360° Profil & Düzenle" style="color:#1a73e8; margin-right:4px;">👁️</button>
+                    <button class="btn-row-action btn-del-cust" data-id="${esc(m.id)}" title="Sil" style="color:#ef4444;">🗑️</button>
                 </td>
             </tr>`;
         }).join('');
@@ -578,7 +667,36 @@
     // 3. SEKME : SATIŞ & KANBAN SÜREÇLERİ
     // ==========================================================================
     function renderKanban() {
-        const isler = getTumIsler();
+        let isler = getTumIsler();
+        const sq = (state.kanbanSearch || '').toLocaleLowerCase('tr-TR');
+        if (sq) {
+            isler = isler.filter(i => {
+                const musteri = musteriler.find(m => String(m.id) === String(i.musteriId)) || { ad: '' };
+                return i.isAdi.toLocaleLowerCase('tr-TR').includes(sq) || musteri.ad.toLocaleLowerCase('tr-TR').includes(sq);
+            });
+        }
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        if (state.kanbanQuickFilter === 'urgent') {
+            isler = isler.filter(i => {
+                if (!i.deadline || i.durum >= 4) return false;
+                const dl = new Date(i.deadline);
+                const diffDays = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
+                return diffDays <= 3;
+            });
+        } else if (state.kanbanQuickFilter === 'high_value') {
+            isler = isler.filter(i => Number(i.tutar || 0) >= 100000);
+        } else if (state.kanbanQuickFilter === 'active') {
+            isler = isler.filter(i => Number(i.durum) === 2 || Number(i.durum) === 3);
+        }
+
+        // Toplam Pipeline Tutarı
+        const totalPipelineSum = isler.reduce((acc, i) => acc + Number(i.tutar || 0), 0);
+        const totalPipelineEl = document.getElementById('kanbanPipelineTotalText');
+        if (totalPipelineEl) totalPipelineEl.textContent = `₺${totalPipelineSum.toLocaleString('tr-TR')}`;
+
         const sutunlar = [
             { baslik: "📞 Tanıtım & Görüşme", durum: 0 },
             { baslik: "📄 Teklif Sunuldu", durum: 1 },
@@ -590,11 +708,10 @@
         const boardEl = document.getElementById('kanbanBoard');
         if (!boardEl) return;
 
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
         boardEl.innerHTML = sutunlar.map(s => {
             const sutunIsler = isler.filter(i => Number(i.durum) === s.durum);
+            const sutunToplam = sutunIsler.reduce((acc, i) => acc + Number(i.tutar || 0), 0);
+
             const kartlar = sutunIsler.map(i => {
                 const musteri = musteriler.find(m => String(m.id) === String(i.musteriId)) || { ad: 'Bilinmeyen Müşteri' };
 
@@ -611,6 +728,15 @@
                     }
                 }
 
+                // WhatsApp bağlantısı
+                const rawPhone = String(musteri.telefon || '').replace(/\D/g, '');
+                let cleanPhone = rawPhone;
+                if (cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.slice(1);
+                else if (cleanPhone && !cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
+
+                const waMsg = encodeURIComponent(`Merhaba ${musteri.ad} yetkilisi, "${i.isAdi}" projemizin süreç durumu hakkında bilgi paylaşmak isteriz.`);
+                const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : '';
+
                 return `
                 <div class="kanban-card" draggable="true" data-id="${i.id}" data-mid="${i.musteriId}" style="cursor:pointer;" title="Projeyi Düzenle / Detayını Gör">
                     <button class="kart-sil" data-id="${i.id}" data-mid="${i.musteriId}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; color:#94a3b8; cursor:pointer;" title="Sil">&times;</button>
@@ -618,19 +744,19 @@
                     <div style="font-weight:700; color:#1e293b; font-size:13.5px; margin-bottom:3px;">${esc(i.isAdi)}</div>
                     <div style="font-size:12px; color:#0284c7; font-weight:600;">${esc(musteri.ad)}</div>
                     ${i.aciklama ? `<div style="font-size:11.5px; color:#64748b; margin-top:4px;">${esc(i.aciklama)}</div>` : ''}
-                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin: 6px 0 2px 0;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin: 6px 0 4px 0;">
                         <span class="kanban-rev-badge" title="Müşteri Revizyon Durumu">🔄 Rev: ${i.revizyon || '1/2'}</span>
                         <span class="kanban-sub-badge" title="Alt Görev Checklist">☑️ ${i.gorevSayi || '3/4 Görev'}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                        <span style="font-weight:800; font-size:12.5px; color:#16a34a;">₺${Number(i.tutar || 0).toLocaleString('tr-TR')}</span>
-                        <select class="g-select kanban-mobile-stage" data-id="${i.id}" data-mid="${i.musteriId}" style="padding:2px 4px; font-size:11px;">
-                            <option value="0" ${s.durum === 0 ? 'selected' : ''}>Aşama 1</option>
-                            <option value="1" ${s.durum === 1 ? 'selected' : ''}>Aşama 2</option>
-                            <option value="2" ${s.durum === 2 ? 'selected' : ''}>Aşama 3</option>
-                            <option value="3" ${s.durum === 3 ? 'selected' : ''}>Aşama 4</option>
-                            <option value="4" ${s.durum === 4 ? 'selected' : ''}>Aşama 5</option>
-                        </select>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid #f1f5f9;">
+                        <span style="font-weight:800; font-size:13px; color:#16a34a;">₺${Number(i.tutar || 0).toLocaleString('tr-TR')}</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn-kanban-wa" title="Müşteriyle WhatsApp Görüşmesi" onclick="event.stopPropagation();">💬</a>` : ''}
+                            <div class="kanban-card-step-actions">
+                                ${s.durum > 0 ? `<button class="btn-kanban-step btn-step-prev" data-id="${i.id}" data-mid="${i.musteriId}" title="Önceki Aşamaya Al">◀</button>` : ''}
+                                ${s.durum < 4 ? `<button class="btn-kanban-step btn-step-next" data-id="${i.id}" data-mid="${i.musteriId}" title="Sonraki Aşamaya İlerlet">▶</button>` : ''}
+                            </div>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
@@ -639,7 +765,10 @@
             <div class="kanban-column" data-durum="${s.durum}">
                 <div class="kanban-col-header">
                     <span>${s.baslik}</span>
-                    <span class="kanban-col-count">${sutunIsler.length}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="kanban-col-total">₺${sutunToplam.toLocaleString('tr-TR')}</span>
+                        <span class="kanban-col-count">${sutunIsler.length}</span>
+                    </div>
                 </div>
                 <div class="kanban-items-wrap" data-durum="${s.durum}">
                     ${kartlar || '<div style="color:#94a3b8; text-align:center; padding:30px 10px; font-size:12px;">Bu aşamada süreç yok</div>'}
@@ -650,7 +779,7 @@
         // Drag & Drop ve Kart Tıklama
         boardEl.querySelectorAll('.kanban-card').forEach(k => {
             k.addEventListener('click', function (e) {
-                if (e.target.closest('.kart-sil') || e.target.closest('.kanban-mobile-stage')) return;
+                if (e.target.closest('.kart-sil') || e.target.closest('.kanban-card-step-actions') || e.target.closest('.btn-kanban-wa')) return;
                 openIsDetay(parseInt(this.dataset.id), this.dataset.mid);
             });
             k.addEventListener('dragstart', handleDragStart);
@@ -662,19 +791,34 @@
             s.addEventListener('drop', handleDrop);
         });
 
-        boardEl.querySelectorAll('.kanban-mobile-stage').forEach(sel => {
-            sel.addEventListener('change', function (e) {
+        boardEl.querySelectorAll('.btn-step-prev').forEach(btn => {
+            btn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const id = parseInt(this.dataset.id);
                 const mid = this.dataset.mid;
-                const newStage = parseInt(this.value);
                 const m = musteriler.find(x => String(x.id) === String(mid));
                 if (m) {
                     const is = (m.isler || []).find(y => y.id === id);
-                    if (is) {
-                        is.durum = newStage;
-                        if (newStage === 2 && !is.alinmaTarihi) is.alinmaTarihi = new Date().toISOString().split('T')[0];
-                        if (newStage === 4 && !is.odemeTarihi) is.odemeTarihi = new Date().toISOString().split('T')[0];
+                    if (is && is.durum > 0) {
+                        is.durum -= 1;
+                        saveAll();
+                    }
+                }
+            });
+        });
+
+        boardEl.querySelectorAll('.btn-step-next').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const id = parseInt(this.dataset.id);
+                const mid = this.dataset.mid;
+                const m = musteriler.find(x => String(x.id) === String(mid));
+                if (m) {
+                    const is = (m.isler || []).find(y => y.id === id);
+                    if (is && is.durum < 4) {
+                        is.durum += 1;
+                        if (is.durum === 2 && !is.alinmaTarihi) is.alinmaTarihi = new Date().toISOString().split('T')[0];
+                        if (is.durum === 4 && !is.odemeTarihi) is.odemeTarihi = new Date().toISOString().split('T')[0];
                         saveAll();
                     }
                 }
@@ -766,29 +910,64 @@
             return;
         }
 
-        const amac = document.getElementById('mailAmac')?.value;
+        const amac = document.getElementById('mailAmac')?.value || 'web';
         const pdfAd = document.getElementById('pdfSec')?.value;
+        const currency = document.getElementById('mailParaBirimi')?.value || 'TL';
+        const curSym = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '₺');
+        const customPrice = document.getElementById('mailTeklifTutar')?.value;
+        const customTime = document.getElementById('mailTeslimSure')?.value || '3-4 Hafta';
+
+        const priceText = customPrice ? `${curSym}${Number(customPrice).toLocaleString('tr-TR')} + KDV` : `kapsam onayına müteakip belirlenecek bütçe`;
 
         let metin = `Sayın ${m.ad} Yetkilisi,\n\n`;
-        if (amac === 'tanitim') {
-            metin += `Mekanik tasarım, 3D modelleme ve sonlu elemanlar analizi alanlarında uzmanlaşmış kurumsal mühendislik ekibimizle ${m.ilce ? m.ilce + ' bölgesindeki ' : ''}projelerinize değer katmak istiyoruz.\n\n` +
-                `Hizmet Başlıklarımız:\n` +
-                `• 3D CAD/CAM Tasarım ve Üretim Paftaları\n` +
-                `• Yapısal Dayanım ve FEA/CFD Simülasyonları\n` +
-                `• Talaşlı ve Sac Metal İmalata Yönelik Tasarım Optimizasyonu\n\n` +
-                `Sizlerle 15 dakikalık bir ön değerlendirme toplantısı gerçekleştirmekten memnuniyet duyarız.`;
-        } else if (amac === 'yazilim') {
-            metin += `Şirketinizin tasarım departmanı için hazırladığımız özel CAD/CAM lisanslama ve teknik eğitim teklifimiz bilgilerinize sunulmuştur.`;
-        } else if (amac === 'teklif') {
-            metin += `Görüşmüş olduğumuz endüstriyel proje kapsamındaki fiyat ve iş teslim şartnamesi teklifimiz ekte yer almaktadır.`;
-        } else if (amac === 'odeme') {
-            metin += `Teslimatı tamamlanan çalışmaya ait fatura vadesini ve cari hesap detaylarını bilgilerinize sunarız.`;
+        if (amac === 'web') {
+            metin += `Şirketinizin dijital dönüşüm ve kurumsal web varlığını güçlendirmek adına modern, yüksek performanslı ve responsive React / Next.js web portalı projemize ait teknik ve ticari teklifimizi bilgilerinize sunarız.\n\n` +
+                `📌 Proje Kapsamı & Teslimatlar:\n` +
+                `• Next.js 15 & Tailwind / Vanilla CSS ile Piksel Kusursuzluğunda Ön Yüz\n` +
+                `• Supabase / PostgreSQL Güvenli Veritabanı ve Yönetim Paneli\n` +
+                `• Google Lighthouse 95+ Core Web Vitals ve SEO Uyumlu Altyapı\n` +
+                `• Güvenli SSL, Cloudflare CDN ve Vercel Staging Yayını\n\n` +
+                `⏱️ Tahmini Teslim Süresi: ${customTime}\n` +
+                `💰 Proje Bütçesi: ${priceText}\n\n` +
+                `Detayları değerlendirmek üzere sizler için uygun bir takvimde online bir tanıtım toplantısı organize edebiliriz.`;
+        } else if (amac === 'uiux') {
+            metin += `Markanızın kullanıcı deneyimini ve dönüşüm oranlarını en üst seviyeye taşımak üzere hazırladığımız Figma UI/UX Tasarım Sistemi teklifimiz aşağıdadır.\n\n` +
+                `📌 Kapsam Detayları:\n` +
+                `• Kullanıcı Araştırması, Wireframe ve Bilgi Mimarisi (UX)\n` +
+                `• Modern Tipografi, Renk Paleti ve Bileşen Kütüphanesi (Design System)\n` +
+                `• Tıklanabilir ve Test Edilebilir Canlı Figma Masaüstü/Mobil Prototip\n` +
+                `• Yazılımcı El Sıkışma (Dev-Handoff) ve SVG/Asset İhracı\n\n` +
+                `⏱️ Teslim Süresi: ${customTime}\n` +
+                `💰 Yatırım Tutarı: ${priceText}`;
+        } else if (amac === 'mobil') {
+            metin += `iOS ve Android platformlarında eş zamanlı çalışan, yüksek performanslı mobil uygulama geliştirme teklifimiz bilgilerinize sunulmuştur.\n\n` +
+                `📌 Çözüm Başlıkları:\n` +
+                `• React Native / Flutter Çapraz Platform Native Performans\n` +
+                `• Push Bildirimleri, Biyometrik Giriş (FaceID/Parmak İzi) ve Güvenli Ödeme\n` +
+                `• App Store ve Google Play Store Yayın Süreç Yönetimi\n\n` +
+                `⏱️ Planlanan Süre: ${customTime} · 💰 Bütçe: ${priceText}`;
+        } else if (amac === 'ai') {
+            metin += `İşletmenizin operasyonel yükünü azaltacak ve müşteri etkileşimini 7/24 otomatikleştirecek Yapay Zeka (LLM) & Akıllı Asistan çözüm paketimiz hazırlanmıştır.\n\n` +
+                `📌 Yetenekler:\n` +
+                `• Şirket Verilerinizle (PDF, SSS, CRM) Beslenen RAG Tabanlı Kurumsal Zeka\n` +
+                `• WhatsApp ve Web Canlı Destek Botu Entegrasyonu\n` +
+                `• Otomatik Lead Toplama ve Randevu Oluşturma`;
+        } else if (amac === 'hakedis') {
+            metin += `Teslimatı tamamlanan ve onayınıza sunulan çalışma dilimine ait hakediş ve fatura bilgilendirmemiz aşağıda yer almaktadır:\n\n` +
+                `💳 Hakediş Tutarı: ${priceText}\n` +
+                `🏦 QNB Finansbank\n` +
+                `👤 Alıcı: Emin A. (Freelance Studio)\n` +
+                `💳 IBAN: TR84 0006 1005 1234 5678 9012 34\n\n` +
+                `Ödemenizin akabinde resmi e-arşiv faturanız sisteminize iletilecektir. İş birliğiniz için teşekkür ederiz.`;
+        } else if (amac === 'teslim') {
+            metin += `Projenizin kararlaştırılan geliştirme ve tasarım aşamaları tamamlanmış olup test ve canlı inceleme bağlantıları hazırlanmıştır.\n\n` +
+                `Lütfen staging ortamındaki güncellemeleri inceleyerek varsa revizyon notlarınızı bu e-posta üzerinden iletiniz.`;
         } else {
-            metin += `Mühendislik ve proje süreçlerimiz hakkında bilgi sunmak isteriz.`;
+            metin += `Freelance yazılım mimarisi, UI/UX tasarımı ve dijital büyüme süreçlerimiz hakkında kurumsal bilgi ve portfolyomuzu bilgilerinize sunarız.`;
         }
 
-        if (pdfAd) metin += `\n\nEkli Belge: ${pdfAd}`;
-        metin += `\n\nSaygılarımızla,\nBusiness Manager / Kurumsal Mühendislik Ekibi`;
+        if (pdfAd) metin += `\n\nEkli Doküman / Portfolyo: ${pdfAd}`;
+        metin += `\n\nSaygılarımızla,\nBusiness Manager / Dijital Stüdyo & Yazılım Ekibi`;
 
         const tEl = document.getElementById('mailTaslak');
         if (tEl) tEl.value = metin;
@@ -803,24 +982,28 @@
             return;
         }
 
-        const amac = document.getElementById('mailAmac')?.value || 'tanitim';
+        const amac = document.getElementById('mailAmac')?.value || 'web';
         const tone = document.getElementById('aiTone')?.value || 'kurumsal';
         const extraNote = document.getElementById('aiEkstraNot')?.value || '';
         const apiKey = document.getElementById('aiApiKey')?.value || localStorage.getItem('ai_manager_api_key') || '';
+        const currency = document.getElementById('mailParaBirimi')?.value || 'TL';
+        const curSym = currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '₺');
+        const customPrice = document.getElementById('mailTeklifTutar')?.value;
 
         const taslakEl = document.getElementById('mailTaslak');
-        if (taslakEl) taslakEl.value = '✨ Google Gemini AI metni hazırlıyor, lütfen bekleyin...';
+        if (taslakEl) taslakEl.value = '✨ Google Gemini AI teklif mektubunu kişiselleştiriyor, lütfen bekleyin...';
 
         document.getElementById('aiModal').style.display = 'none';
 
         if (apiKey && apiKey.startsWith('sk-')) {
             try {
                 localStorage.setItem('ai_manager_api_key', apiKey);
-                const prompt = `B2B kurumsal mekanik mühendislik direktörüsün. Müşteri: ${m.ad} (${m.ilce || ''} - Sektör: ${m.faaliyet || 'Mekanik'}).
+                const prompt = `Üst düzey freelance yazılım mimarı ve UI/UX stüdyo direktörüsün. Müşteri: ${m.ad} (${m.ilce || ''} - Alan: ${m.faaliyet || 'Teknoloji'}).
 Amacımız: ${amac}.
-Ton: ${tone}.
-Ek not: ${extraNote}.
-Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurumsal teklif mektubu yaz. Konu başlığı ile başla.`;
+Bütçe/Para Birimi: ${customPrice ? curSym + customPrice : 'Belirtilmemiş'}.
+İletişim Tonu: ${tone}.
+Ekstra Not: ${extraNote}.
+Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici bir kurumsal teklif mektubu yaz. Konu başlığı ile başla.`;
 
                 const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                     method: 'POST',
@@ -846,31 +1029,80 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
         }
 
         // Akıllı Yerel Kurumsal AI Şablonu
-        let baslik = `Konu: ${m.ad} & İleri Mühendislik Çözüm Ortaklığı`;
-        let govde = `Sayın ${m.ad} Karar Vericileri ve İlgili Yöneticileri,\n\n`;
+        let baslik = `Konu: ${m.ad} & Dijital Ürün & Yazılım Çözüm Ortaklığı Teklifi`;
+        let govde = `Sayın ${m.ad} Yönetimi ve Karar Vericileri,\n\n`;
 
         if (tone === 'ikna') {
-            govde += `Endüstriyel imalat süreçlerinde yüksek verimlilik ve minimum hata toleransı sağlamak adına ${m.ilce ? m.ilce + ' bölgesinde ' : ''}sektörün öncülerinden olan saygın firmanız için özel bir mühendislik iş birliği paketi hazırladık.\n\n` +
+            govde += `${m.ilce ? m.ilce + ' bölgesindeki ' : ''}sektörünüzdeki lider konumunuzu teknolojik olarak güçlendirecek, doğrudan müşteri kazanımını ve dönüşüm oranlarınızı artıracak özel bir dijital çözüm paketi hazırladık.\n\n` +
                 `Somut Katkılarımız:\n` +
-                `1. %100 Doğrulanmış 3D CAD ve İmalat Paftaları ile Hatalı Üretim Riskine Sıfır Tolerans\n` +
-                `2. Sonlu Elemanlar Analizi (FEA) ile Tasarımda %20'ye Varan Malzeme ve Ağırlık Tasarrufu\n` +
-                `3. İlk Projenize Özel Tanışma İndirimi ve Ön Fizibilite Raporu Desteği\n\n`;
+                `1. Piksel Kusursuzluğunda Modern UI/UX Tasarımı ile Marka Değerinde Anında Yükseliş\n` +
+                `2. Sıfır Hata ve Yüksek Hızlı Next.js / Mobil Altyapı ile %40 Daha Hızlı Yüklenme\n` +
+                `3. İlk Projenize Özel Tanışma İndirimi ve 6 Ay Ücretsiz Canlı Destek / Bakım Garantisi\n\n`;
         } else if (tone === 'teknik') {
-            govde += `Şirketinizin teknik çizim, 3D katı modelleme ve ANSYS/SolidWorks simülasyon süreçlerinde dış kaynak mühendislik kapasitenizi artırmaya hazırız.\n\n` +
-                `Hassas toleranslara uygun imalat resimleri ve montaj simülasyonlarıyla üretim hattınızın aksamadan ilerlemesini sağlıyoruz.\n\n`;
+            govde += `Şirketinizin dijital mimarisini geleceğe taşımak üzere modern frontend (React/Next.js), ölçeklenebilir backend ve native mobil entegrasyonu sunuyoruz.\n\n` +
+                `Clean Code, modüler tasarım sistemleri ve CI/CD otomatik test boru hatlarıyla projelerinizi kesintisiz teslim ediyoruz.\n\n`;
         } else {
-            govde += `${m.ad} olarak sektördeki başarılı konumunuzu takdirle takip ediyoruz. Mekanik tasarım, mekanizma geliştirme ve teknik danışmanlık alanlarında şirketinizin operasyonel hedeflerine nasıl güç katabileceğimizi görüşmek isteriz.\n\n`;
+            govde += `${m.ad} markasının vizyonunu yakından takip ediyoruz. İhtiyaç duyduğunuz dijital ürün geliştirme, UI/UX tasarımı ve sistem entegrasyonlarında güvenilir bir teknoloji ortağı olarak katkı sağlamak isteriz.\n\n`;
+        }
+
+        if (customPrice) {
+            govde += `💰 Proje Bütçesi: ${curSym}${Number(customPrice).toLocaleString('tr-TR')} + KDV\n\n`;
         }
 
         if (extraNote) {
             govde += `📌 Özel Notumuz: ${extraNote}\n\n`;
         }
 
-        govde += `Konuyu kısaca değerlendirebilmeniz adına sizler için uygun bir takvimde 15 dakikalık bir ön görüşme organize edebilir miyiz?\n\n` +
+        govde += `Proje detaylarını ve takvimini değerlendirmek adına uygun bir takviminizde 15 dakikalık bir ön değerlendirme toplantısı planlayabilir miyiz?\n\n` +
             `Saygılarımızla,\n` +
-            `Kurumsal Satış & Mühendislik Direktörlüğü\nBusiness Manager Insights`;
+            `Business Manager Dijital Stüdyosu | Yazılım & Tasarım Direktörlüğü`;
 
         taslakEl.value = `${baslik}\n\n${govde}`;
+    }
+
+    function openA4TeklifFromMailStudio() {
+        const mid = document.getElementById('mailMusteri')?.value;
+        const m = musteriler.find(x => String(x.id) === String(mid));
+        if (!m) {
+            alert('Lütfen önce müşteri arama alanından bir firma seçiniz.');
+            document.getElementById('mailMusteriAra')?.focus();
+            return;
+        }
+
+        const amacSelect = document.getElementById('mailAmac');
+        const isAdi = amacSelect ? amacSelect.options[amacSelect.selectedIndex]?.text : 'Dijital Çözüm & Tasarım Hizmeti';
+        const customPrice = parseFloat(document.getElementById('mailTeklifTutar')?.value) || 85000;
+        const aciklama = document.getElementById('mailTaslak')?.value || 'Modern web ve mobil yazılım geliştirme şartnamesi kapsamındaki anahtar teslim proje.';
+
+        openTeklifYazdirCustom({
+            musteriAd: m.ad,
+            musteriDetay: `İlçe/Bölge: ${m.ilce || 'İstanbul'} · Tel: ${m.telefon || '-'} · E-Posta: ${m.email || '-'}`,
+            isAdi: isAdi.replace(/^[^\w\s\u00C0-\u017F]+/, '').trim(),
+            isAciklama: aciklama.slice(0, 320) + (aciklama.length > 320 ? '...' : ''),
+            tutar: customPrice
+        });
+    }
+
+    function openTeklifYazdirCustom(data) {
+        const tutar = Number(data.tutar || 50000);
+        const kdv = tutar * 0.20;
+        const genelToplam = tutar + kdv;
+
+        document.getElementById('pr_tarih').textContent = new Date().toLocaleDateString('tr-TR');
+        document.getElementById('pr_teklif_no').textContent = `TKF-${Date.now().toString().slice(-6)}`;
+        document.getElementById('pr_musteri_ad').textContent = data.musteriAd || 'Sayın Kurumsal Müşteri';
+        document.getElementById('pr_musteri_detay').textContent = data.musteriDetay || '';
+
+        document.getElementById('pr_is_adi').textContent = data.isAdi || 'Yazılım ve Tasarım Hizmeti';
+        document.getElementById('pr_is_aciklama').textContent = data.isAciklama || 'Şartnameye uygun profesyonel teslimat paketi.';
+        document.getElementById('pr_birim_fiyat').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('pr_toplam_fiyat').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+
+        document.getElementById('pr_ara_toplam').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('pr_kdv').textContent = `₺${kdv.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('pr_genel_toplam').textContent = `₺${genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+
+        window.print();
     }
 
     // ==========================================================================
@@ -886,6 +1118,8 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
         let yillikCiro = 0;
         let toplamMasraf = 0;
         let toplamVergi = 0;
+        let bekleyenAlacak = 0;
+        let tahsilKasa = 0;
 
         const bugun = new Date();
         const yediGunOnce = new Date(bugun.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -902,6 +1136,12 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
             toplamCiro += tutar;
             toplamMasraf += masraf;
             toplamVergi += vTut;
+
+            if (Number(i.durum) === 4) {
+                tahsilKasa += tutar;
+            } else if (Number(i.durum) === 2 || Number(i.durum) === 3) {
+                bekleyenAlacak += tutar;
+            }
 
             const isTarihStr = i.odemeTarihi || i.alinmaTarihi;
             if (isTarihStr) {
@@ -931,18 +1171,48 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
         }).join('') || `<tr><td colspan="9" style="text-align:center; padding:32px; color:#64748b;">Finansal takibe alınmış aktif iş kaydı bulunmuyor.</td></tr>`;
 
         const netKar = toplamCiro - toplamMasraf - toplamVergi;
+        const netKarMarjiVal = toplamCiro > 0 ? ((netKar / toplamCiro) * 100).toFixed(1) : '0';
 
         const elAylik = document.getElementById('aylikCiro');
         const elHaftalik = document.getElementById('haftalikCiro');
         const elYillik = document.getElementById('yillikCiro');
         const elVergi = document.getElementById('toplamVergi');
         const elKar = document.getElementById('toplamKar');
+        const elMarj = document.getElementById('netKarMarji');
+        const elBekleyen = document.getElementById('bekleyenAlacak');
+        const elKasa = document.getElementById('tahsilEdilmisKasa');
 
         if (elAylik) elAylik.textContent = `₺${toplamCiro.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elHaftalik) elHaftalik.textContent = `₺${haftalikCiro.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elYillik) elYillik.textContent = `₺${yillikCiro.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elVergi) elVergi.textContent = `₺${toplamVergi.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elKar) elKar.textContent = `₺${netKar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        if (elMarj) elMarj.textContent = `%${netKarMarjiVal}`;
+        if (elBekleyen) elBekleyen.textContent = `₺${bekleyenAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        if (elKasa) elKasa.textContent = `₺${tahsilKasa.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+
+        // Görsel Dağılım Çubuğu
+        const karPct = toplamCiro > 0 ? Math.max(0, Math.round((netKar / toplamCiro) * 100)) : 70;
+        const masrafPct = toplamCiro > 0 ? Math.max(0, Math.round((toplamMasraf / toplamCiro) * 100)) : 20;
+        const vergiPct = Math.max(0, 100 - karPct - masrafPct);
+
+        const bKar = document.getElementById('barKarSegment');
+        const bMasraf = document.getElementById('barMasrafSegment');
+        const bVergi = document.getElementById('barVergiSegment');
+        const bText = document.getElementById('financeBarRatioText');
+
+        if (bKar) bKar.style.width = `${karPct}%`;
+        if (bMasraf) bMasraf.style.width = `${masrafPct}%`;
+        if (bVergi) bVergi.style.width = `${vergiPct}%`;
+        if (bText) bText.textContent = `%${karPct} Net Kar · %${masrafPct} Masraf · %${vergiPct} Vergi`;
+
+        // Gider Dağılım Tutarları
+        const expCloud = document.getElementById('expCloudAmount');
+        const expSoft = document.getElementById('expSoftwareAmount');
+        const expSub = document.getElementById('expSubcontractAmount');
+        if (expCloud) expCloud.textContent = `₺${Math.round(toplamMasraf * 0.25).toLocaleString('tr-TR')} / dönem`;
+        if (expSoft) expSoft.textContent = `₺${Math.round(toplamMasraf * 0.35).toLocaleString('tr-TR')} / dönem`;
+        if (expSub) expSub.textContent = `₺${Math.round(toplamMasraf * 0.40).toLocaleString('tr-TR')} / dönem`;
 
         tbody.querySelectorAll('.tutarInput, .masrafInput, .vergiOranInput, .odemeTarihiInput').forEach(inp => {
             inp.addEventListener('change', function () {
@@ -964,7 +1234,7 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
     }
 
     // ==========================================================================
-    // 6. SEKME : MÜŞTERİ LİNKLERİ
+    // 6. SEKME : MÜŞTERİ LİNKLERİ & TESLİMAT PORTALI
     // ==========================================================================
     function renderLinkler() {
         const tamDiv = document.getElementById('tamamlananIsler');
@@ -976,8 +1246,11 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
             const m = musteriler.find(x => String(x.id) === String(i.musteriId)) || { ad: 'Kurumsal Müşteri' };
             return `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#f8fafc; border-radius:8px; margin-bottom:10px; border:1px solid #e2e8f0;">
-                <span><b>${esc(i.isAdi)}</b> (${esc(m.ad)})</span>
-                <button class="g-page-btn btn-add-link" data-id="${i.id}" data-mid="${i.musteriId}">🔗 Link Ekle</button>
+                <div>
+                    <b>${esc(i.isAdi)}</b>
+                    <div style="font-size:12px; color:#0284c7; font-weight:600; margin-top:2px;">🏢 ${esc(m.ad)} · ₺${Number(i.tutar || 0).toLocaleString('tr-TR')}</div>
+                </div>
+                <button class="btn-g-primary btn-add-link" data-id="${i.id}" data-mid="${i.musteriId}" style="padding:6px 12px; font-size:12px;">🔗 Varlık Ekle</button>
             </div>`;
         }).join('') || '<div style="font-size:12.5px; color:#64748b;">Tahsilatı tamamlanmış teslimat kaydı bulunmuyor.</div>';
 
@@ -989,32 +1262,74 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
                 const is = m?.isler?.find(y => y.id === id);
                 if (!m || !is) return;
 
-                const link = prompt('Müşteri için paylaşım / teslimat linki girin:', 'https://drive.google.com/...');
+                const link = prompt('Müşteri teslimat bağlantısını girin (Figma, GitHub, Drive vb.):', 'https://figma.com/...');
                 if (link && link.trim()) {
+                    let cat = 'doc';
+                    const lower = link.toLowerCase();
+                    if (lower.includes('figma.com')) cat = 'figma';
+                    else if (lower.includes('github.com') || lower.includes('vercel.app')) cat = 'github';
+                    else if (lower.includes('drive.google') || lower.includes('dropbox')) cat = 'drive';
+                    else if (lower.includes('loom.com') || lower.includes('youtube')) cat = 'loom';
+
                     if (!m.linkler) m.linkler = [];
                     m.linkler.push({
                         isId: id,
                         link: link.trim(),
                         aciklama: is.isAdi,
+                        kategori: cat,
                         tarih: new Date().toLocaleDateString('tr-TR')
                     });
                     saveAll();
+                    showToast('Teslimat bağlantısı başarıyla kaydedildi.');
                 }
             });
         });
 
         lDiv.innerHTML = getTumLinkler().map(l => {
             const m = musteriler.find(x => String(x.id) === String(l.musteriId)) || { ad: 'Kurumsal Müşteri' };
+            const lower = (l.link || '').toLowerCase();
+            let cat = l.kategori || 'doc';
+            if (!l.kategori) {
+                if (lower.includes('figma.com')) cat = 'figma';
+                else if (lower.includes('github.com') || lower.includes('vercel.app')) cat = 'github';
+                else if (lower.includes('drive.google') || lower.includes('dropbox')) cat = 'drive';
+                else if (lower.includes('loom.com') || lower.includes('youtube')) cat = 'loom';
+            }
+
+            let badgeHtml = `<span class="asset-badge asset-doc">📄 Doküman</span>`;
+            if (cat === 'figma') badgeHtml = `<span class="asset-badge asset-figma">🎨 Figma UI/UX</span>`;
+            else if (cat === 'github') badgeHtml = `<span class="asset-badge asset-github">💻 Kod & Demo</span>`;
+            else if (cat === 'drive') badgeHtml = `<span class="asset-badge asset-drive">📁 Dosya Paketi</span>`;
+            else if (cat === 'loom') badgeHtml = `<span class="asset-badge asset-loom">🎥 Loom Video</span>`;
+
             return `
             <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:12px 14px; background:#f8fafc; border-radius:8px; margin-bottom:10px; border:1px solid #e2e8f0; font-size:13px;">
                 <div style="flex:1; padding-right:12px;">
-                    <b>${esc(m.ad)}</b> — ${esc(l.aciklama)}:
-                    <div style="margin:4px 0;"><a href="${esc(l.link)}" target="_blank" style="color:#1a73e8; word-break:break-all; font-weight:600;">${esc(l.link)}</a></div>
-                    <small style="color:#94a3b8;">📅 ${esc(l.tarih)}</small>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        ${badgeHtml}
+                        <b>${esc(m.ad)}</b>
+                    </div>
+                    <div style="font-size:12.5px; color:#475569; font-weight:600;">${esc(l.aciklama)}</div>
+                    <div style="margin:4px 0;"><a href="${esc(l.link)}" target="_blank" style="color:#1a73e8; word-break:break-all; font-weight:600; font-size:12px;">${esc(l.link)}</a></div>
+                    <small style="color:#94a3b8;">📅 Teslim: ${esc(l.tarih)}</small>
                 </div>
-                <button class="g-page-btn btn-del-link" data-mid="${esc(l.musteriId)}" data-link="${esc(l.link)}" style="padding:4px 8px; color:#ef4444;" title="Bağlantıyı Sil">Sil</button>
+                <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                    <button class="g-page-btn btn-copy-link" data-url="${esc(l.link)}" style="padding:4px 8px; font-size:11px;" title="Panoya Kopyala">📋 Kopyala</button>
+                    <button class="g-page-btn btn-del-link" data-mid="${esc(l.musteriId)}" data-link="${esc(l.link)}" style="padding:4px 8px; color:#ef4444; font-size:11px;" title="Bağlantıyı Sil">Sil</button>
+                </div>
             </div>`;
         }).join('') || '<div style="font-size:12.5px; color:#64748b;">Henüz müşteri bağlantısı tanımlanmamış.</div>';
+
+        lDiv.querySelectorAll('.btn-copy-link').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.dataset.url;
+                if (url) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        showToast('Bağlantı panoya kopyalandı! 📋');
+                    });
+                }
+            });
+        });
 
         lDiv.querySelectorAll('.btn-del-link').forEach(btn => {
             btn.addEventListener('click', function () {
@@ -1024,8 +1339,32 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
                 if (m && confirm('Bu paylaşım bağlantısını silmek istediğinize emin misiniz?')) {
                     m.linkler = (m.linkler || []).filter(l => l.link !== linkVal);
                     saveAll();
+                    showToast('Bağlantı silindi.');
                 }
             });
+        });
+    }
+
+    function copyClientDeliverablesWhatsApp() {
+        const links = getTumLinkler();
+        if (links.length === 0) {
+            alert('Henüz paylaşılacak müşteri teslimat bağlantısı bulunmuyor.');
+            return;
+        }
+
+        let summary = `🚀 *MÜŞTERİ TESLİMAT & PORTAL PAKETİ*\n\nMerhaba,\nTeslimatı tamamlanan kurumsal projelerinizin dijital varlık ve erişim bağlantıları aşağıda özetlenmiştir:\n\n`;
+
+        links.forEach(l => {
+            const m = musteriler.find(x => String(x.id) === String(l.musteriId)) || { ad: 'Müşteri' };
+            summary += `📌 *${m.ad}* — ${l.aciklama}\n🔗 ${l.link}\n\n`;
+        });
+
+        summary += `İnceleyip geri bildirimlerinizi iletebilirsiniz. İyi çalışmalar dileriz!`;
+
+        navigator.clipboard.writeText(summary).then(() => {
+            showToast('✅ Tüm teslimat metni WhatsApp formatında panoya kopyalandı!');
+        }).catch(() => {
+            prompt('Kopyalayabileceğiniz teslim metni:', summary);
         });
     }
 
@@ -1796,7 +2135,51 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
 
         document.getElementById('ciroHesapla')?.addEventListener('click', () => {
             saveAll();
-            alert('Finansal tablolar ve KPI özetleri güncellendi.');
+            showToast('Finansal tablolar ve KPI özetleri güncellendi.');
+        });
+
+        // Müşteri Hızlı Filtre Çipleri
+        document.querySelectorAll('#custQuickChipsBar .crm-quick-chip').forEach(chip => {
+            chip.addEventListener('click', function () {
+                document.querySelectorAll('#custQuickChipsBar .crm-quick-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                state.custQuickFilter = this.dataset.custFilter;
+                state.page = 1;
+                renderMusteriTable();
+            });
+        });
+
+        // Kanban Arama & Hızlı Filtre Çipleri
+        const kbSearch = document.getElementById('kanbanSearchInput');
+        if (kbSearch) {
+            kbSearch.addEventListener('input', function () {
+                state.kanbanSearch = this.value.trim();
+                renderKanban();
+            });
+        }
+
+        document.querySelectorAll('#kanbanFilterChips .crm-quick-chip').forEach(chip => {
+            chip.addEventListener('click', function () {
+                document.querySelectorAll('#kanbanFilterChips .crm-quick-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                state.kanbanQuickFilter = this.dataset.kanbanFilter;
+                renderKanban();
+            });
+        });
+
+        // Mail Stüdyosu - Hızlı A4 Proforma & Teklif Belgesi
+        document.getElementById('mailA4HizliAcBtn')?.addEventListener('click', openA4TeklifFromMailStudio);
+
+        // Müşteri Teslim Varlık Metnini WhatsApp Formatında Kopyala
+        document.getElementById('copyAllClientDeliverablesBtn')?.addEventListener('click', copyClientDeliverablesWhatsApp);
+
+        // Marketing İframe Yenile Butonu
+        document.getElementById('marketingReloadBtn')?.addEventListener('click', () => {
+            const iframe = document.getElementById('marketingIframe');
+            if (iframe) {
+                iframe.src = 'marketing.html?t=' + Date.now();
+                showToast('Marketing stüdyosu yeniden yüklendi.');
+            }
         });
 
         // 6. Yüzen Sanal Asistan (Sekme Geçiş Motoru)

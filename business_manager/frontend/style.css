@@ -2148,4 +2148,405 @@ body {
     }
 }
 
+/* ==========================================================================
+   GELİŞMİŞ SEKME STİLLERİ (CRM, KANBAN, FİNANS, TESLİMAT)
+   ========================================================================== */
+
+/* CRM Quick Chips */
+.crm-quick-chips-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+}
+.crm-quick-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+.crm-quick-chip:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #1e293b;
+}
+.crm-quick-chip.active {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1a73e8;
+    box-shadow: 0 1px 3px rgba(26,115,232,0.12);
+}
+.crm-quick-chip .chip-count {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+}
+.crm-quick-chip.active .chip-count {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* Customer Ciro & VIP Badges */
+.cust-vol-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f766e;
+    background: #f0fdfa;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccfbf1;
+}
+.cust-vol-badge.empty {
+    color: #94a3b8;
+    background: #f8fafc;
+    border-color: #f1f5f9;
+    font-weight: 500;
+}
+.vip-pill {
+    background: linear-gradient(135deg, #fef08a 0%, #facc15 100%);
+    color: #854d0e;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    letter-spacing: 0.3px;
+    border: 1px solid #eab308;
+    box-shadow: 0 1px 2px rgba(234,179,8,0.2);
+}
+
+/* Quick Action Buttons in Table */
+.btn-row-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 7px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+.btn-row-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.btn-row-wa {
+    color: #16a34a;
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+.btn-row-wa:hover {
+    background: #dcfce7;
+}
+.btn-row-call {
+    color: #0284c7;
+    border-color: #bae6fd;
+    background: #f0f9ff;
+}
+.btn-row-call:hover {
+    background: #e0f2fe;
+}
+
+/* Kanban Toolbar & Col Header Totals */
+.kanban-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+.kanban-pipeline-badge {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1a73e8;
+    background: #eff6ff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    white-space: nowrap;
+}
+.kanban-col-total {
+    font-size: 11px;
+    font-weight: 700;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 2px 7px;
+    border-radius: 6px;
+    border: 1px solid #a7f3d0;
+}
+.kanban-card-step-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.btn-kanban-step {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-kanban-step:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+.btn-kanban-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #15803d;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 4px;
+    padding: 2px 7px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-kanban-wa:hover {
+    background: #dcfce7;
+}
+
+/* Finance Distribution Bar & Expense Grid */
+.finance-distribution-card {
+    background: #ffffff;
+    border: 1px solid var(--g-border-light);
+    border-radius: var(--g-radius);
+    padding: 16px 20px;
+    margin-top: 16px;
+    box-shadow: var(--g-shadow-card);
+}
+.finance-progress-bar {
+    height: 14px;
+    border-radius: 7px;
+    overflow: hidden;
+    display: flex;
+    background: #f1f5f9;
+    margin: 10px 0;
+}
+.bar-segment {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+.bar-kar {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+.bar-masraf {
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+.bar-vergi {
+    background: linear-gradient(90deg, #f87171 0%, #dc2626 100%);
+}
+.finance-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+.legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.expense-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+.expense-cat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: transform 0.15s ease;
+}
+.expense-cat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+.expense-cat-icon {
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.expense-cat-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.expense-cat-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 1px;
+}
+.expense-cat-amount {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #0f766e;
+    margin-top: 3px;
+}
+
+/* Links & Asset Badges */
+.asset-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.asset-figma { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+.asset-github { background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; }
+.asset-drive { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.asset-loom { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+.asset-doc { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+/* Dark Mode Overrides for New Components */
+[data-theme="dark"] .crm-quick-chip {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+[data-theme="dark"] .crm-quick-chip:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+[data-theme="dark"] .crm-quick-chip.active {
+    background: #1e3a5f;
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+[data-theme="dark"] .crm-quick-chip .chip-count {
+    background: #334155;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .crm-quick-chip.active .chip-count {
+    background: #1d4ed8;
+    color: #eff6ff;
+}
+[data-theme="dark"] .cust-vol-badge {
+    background: #042f2e;
+    border-color: #115e59;
+    color: #2dd4bf;
+}
+[data-theme="dark"] .cust-vol-badge.empty {
+    background: #1e293b;
+    border-color: #334155;
+    color: #64748b;
+}
+[data-theme="dark"] .btn-row-action {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .btn-row-wa {
+    background: #052e16;
+    border-color: #166534;
+    color: #4ade80;
+}
+[data-theme="dark"] .btn-row-call {
+    background: #082f49;
+    border-color: #075985;
+    color: #38bdf8;
+}
+[data-theme="dark"] .kanban-toolbar {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .kanban-pipeline-badge {
+    background: #1e3a5f;
+    border-color: #2563eb;
+    color: #93c5fd;
+}
+[data-theme="dark"] .kanban-col-total {
+    background: #064e3b;
+    border-color: #047857;
+    color: #6ee7b7;
+}
+[data-theme="dark"] .btn-kanban-step {
+    background: #334155;
+    border-color: #475569;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .btn-kanban-step:hover {
+    background: #475569;
+    color: #f8fafc;
+}
+[data-theme="dark"] .btn-kanban-wa {
+    background: #052e16;
+    border-color: #166534;
+    color: #4ade80;
+}
+[data-theme="dark"] .finance-distribution-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .finance-distribution-card span {
+    color: #f1f5f9 !important;
+}
+[data-theme="dark"] .expense-cat-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .expense-cat-icon {
+    background: #0f172a;
+    border-color: #334155;
+}
+[data-theme="dark"] .expense-cat-title {
+    color: #f1f5f9;
+}
+[data-theme="dark"] .expense-cat-desc {
+    color: #94a3b8;
+}
+[data-theme="dark"] .expense-cat-amount {
+    color: #2dd4bf;
+}
+
 

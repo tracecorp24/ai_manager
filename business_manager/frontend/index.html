@@ -513,23 +513,31 @@
                 </div>
             </section>
 
-            <!-- 2. SEKME : MÜŞTERİ VERİ TABANI (GOOGLE MATERIAL TABLO) -->
+            <!-- 2. SEKME : MÜŞTERİ VERİ TABANI (GOOGLE MATERIAL TABLO & CRM) -->
             <section id="tab-customers" class="tab-pane">
                 <div class="crm-header-action">
                     <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Kurumsal Müşteri Portföyü</h2>
-                        <p style="font-size:12.5px; color:#64748b;">1.629 kayıtlı şirket ve aktif müşteri temas geçmişi</p>
+                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Kurumsal Müşteri Portföyü & CRM</h2>
+                        <p style="font-size:12.5px; color:#64748b;">1.629 kayıtlı şirket, aktif proje hacimleri ve 360° müşteri temas geçmişi</p>
                     </div>
-                    <div style="display:flex; gap:10px;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button class="btn-export-csv" id="exportCustomersCsvBtn">📊 Excel (CSV) İndir</button>
                         <button class="btn-g-primary" id="yeniMusteriBtn">➕ Yeni Şirket / Müşteri Ekle</button>
                     </div>
                 </div>
 
+                <!-- Müşteri Hızlı Filtre Çipleri -->
+                <div class="crm-quick-chips-bar" id="custQuickChipsBar">
+                    <button class="crm-quick-chip active" data-cust-filter="all">Tüm Müşteriler <span class="chip-count" id="chipCustAll">1.629</span></button>
+                    <button class="crm-quick-chip" data-cust-filter="vip">⭐ VIP Portföy (>₺100k) <span class="chip-count" id="chipCustVip">0</span></button>
+                    <button class="crm-quick-chip" data-cust-filter="active_job">🚀 Aktif Projesi Olanlar <span class="chip-count" id="chipCustActive">0</span></button>
+                    <button class="crm-quick-chip" data-cust-filter="warm">💬 İletişimde / Sıcak <span class="chip-count" id="chipCustWarm">0</span></button>
+                </div>
+
                 <div class="table-layout-card">
                     <div class="table-toolbar">
                         <div class="table-filters-group">
-                            <input type="text" id="arama" class="g-input" placeholder="🔍 Firma adı, sicil no veya ilçe ara..." style="min-width:240px;">
+                            <input type="text" id="arama" class="g-input" placeholder="🔍 Firma adı, sicil no, ilçe veya yetkili ara..." style="min-width:240px;">
                             <select id="filtreFaaliyet" class="g-select"><option value="">Tüm Sektörler</option></select>
                             <select id="filtreIlce" class="g-select"><option value="">Tüm İlçeler</option></select>
                             <select id="filtreDurum" class="g-select">
@@ -549,11 +557,12 @@
                                 <tr>
                                     <th>Sicil No</th>
                                     <th>Firma / Şirket Ünvanı</th>
+                                    <th>Ciro & Proje Hacmi</th>
                                     <th>Konum / İlçe</th>
                                     <th>Faaliyet Alanı</th>
                                     <th>Son Görüşme / Not</th>
                                     <th>Temas Durumu</th>
-                                    <th style="text-align:right;">İşlemler</th>
+                                    <th style="text-align:right;">Hızlı Aksiyonlar</th>
                                 </tr>
                             </thead>
                             <tbody id="musteriTableTbody">
@@ -579,10 +588,29 @@
                 <div class="crm-header-action">
                     <div>
                         <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Satış Süreçleri & Fırsat Pipeline</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Teklif aşamasından tahsilata kadar uçtan uca iş takibi</p>
+                        <p style="font-size:12.5px; color:#64748b;">Teklif aşamasından tahsilata kadar uçtan uca nakit akışı ve iş takibi</p>
                     </div>
-                    <button class="btn-g-primary" id="yeniIsEkle">➕ Yeni Fırsat / Teklif Ekle</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-g-primary" id="yeniIsEkle">➕ Yeni Fırsat / Teklif Ekle</button>
+                    </div>
                 </div>
+
+                <!-- Kanban Hızlı Arama & Filtre Çubuğu -->
+                <div class="kanban-toolbar">
+                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:260px; flex-wrap:wrap;">
+                        <input type="text" id="kanbanSearchInput" class="g-input" placeholder="🔍 Proje veya müşteri ara..." style="min-width:200px; max-width:320px;">
+                        <div class="kanban-filter-chips" id="kanbanFilterChips">
+                            <button class="crm-quick-chip active" data-kanban-filter="all">Tümü</button>
+                            <button class="crm-quick-chip" data-kanban-filter="urgent">⚠️ Acil / Geciken</button>
+                            <button class="crm-quick-chip" data-kanban-filter="high_value">💰 Yüksek Tutar (>₺100k)</button>
+                            <button class="crm-quick-chip" data-kanban-filter="active">⚡ Devam Eden İşler</button>
+                        </div>
+                    </div>
+                    <div id="kanbanTotalValueBadge" class="kanban-pipeline-badge">
+                        Pipeline Toplam Hacim: <b id="kanbanPipelineTotalText">₺0</b>
+                    </div>
+                </div>
+
                 <div class="kanban-grid" id="kanbanBoard"></div>
             </section>
 
@@ -590,56 +618,78 @@
             <section id="tab-mail" class="tab-pane">
                 <div class="crm-header-action">
                     <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">AI Destekli Satış & İletişim Stüdyosu</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Müşteri zekası ile güçlendirilmiş B2B teklif ve e-posta motoru</p>
+                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">AI Satış, Teklif & Proforma Stüdyosu</h2>
+                        <p style="font-size:12.5px; color:#64748b;">Müşteri zekası ile güçlendirilmiş teklif mektubu ve anında yazdırılabilir A4 proforma motoru</p>
                     </div>
+                    <button class="btn-g-primary" id="mailA4HizliAcBtn" style="background:#0284c7;">📄 A4 Proforma & Teklif Belgesi Önizle</button>
                 </div>
                 <div class="mail-studio-layout">
                     <div class="studio-card">
-                        <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">👥 Müşteri Seçimi</label>
+                        <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">👥 Hedef Müşteri Seçimi</label>
                         <input type="text" id="mailMusteriAra" class="g-input" style="width:100%; margin-bottom:14px;" placeholder="Müşteri adını yazmaya başlayın...">
                         <div id="mailMusteriSonuclari" class="customer-search-results"></div>
                         <input type="hidden" id="mailMusteri">
 
-                        <div style="display:flex; gap:14px; margin-bottom:14px;">
-                            <div style="flex:1;">
-                                <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">🎯 İletişim Amacı</label>
+                        <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;">
+                                <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">🎯 Teklif & İletişim Amacı</label>
                                 <select id="mailAmac" class="g-select" style="width:100%;">
-                                    <option value="tanitim">Kurumsal Tanıtım & Mekanik Mühendislik</option>
-                                    <option value="yazilim">Endüstriyel Yazılım & CAD/CAM Lisanslama</option>
-                                    <option value="hizmet">Mühendislik Danışmanlığı & Analiz</option>
-                                    <option value="teklif">Fiyat Teklifi ve Teslim Takvimi</option>
-                                    <option value="durum">Proje İlerleme Raporu</option>
-                                    <option value="odeme">Ödeme & Fatura Bilgilendirmesi</option>
+                                    <option value="web">🚀 Full-Stack Web & Next.js Portalı Teklifi</option>
+                                    <option value="uiux">🎨 UI/UX & Figma Tasarım Sistemi Teklifi</option>
+                                    <option value="mobil">📱 iOS & Android Mobil Uygulama Teklifi</option>
+                                    <option value="ai">🤖 Yapay Zeka & LLM Otomasyon Çözümü</option>
+                                    <option value="hakedis">🧾 Hakediş & Fatura İletimi (IBAN Bilgisiyle)</option>
+                                    <option value="teslim">📦 Proje Teslim & Revizyon Raporu</option>
+                                    <option value="tanitim">🏢 Kurumsal Hizmet Tanıtımı & Tanışma</option>
                                 </select>
                             </div>
-                            <div style="flex:1;">
-                                <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">📎 Ekli Katalog / Belge</label>
+                            <div style="flex:1; min-width:180px;">
+                                <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">📎 Ekli Katalog / Portfolyo</label>
                                 <select id="pdfSec" class="g-select" style="width:100%;">
                                     <option value="">Ek seçilmedi</option>
                                 </select>
                             </div>
                         </div>
 
-                        <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">📝 Hazırlanan Teklif Metni</label>
-                        <textarea id="mailTaslak" class="g-input" style="width:100%; height:240px; line-height:1.5; font-family:inherit; resize:vertical; margin-bottom:16px;" placeholder="Taslak oluşturmak için aşağıdaki butonları kullanın..."></textarea>
+                        <!-- Teklif Detay Parametreleri (Döviz, Bütçe, Teslim Süresi) -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:14px;">
+                            <div>
+                                <label style="font-weight:600; font-size:12px; margin-bottom:4px; display:block;">💵 Para Birimi</label>
+                                <select id="mailParaBirimi" class="g-select" style="width:100%;">
+                                    <option value="TL">₺ Türk Lirası (TL)</option>
+                                    <option value="USD">$ Amerikan Doları (USD)</option>
+                                    <option value="EUR">€ Euro (EUR)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-weight:600; font-size:12px; margin-bottom:4px; display:block;">💰 Teklif Tutarı</label>
+                                <input type="number" id="mailTeklifTutar" class="g-input" style="width:100%;" placeholder="85000">
+                            </div>
+                            <div>
+                                <label style="font-weight:600; font-size:12px; margin-bottom:4px; display:block;">⏳ Tahmini Teslim</label>
+                                <input type="text" id="mailTeslimSure" class="g-input" style="width:100%;" placeholder="3 Hafta">
+                            </div>
+                        </div>
+
+                        <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">📝 Hazırlanan Teklif / E-Posta Metni</label>
+                        <textarea id="mailTaslak" class="g-input" style="width:100%; height:230px; line-height:1.5; font-family:inherit; resize:vertical; margin-bottom:16px;" placeholder="Taslak oluşturmak için aşağıdaki butonları kullanın..."></textarea>
 
                         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <button class="g-page-btn" id="mailOlustur" style="padding:10px 16px;">✍️ Standart Şablon</button>
+                            <button class="g-page-btn" id="mailOlustur" style="padding:10px 16px;">✍️ Şablonu Uygula</button>
                             <button class="btn-ai-sparkle" id="mailAiBtn">✨ Google Gemini ile Kişiselleştir</button>
                             <button class="btn-g-primary" id="mailGonderBtn">🚀 E-Postada Aç (Mailto)</button>
-                            <button class="g-page-btn" id="mailKopyalaBtn" style="padding:10px 16px;">📋 Kopyala</button>
+                            <button class="g-page-btn" id="mailKopyalaBtn" style="padding:10px 16px;">📋 Metni Kopyala</button>
                             <button class="g-page-btn" id="mailKaydet" style="padding:10px 16px;">💾 Kaydet</button>
                         </div>
                     </div>
 
-                    <!-- PDF Belgeleri -->
+                    <!-- PDF Belgeleri & Portfolyo -->
                     <div class="studio-card">
-                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">📂 Ekli Belgeler & Kataloglar</h3>
+                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">📂 Ekli Belgeler & Portfolyo PDF</h3>
                         <div id="pdfListesi"></div>
                         <div style="margin-top:16px;">
                             <input type="file" id="pdfYukle" accept=".pdf" multiple class="g-input" style="width:100%;">
-                            <p style="font-size:11.5px; color:#64748b; margin-top:8px;">Yüklenen katalogların dosya adları hazırladığınız teklife otomatik eklenir.</p>
+                            <p style="font-size:11.5px; color:#64748b; margin-top:8px;">Yüklenen portfolyo dosyaları hazırladığınız teklif metnine otomatik iliştirilir.</p>
                         </div>
                     </div>
                 </div>
@@ -649,15 +699,16 @@
             <section id="tab-finance" class="tab-pane">
                 <div class="crm-header-action">
                     <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Finans & Karlılık Raporları</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Haftalık, aylık ve yıllık ciro gerçekleşmeleri ve kar/zarar hesabı</p>
+                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Finans, Nakit Akışı & Karlılık Raporları</h2>
+                        <p style="font-size:12.5px; color:#64748b;">Haftalık, aylık ve yıllık nakit akışı, net kar marjı ve serbest çalışma maliyet dağılımı</p>
                     </div>
-                    <div style="display:flex; gap:10px;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button class="btn-export-csv" id="exportFinanceCsvBtn">📊 Gelir-Gider Excel (CSV)</button>
                         <button class="btn-g-primary" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
                     </div>
                 </div>
 
+                <!-- Gelişmiş Finans KPI Kartları (8 Gösterge) -->
                 <div class="kpi-metrics-grid finance-metrics-grid">
                     <div class="kpi-card">
                         <div class="kpi-card-label">Toplam Gerçekleşen Ciro</div>
@@ -672,16 +723,74 @@
                         <div class="kpi-card-value" id="yillikCiro">₺0</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-card-label">Toplam Tahakkuk Vergi</div>
-                        <div class="kpi-card-value" id="toplamVergi" style="color:#d93025;">₺0</div>
-                    </div>
-                    <div class="kpi-card">
                         <div class="kpi-card-label">Net Şirket Karlılığı</div>
                         <div class="kpi-card-value" id="toplamKar" style="color:#1e8e3e;">₺0</div>
                     </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Net Kar Marjı (%)</div>
+                        <div class="kpi-card-value" id="netKarMarji" style="color:#0284c7;">%0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">⏳ Bekleyen Açık Alacak</div>
+                        <div class="kpi-card-value" id="bekleyenAlacak" style="color:#b45309;">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">💰 Tahsil Edilmiş Kasa</div>
+                        <div class="kpi-card-value" id="tahsilEdilmisKasa" style="color:#16a34a;">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Toplam Tahakkuk Vergi</div>
+                        <div class="kpi-card-value" id="toplamVergi" style="color:#d93025;">₺0</div>
+                    </div>
                 </div>
 
-                <div class="table-layout-card">
+                <!-- Görsel Gelir Dağılım Çubuğu & Gider Analiz Kartları -->
+                <div class="finance-distribution-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:13px; font-weight:700; color:#1e293b;">📊 Gelir Dağılım Analizi (Ciro Kompozisyonu)</span>
+                        <span style="font-size:12px; color:#64748b;" id="financeBarRatioText">%70 Net Kar · %20 Masraf · %10 Vergi</span>
+                    </div>
+                    <div class="finance-progress-bar">
+                        <div class="bar-segment bar-kar" id="barKarSegment" style="width:70%;" title="Net Kar"></div>
+                        <div class="bar-segment bar-masraf" id="barMasrafSegment" style="width:20%;" title="Doğrudan Masraflar"></div>
+                        <div class="bar-segment bar-vergi" id="barVergiSegment" style="width:10%;" title="Vergi / Stopaj"></div>
+                    </div>
+                    <div class="finance-legend">
+                        <span><span class="legend-dot" style="background:#16a34a;"></span> Net Kar</span>
+                        <span><span class="legend-dot" style="background:#f59e0b;"></span> Proje Masrafları</span>
+                        <span><span class="legend-dot" style="background:#ef4444;"></span> Vergi Tahakkuku</span>
+                    </div>
+                </div>
+
+                <!-- Freelance Maliyet & SaaS Abonelik Dağılımı -->
+                <div class="expense-breakdown-grid">
+                    <div class="expense-cat-card">
+                        <div class="expense-cat-icon">☁️</div>
+                        <div>
+                            <div class="expense-cat-title">Bulut & Sunucu Altyapısı</div>
+                            <div class="expense-cat-desc">Vercel, AWS, Cloudflare, Supabase</div>
+                            <div class="expense-cat-amount" id="expCloudAmount">₺14.200 / yıl</div>
+                        </div>
+                    </div>
+                    <div class="expense-cat-card">
+                        <div class="expense-cat-icon">🎨</div>
+                        <div>
+                            <div class="expense-cat-title">Yazılım & Tasarım Lisansları</div>
+                            <div class="expense-cat-desc">Figma Pro, JetBrains, OpenAI, Cursor</div>
+                            <div class="expense-cat-amount" id="expSoftwareAmount">₺21.500 / yıl</div>
+                        </div>
+                    </div>
+                    <div class="expense-cat-card">
+                        <div class="expense-cat-icon">🤝</div>
+                        <div>
+                            <div class="expense-cat-title">Dış Kaynak & Taşeron</div>
+                            <div class="expense-cat-desc">Freelance animatör, test mühendisi vb.</div>
+                            <div class="expense-cat-amount" id="expSubcontractAmount">₺36.800 / yıl</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-layout-card" style="margin-top:20px;">
                     <div style="overflow-x:auto;">
                         <table class="g-table" id="ciroTable">
                             <thead>
@@ -703,21 +812,22 @@
                 </div>
             </section>
 
-            <!-- 6. SEKME : MÜŞTERİ LİNKLERİ -->
+            <!-- 6. SEKME : MÜŞTERİ LİNKLERİ & TESLİMAT PORTALI -->
             <section id="tab-links" class="tab-pane">
                 <div class="crm-header-action">
                     <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Müşteri Portalı & Paylaşım Linkleri</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Teslim edilen projelerin canlı indirme ve takip bağlantıları</p>
+                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Müşteri Portalı & Teslimat Varlıkları</h2>
+                        <p style="font-size:12.5px; color:#64748b;">Teslim edilen projelerin Figma, GitHub, Vercel, Drive ve dokümantasyon bağlantıları</p>
                     </div>
+                    <button class="btn-g-primary" id="copyAllClientDeliverablesBtn" style="background:#16a34a;">📋 Müşteri Teslim Metnini Kopyala (WhatsApp Formatı)</button>
                 </div>
                 <div class="two-col-grid">
                     <div class="studio-card">
-                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">✅ Tamamlanan İşler (Ödemesi Alınan)</h3>
+                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">✅ Teslim Edilen & Ödemesi Alınan Projeler</h3>
                         <div id="tamamlananIsler"></div>
                     </div>
                     <div class="studio-card">
-                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">🔗 Paylaşılan Müşteri Bağlantıları</h3>
+                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">🔗 Paylaşılan Müşteri Varlıkları & Canlı Bağlantılar</h3>
                         <div id="linkListesi"></div>
                     </div>
                 </div>
@@ -727,12 +837,16 @@
             <section id="tab-marketing" class="tab-pane">
                 <div class="crm-header-action">
                     <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Marketing & ProSunum Stüdyosu</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Kurumsal ürün ve mühendislik sunumları hazırlama modülü</p>
+                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Marketing & ProSunum Tasarım Stüdyosu</h2>
+                        <p style="font-size:12.5px; color:#64748b;">Kurumsal ürün, yazılım ve tasarım sunumları hazırlama modülü</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="g-page-btn" id="marketingReloadBtn" style="font-weight:600;">🔄 Yenile</button>
+                        <a href="marketing.html" target="_blank" class="btn-g-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">🖥️ Yeni Sekmede Aç</a>
                     </div>
                 </div>
                 <div style="width:100%; height:calc(100vh - 200px); min-height:600px; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0; background:#fff;">
-                    <iframe src="marketing.html" style="width:100%; height:100%; border:none;" title="ProSunum Marketing Modülü"></iframe>
+                    <iframe id="marketingIframe" src="marketing.html" style="width:100%; height:100%; border:none;" title="ProSunum Marketing Modülü"></iframe>
                 </div>
             </section>
         </main>
