@@ -14,7 +14,7 @@ try {
 // Test/Demo giris kontrolu (admin bypass destekli)
 async function guardProtectedPage() {
     if (sessionStorage.getItem('ai_manager_demo_admin') !== '1') {
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
         return false;
     }
     document.documentElement.classList.remove('auth-pending');
@@ -24,7 +24,7 @@ async function guardProtectedPage() {
 
 function handleSignOut() {
     sessionStorage.removeItem('ai_manager_demo_admin');
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
 }
 
 // Supabase durumunu kontrol et

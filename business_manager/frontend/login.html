@@ -168,7 +168,7 @@
 <script>
 function doAdminLogin() {
     sessionStorage.setItem('ai_manager_demo_admin', '1');
-    window.location.href = '/index.html';
+    window.location.href = 'index.html';
 }
 
 function login(event) {
@@ -193,7 +193,7 @@ function login(event) {
 }
 
 if (sessionStorage.getItem('ai_manager_demo_admin') === '1') {
-    window.location.href = '/index.html';
+    window.location.href = 'index.html';
 }
 
 document.getElementById('loginForm').addEventListener('submit', login);
