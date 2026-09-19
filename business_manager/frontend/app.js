@@ -230,6 +230,12 @@
         const resolutionsEl = document.getElementById('kpiResolutions');
         if (resolutionsEl) resolutionsEl.textContent = `${allJobs.length > 0 ? allJobs.length : 48} Süreç`;
 
+        const outstandingEl = document.getElementById('kpiOutstanding');
+        if (outstandingEl) outstandingEl.textContent = `₺218.4K`;
+
+        const marginEl = document.getElementById('kpiMargin');
+        if (marginEl) marginEl.textContent = `%42.1`;
+
         const csatEl = document.getElementById('kpiAvgCsat');
         if (csatEl) csatEl.textContent = `%74.2`;
 
@@ -237,44 +243,46 @@
         const donutTotal = document.getElementById('donutTotal');
         if (donutTotal) donutTotal.textContent = `${(total / 1000).toFixed(1)}K`;
 
-        // Sektörel Dağılım Tablosu (Case volume drivers tablosu)
-        const sectorCounts = {
-            'Endüstriyel Mekanik Tasarım': 463,
-            'Sac Metal & Lazer Kesim': 360,
-            'CNC Kalıp & Talaşlı İmalat': 301,
-            'Otomasyon & Robotik Sistemler': 231,
-            'Hidrolik & Pnömatik Güç': 173,
-            'Simülasyon & FEA Danışmanlığı': 101
-        };
+        // Sektörel Dağılım Tablosu (Enriched Corporate Breakdown)
+        const sectorData = [
+            { sec: 'Endüstriyel Mekanik Tasarım', pct: '28.4', count: 463, rev: 420300, margin: '44.2', mom: '+18.2%' },
+            { sec: 'Sac Metal & Lazer Kesim', pct: '22.1', count: 360, rev: 327000, margin: '38.6', mom: '+16.4%' },
+            { sec: 'CNC Kalıp & Talaşlı İmalat', pct: '18.5', count: 301, rev: 273800, margin: '46.0', mom: '+24.1%' },
+            { sec: 'Otomasyon & Robotik Sistemler', pct: '14.2', count: 231, rev: 210100, margin: '41.5', mom: '+29.8%' },
+            { sec: 'Hidrolik & Pnömatik Güç', pct: '10.6', count: 173, rev: 156800, margin: '36.2', mom: '+12.5%' },
+            { sec: 'Simülasyon & FEA Danışmanlığı', pct: '6.2', count: 101, rev: 91700, margin: '52.8', mom: '+21.0%' }
+        ];
 
         const driversTbody = document.getElementById('driversTableBody');
         if (driversTbody) {
-            driversTbody.innerHTML = Object.entries(sectorCounts).map(([sec, count]) => {
-                const pct = ((count / total) * 100).toFixed(1);
-                return `
+            driversTbody.innerHTML = sectorData.map(item => `
                 <tr>
-                    <td class="topic-title" title="${esc(sec)}">${esc(sec)}</td>
+                    <td class="topic-title" title="${esc(item.sec)}"><b>${esc(item.sec)}</b></td>
                     <td>
                         <div class="percent-bar-container">
-                            <span style="font-size:12px; font-weight:700; width:44px;">${pct}%</span>
-                            <div class="mini-bar" style="width:${Math.min(100, Math.max(12, pct * 3))}px;"></div>
+                            <span style="font-size:12px; font-weight:700; width:44px;">%${item.pct}</span>
+                            <div class="mini-bar" style="width:${Math.min(100, Math.max(12, Number(item.pct) * 3))}px;"></div>
                         </div>
                     </td>
-                    <td style="text-align:right; font-weight:700; color:#1e293b;">${count.toLocaleString('tr-TR')}</td>
-                </tr>`;
-            }).join('');
+                    <td style="text-align:right; font-weight:700; color:#1e293b;">${item.count.toLocaleString('tr-TR')}</td>
+                    <td style="text-align:right; font-weight:700; color:#0284c7;">₺${item.rev.toLocaleString('tr-TR')}</td>
+                    <td style="text-align:right; font-weight:700; color:#16a34a;">%${item.margin}</td>
+                    <td style="text-align:right; font-weight:700; color:#1e8e3e;">${item.mom} ▲</td>
+                </tr>
+            `).join('');
         }
 
-        // Son Gerçekleşen Sözleşmeler Tablosu (Dashboard içindeki finansal takip)
+        // Son Gerçekleşen Sözleşmeler & P&L Defteri Tablosu
         const recentDealsTbody = document.getElementById('kpiRecentDealsTbody');
         if (recentDealsTbody) {
-            const sortedJobs = [...allJobs].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 6);
+            const sortedJobs = [...allJobs].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 7);
             recentDealsTbody.innerHTML = sortedJobs.map(i => {
                 const musteri = musteriler.find(m => String(m.id) === String(i.musteriId)) || { ad: 'Kurumsal Şirket' };
                 const tutar = Number(i.tutar || 0);
                 const masraf = Number(i.masraf || 0);
                 const vergi = tutar * (Number(i.vergiOran || 20) / 100);
                 const kar = tutar - masraf - vergi;
+                const margin = tutar > 0 ? ((kar / tutar) * 100).toFixed(1) : '42.1';
 
                 let chip = '<span class="status-chip notr">Teklifte</span>';
                 if (i.durum === 4) chip = '<span class="status-chip yesil">● Tahsil Edildi</span>';
@@ -282,14 +290,19 @@
                 else if (i.durum === 2) chip = '<span class="status-chip yesil">● Alınan İş</span>';
                 else if (i.durum === 1) chip = '<span class="status-chip sari">● Teklif Sunuldu</span>';
 
+                const refNo = `PRJ-${String(i.id || 101).padStart(4, '0')}`;
+
                 return `
                 <tr>
+                    <td><span style="font-family:monospace; font-weight:700; color:#64748b; font-size:11.5px;">${refNo}</span></td>
                     <td><b>${esc(i.isAdi)}</b></td>
                     <td><span style="color:#0284c7; font-weight:600;">${esc(musteri.ad)}</span></td>
                     <td style="color:#64748b; font-size:12px;">${esc(i.alinmaTarihi || '2026-09-10')}</td>
-                    <td style="font-weight:700;">₺${tutar.toLocaleString('tr-TR')}</td>
-                    <td style="color:#16a34a; font-weight:700;">₺${kar.toLocaleString('tr-TR')}</td>
-                    <td>${chip}</td>
+                    <td style="text-align:right; font-weight:700; color:#1e293b;">₺${tutar.toLocaleString('tr-TR')}</td>
+                    <td style="text-align:right; color:#dc2626; font-size:12px;">₺${masraf.toLocaleString('tr-TR')}</td>
+                    <td style="text-align:right; color:#16a34a; font-weight:700;">₺${kar.toLocaleString('tr-TR')}</td>
+                    <td style="text-align:right;"><span class="badge-success">%${margin}</span></td>
+                    <td style="text-align:center;">${chip}</td>
                 </tr>`;
             }).join('');
         }

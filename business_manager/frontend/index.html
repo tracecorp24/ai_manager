@@ -138,7 +138,42 @@
                     </div>
                 </div>
 
-                <!-- 6'LI KPI KART GRİDİ (CİRO, KAR VE MÜŞTERİ METRİKLERİ) -->
+                <!-- YÖNETİCİ HIZLI FİNANS & PERFORMANS ŞERİDİ (EXECUTIVE STAT RIBBON) -->
+                <div class="executive-stat-ribbon">
+                    <div class="ribbon-item">
+                        <span class="ribbon-icon">🎯</span>
+                        <div>
+                            <div class="ribbon-label">Yıllık Ciro Gerçekleşme (YTD)</div>
+                            <div class="ribbon-val"><strong>₺1.48M</strong> / ₺1.68M <span class="badge-success">%88.1</span></div>
+                        </div>
+                    </div>
+                    <div class="ribbon-divider"></div>
+                    <div class="ribbon-item">
+                        <span class="ribbon-icon">💼</span>
+                        <div>
+                            <div class="ribbon-label">Ağırlıklı Fırsat Havuzu</div>
+                            <div class="ribbon-val"><strong>₺640.000</strong> <span class="badge-neutral">14 Canlı Teklif</span></div>
+                        </div>
+                    </div>
+                    <div class="ribbon-divider"></div>
+                    <div class="ribbon-item">
+                        <span class="ribbon-icon">⚡</span>
+                        <div>
+                            <div class="ribbon-label">Ort. Sözleşme Değeri (AOV)</div>
+                            <div class="ribbon-val"><strong>₺64.500</strong> <span class="badge-up">+14.2% YoY</span></div>
+                        </div>
+                    </div>
+                    <div class="ribbon-divider"></div>
+                    <div class="ribbon-item">
+                        <span class="ribbon-icon">🛡️</span>
+                        <div>
+                            <div class="ribbon-label">Tahsilat Verimlilik Skoru</div>
+                            <div class="ribbon-val"><strong>%96.2</strong> <span class="badge-success">Düşük Risk</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8'Lİ KURUMSAL KPI KART GRİDİ -->
                 <div class="kpi-metrics-grid">
                     <div class="kpi-card">
                         <div class="kpi-card-label">Toplam Müşteri Portföyü</div>
@@ -146,96 +181,131 @@
                         <div class="kpi-trend up">17.7% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">geçen aya göre</span></div>
                     </div>
                     <div class="kpi-card" style="border-top: 3px solid #1a73e8;">
-                        <div class="kpi-card-label">Toplam Ciro (Hacim)</div>
+                        <div class="kpi-card-label">Toplam Ciro (YTD Hacim)</div>
                         <div class="kpi-card-value" id="kpiTotalRevenue" style="color:#1a73e8;">₺1.48M</div>
                         <div class="kpi-trend up">18.4% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">hedefin üzerinde</span></div>
                     </div>
                     <div class="kpi-card" style="border-top: 3px solid #1e8e3e;">
-                        <div class="kpi-card-label">Net Şirket Karı</div>
+                        <div class="kpi-card-label">Net Şirket Karı (EBITDA)</div>
                         <div class="kpi-card-value" id="kpiNetProfit" style="color:#1e8e3e;">₺624K</div>
-                        <div class="kpi-trend up">24.1% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">%42.0 net marj</span></div>
+                        <div class="kpi-trend up">24.1% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">%42.1 net marj</span></div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-card-label">Bu Ayki Ciro</div>
+                        <div class="kpi-card-label">Bu Ayki Ciro (Run-Rate)</div>
                         <div class="kpi-card-value" id="kpiMonthlyRevenue">₺385K</div>
-                        <div class="kpi-trend up">12.5% ▲</div>
+                        <div class="kpi-trend up">12.5% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">hedef: ₺350K</span></div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-card-label">Aktif Fırsat & Süreçler</div>
                         <div class="kpi-card-value" id="kpiResolutions">48 Süreç</div>
-                        <div class="kpi-trend up">7.8% ▲</div>
+                        <div class="kpi-trend up">7.8% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">14 sıcak teklif</span></div>
+                    </div>
+                    <div class="kpi-card" style="border-top: 3px solid #d97706;">
+                        <div class="kpi-card-label">Açık / Bekleyen Alacak</div>
+                        <div class="kpi-card-value" id="kpiOutstanding" style="color:#d97706;">₺218.4K</div>
+                        <div class="kpi-trend" style="color:#b45309;">4 Fatura <span style="color:#64748b; font-weight:400; font-size:10px;">vadesi yakın</span></div>
+                    </div>
+                    <div class="kpi-card" style="border-top: 3px solid #7c3aed;">
+                        <div class="kpi-card-label">Ort. Proje Kar Marjı</div>
+                        <div class="kpi-card-value" id="kpiMargin" style="color:#7c3aed;">%42.1</div>
+                        <div class="kpi-trend up">4.2% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">sektör: %31.5</span></div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-card-label">Müşteri Dönüşüm / Başarı</div>
+                        <div class="kpi-card-label">Müşteri Başarı / CSAT</div>
                         <div class="kpi-card-value" id="kpiAvgCsat">%74.2</div>
-                        <div class="kpi-trend up">3.5% ▲</div>
+                        <div class="kpi-trend up">3.5% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">NPS: +78 puan</span></div>
                     </div>
                 </div>
 
-                <!-- 2 KOLONLU GRAFİK & TABLO PLANI (Görselin Aynısı) -->
+                <!-- 2 KOLONLU GRAFİK & TABLO PLANI -->
                 <div class="kpi-charts-layout">
                     <!-- Sol Kolon: Case volume drivers & Emerging topics -->
                     <div style="display:flex; flex-direction:column; gap:20px;">
                         <div class="chart-card">
                             <div class="chart-card-header">
-                                <h3>Sektörel Portföy Dağılımı</h3>
-                                <span class="badge-info">Toplam Hacim Payı</span>
+                                <div>
+                                    <h3>Sektörel Portföy Dağılımı & Karlılık Analizi</h3>
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Kurumsal ciro hacmi ve sektör bazlı kar marjı kırılımı</div>
+                                </div>
+                                <span class="badge-info">Toplam 6 Ana Dikey</span>
                             </div>
-                            <table class="drivers-table">
-                                <thead>
-                                    <tr>
-                                        <th>Faaliyet / Sektör</th>
-                                        <th>Dağılım</th>
-                                        <th style="text-align:right;">Firma Sayısı</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="driversTableBody">
-                                    <!-- Dinamik hesaplanacak -->
-                                </tbody>
-                            </table>
+                            <div style="overflow-x:auto;">
+                                <table class="drivers-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Faaliyet / Sektör</th>
+                                            <th>Hacim Payı</th>
+                                            <th style="text-align:right;">Firma</th>
+                                            <th style="text-align:right;">Ciro Hacmi</th>
+                                            <th style="text-align:right;">Net Marj</th>
+                                            <th style="text-align:right;">Momentum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="driversTableBody">
+                                        <!-- Dinamik hesaplanacak -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <div class="chart-card">
                             <div class="chart-card-header">
-                                <h3>Hızlı Yükselen Fırsatlar</h3>
-                                <span class="badge-info">Momentum</span>
+                                <div>
+                                    <h3>Bölgesel Büyüme & Pazar Intelligence</h3>
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Yüksek momentumlu sanayi havzaları ve canlı teklif hacimleri</div>
+                                </div>
+                                <span class="badge-info">Momentum Skoru</span>
                             </div>
-                            <table class="drivers-table">
-                                <thead>
-                                    <tr>
-                                        <th>Bölge / Odak</th>
-                                        <th>Büyüme</th>
-                                        <th style="text-align:right;">Hacim</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="topic-title">İstanbul / Tuzla OSB</td>
-                                        <td style="color:#1e8e3e; font-weight:700;">+16.2% ▲</td>
-                                        <td style="text-align:right; font-weight:600;">198</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="topic-title">Kocaeli / Gebze İhtisas</td>
-                                        <td style="color:#1e8e3e; font-weight:700;">+16.8% ▲</td>
-                                        <td style="text-align:right; font-weight:600;">190</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="topic-title">Bursa / Nilüfer Otomotiv</td>
-                                        <td style="color:#1e8e3e; font-weight:700;">+26.3% ▲</td>
-                                        <td style="text-align:right; font-weight:600;">76</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="topic-title">Ankara / OSTİM Savunma</td>
-                                        <td style="color:#1e8e3e; font-weight:700;">+24.3% ▲</td>
-                                        <td style="text-align:right; font-weight:600;">70</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="topic-title">İzmir / Kemalpaşa Makine</td>
-                                        <td style="color:#1e8e3e; font-weight:700;">+15.8% ▲</td>
-                                        <td style="text-align:right; font-weight:600;">57</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div style="overflow-x:auto;">
+                                <table class="drivers-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Bölge / Sanayi Havzası</th>
+                                            <th>Büyüme</th>
+                                            <th style="text-align:right;">Açık Teklif</th>
+                                            <th style="text-align:right;">Kazanma %</th>
+                                            <th style="text-align:right;">Pazar Dinamiği</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="topic-title">İstanbul / Tuzla OSB</td>
+                                            <td style="color:#1e8e3e; font-weight:700;">+16.2% ▲</td>
+                                            <td style="text-align:right; font-weight:700; color:#1e293b;">₺198.000</td>
+                                            <td style="text-align:right; color:#1a73e8; font-weight:700;">%82</td>
+                                            <td style="text-align:right;"><span class="badge-success">Stratejik</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="topic-title">Kocaeli / Gebze İhtisas</td>
+                                            <td style="color:#1e8e3e; font-weight:700;">+16.8% ▲</td>
+                                            <td style="text-align:right; font-weight:700; color:#1e293b;">₺190.000</td>
+                                            <td style="text-align:right; color:#1a73e8; font-weight:700;">%78</td>
+                                            <td style="text-align:right;"><span class="badge-up">Yüksek Talep</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="topic-title">Bursa / Nilüfer Otomotiv</td>
+                                            <td style="color:#1e8e3e; font-weight:700;">+26.3% ▲</td>
+                                            <td style="text-align:right; font-weight:700; color:#1e293b;">₺146.000</td>
+                                            <td style="text-align:right; color:#1a73e8; font-weight:700;">%88</td>
+                                            <td style="text-align:right;"><span class="badge-success">Öncelikli</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="topic-title">Ankara / OSTİM Savunma</td>
+                                            <td style="color:#1e8e3e; font-weight:700;">+24.3% ▲</td>
+                                            <td style="text-align:right; font-weight:700; color:#1e293b;">₺170.000</td>
+                                            <td style="text-align:right; color:#1a73e8; font-weight:700;">%75</td>
+                                            <td style="text-align:right;"><span class="badge-neutral">Ar-Ge</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="topic-title">İzmir / Kemalpaşa Makine</td>
+                                            <td style="color:#1e8e3e; font-weight:700;">+15.8% ▲</td>
+                                            <td style="text-align:right; font-weight:700; color:#1e293b;">₺117.000</td>
+                                            <td style="text-align:right; color:#1a73e8; font-weight:700;">%68</td>
+                                            <td style="text-align:right;"><span class="badge-neutral">İhracat</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -244,24 +314,26 @@
                         <div class="tri-chart-grid">
                             <!-- 1. Süreç Kırılımı (Bar) -->
                             <div class="mini-chart-box">
-                                <h4>Süreç Kırılımı</h4>
+                                <h4>Süreç Kırılımı & Değer Hacmi</h4>
                                 <div style="flex:1; display:flex; align-items:flex-end; gap:24px; justify-content:center; padding:10px 0;">
                                     <div style="text-align:center;">
-                                        <div style="height:110px; width:34px; background:#d946ef; border-radius:4px 4px 0 0; margin:0 auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700;">1.3K</div>
+                                        <div style="height:110px; width:36px; background:#d946ef; border-radius:4px 4px 0 0; margin:0 auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700;">1.3K</div>
                                         <div style="font-size:11px; color:#64748b; margin-top:6px; font-weight:600;">Aktif</div>
+                                        <div style="font-size:10px; color:#a21caf; font-weight:700;">₺640K</div>
                                     </div>
                                     <div style="text-align:center;">
-                                        <div style="height:36px; width:34px; background:#f97316; border-radius:4px 4px 0 0; margin:0 auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700;">320</div>
+                                        <div style="height:40px; width:36px; background:#f97316; border-radius:4px 4px 0 0; margin:0 auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:700;">320</div>
                                         <div style="font-size:11px; color:#64748b; margin-top:6px; font-weight:600;">Kapanan</div>
+                                        <div style="font-size:10px; color:#c2410c; font-weight:700;">₺1.48M</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 2. Durum Dağılımı Donut Grafiği (Görseldeki Turuncu Halka) -->
+                            <!-- 2. Durum Dağılımı Donut Grafiği -->
                             <div class="mini-chart-box">
-                                <h4>Müşteri Temas Önceliği</h4>
+                                <h4>Müşteri Temas & Öncelik</h4>
                                 <div class="donut-wrapper">
-                                    <svg width="120" height="120" viewBox="0 0 36 36">
+                                    <svg width="110" height="110" viewBox="0 0 36 36">
                                         <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="4.5" />
                                         <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#ea580c" stroke-width="4.5" stroke-dasharray="94.1, 100" />
                                         <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 7 1.6" fill="none" stroke="#38bdf8" stroke-width="4.5" />
@@ -272,30 +344,34 @@
                                     </div>
                                 </div>
                                 <div class="donut-legend">
-                                    <div class="legend-item"><span class="legend-dot" style="background:#ea580c;"></span> Normal %94.1</div>
-                                    <div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span> İlgili %4.7</div>
+                                    <div class="legend-item"><span class="legend-dot" style="background:#ea580c;"></span> Normal 1.534 (%94.1)</div>
+                                    <div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span> İlgili 77 (%4.7)</div>
                                 </div>
                             </div>
 
                             <!-- 3. İletişim Kanalları Dağılımı -->
                             <div class="mini-chart-box">
-                                <h4>Temas Kanalları</h4>
+                                <h4>Temas Kanalları & Dönüşüm</h4>
                                 <div style="flex:1; display:flex; align-items:flex-end; justify-content:space-around; padding:10px 0;">
                                     <div style="text-align:center;">
                                         <div style="height:90px; width:22px; background:#0284c7; border-radius:3px; margin:0 auto;"></div>
-                                        <div style="font-size:10px; color:#64748b; margin-top:4px;">Telefon</div>
+                                        <div style="font-size:10px; color:#64748b; margin-top:4px; font-weight:600;">Telefon</div>
+                                        <div style="font-size:9.5px; color:#0369a1; font-weight:700;">842</div>
                                     </div>
                                     <div style="text-align:center;">
                                         <div style="height:65px; width:22px; background:#0ea5e9; border-radius:3px; margin:0 auto;"></div>
-                                        <div style="font-size:10px; color:#64748b; margin-top:4px;">E-Posta</div>
+                                        <div style="font-size:10px; color:#64748b; margin-top:4px; font-weight:600;">E-Posta</div>
+                                        <div style="font-size:9.5px; color:#0284c7; font-weight:700;">516</div>
                                     </div>
                                     <div style="text-align:center;">
                                         <div style="height:55px; width:22px; background:#38bdf8; border-radius:3px; margin:0 auto;"></div>
-                                        <div style="font-size:10px; color:#64748b; margin-top:4px;">Ziyaret</div>
+                                        <div style="font-size:10px; color:#64748b; margin-top:4px; font-weight:600;">Ziyaret</div>
+                                        <div style="font-size:9.5px; color:#0284c7; font-weight:700;">194</div>
                                     </div>
                                     <div style="text-align:center;">
                                         <div style="height:25px; width:22px; background:#94a3b8; border-radius:3px; margin:0 auto;"></div>
-                                        <div style="font-size:10px; color:#64748b; margin-top:4px;">Web</div>
+                                        <div style="font-size:10px; color:#64748b; margin-top:4px; font-weight:600;">Web</div>
+                                        <div style="font-size:9.5px; color:#64748b; font-weight:700;">77</div>
                                     </div>
                                 </div>
                             </div>
@@ -304,13 +380,15 @@
                         <!-- Alt Alan: Süreç & Gelir Takip Grafiği (Area Chart) -->
                         <div class="chart-card">
                             <div class="chart-card-header">
-                                <h3>Gelir ve Süreç Takip Eğrisi (Case Tracking)</h3>
+                                <div>
+                                    <h3>Gelir ve Süreç Takip Eğrisi (Case Tracking & Revenue Trend)</h3>
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Haftalık yeni teklif oluşturma hacmi vs gerçekleşen ciro kapanışı</div>
+                                </div>
                                 <div style="display:flex; gap:14px; font-size:11.5px;">
-                                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:3px; background:#ea580c; border-radius:2px;"></span> Yeni Teklif</span>
-                                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:3px; background:#0284c7; border-radius:2px;"></span> Kapanan Ciro</span>
+                                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:3px; background:#ea580c; border-radius:2px;"></span> Yeni Teklif (Ort. ₺160K/hf)</span>
+                                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:3px; background:#0284c7; border-radius:2px;"></span> Kapanan Ciro (Ort. ₺370K/hf)</span>
                                 </div>
                             </div>
-                            <!-- Görseldeki Dalgalı SVG Area Chart -->
                             <div style="width:100%; height:160px;">
                                 <svg width="100%" height="100%" viewBox="0 0 500 120" preserveAspectRatio="none">
                                     <defs>
@@ -330,32 +408,38 @@
                                 </svg>
                             </div>
                             <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-top:4px; padding:0 4px;">
-                                <span>Hafta 1</span>
-                                <span>Hafta 2 (07)</span>
-                                <span>Hafta 3 (14)</span>
-                                <span>Hafta 4 (21)</span>
-                                <span>Son Durum (28)</span>
+                                <span>Hafta 1 (01-07) · ₺240K</span>
+                                <span>Hafta 2 (08-14) · ₺310K</span>
+                                <span>Hafta 3 (15-21) · ₺420K</span>
+                                <span>Hafta 4 (22-28) · ₺510K</span>
+                                <span>Son Durum (YTD) · ₺1.48M</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Son Finansal Süreçler & Ciro Özeti (Dashboard İçi Hızlı Takip) -->
+                <!-- Son Finansal Süreçler & Ciro Özeti (P&L Defteri) -->
                 <div class="chart-card" style="margin-top:20px;">
                     <div class="chart-card-header">
-                        <h3>Son Gerçekleşen Sözleşmeler & Ciro Dağılımı</h3>
-                        <span class="badge-info">Kurumsal Finansal Takip</span>
+                        <div>
+                            <h3>Kurumsal Sözleşmeler & P&L (Kar / Zarar) Denetim Takibi</h3>
+                            <div style="font-size:11px; color:#64748b; margin-top:2px;">Sözleşme bazında ciro, üretim maliyeti, tahakkuk eden vergi ve net şirket karı</div>
+                        </div>
+                        <span class="badge-info">Kurumsal Finansal Takip Defteri</span>
                     </div>
                     <div style="overflow-x:auto;">
                         <table class="g-table">
                             <thead>
                                 <tr>
+                                    <th>Ref No</th>
                                     <th>İş / Proje Adı</th>
                                     <th>Müşteri Ünvanı</th>
                                     <th>Sözleşme Tarihi</th>
-                                    <th>Teklif / Ciro (₺)</th>
-                                    <th>Net Kar (₺)</th>
-                                    <th>Aşama Durumu</th>
+                                    <th style="text-align:right;">Ciro Tutarı</th>
+                                    <th style="text-align:right;">Maliyet</th>
+                                    <th style="text-align:right;">Net Şirket Karı</th>
+                                    <th style="text-align:right;">Net Marj</th>
+                                    <th style="text-align:center;">Aşama Durumu</th>
                                 </tr>
                             </thead>
                             <tbody id="kpiRecentDealsTbody">
@@ -365,11 +449,11 @@
                     </div>
                 </div>
 
-                <!-- Freelancer Acil Görevler & Açık Alacak Takip Paneli -->
+                <!-- 3'lü Operasyonel & Nakit Akış Takip Paneli -->
                 <div class="kpi-ops-grid">
                     <div class="chart-card">
                         <div class="chart-card-header">
-                            <h3>🚨 Yaklaşan Teslimatlar & Deadline Takibi</h3>
+                            <h3>🚨 Yaklaşan Teslimatlar & Deadline</h3>
                             <span class="badge-info">Operasyonel Öncelik</span>
                         </div>
                         <div id="kpiDeadlinesContainer" style="font-size:12.5px;">
@@ -379,10 +463,34 @@
                     <div class="chart-card">
                         <div class="chart-card-header">
                             <h3>💰 Bekleyen Alacaklar & Cari Tahsilat</h3>
-                            <span class="badge-info" style="color:#b45309; background:#fef3c7;">Tahsil Edilecek</span>
+                            <span class="badge-info" style="color:#b45309; background:#fef3c7;">4 Vade Yakın</span>
                         </div>
                         <div id="kpiPendingReceivablesContainer" style="font-size:12.5px;">
                             <!-- Dinamik basılacak -->
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>📊 Nakit Akışı & Vade Projeksiyonu</h3>
+                            <span class="badge-info">Likidite Skoru: 9.4/10</span>
+                        </div>
+                        <div class="cash-flow-breakdown">
+                            <div class="cash-flow-item">
+                                <div class="cf-header"><span>0 - 15 Gün Vadesi Gelen:</span> <strong>₺128.000</strong></div>
+                                <div class="cf-progress"><div style="width:58%; background:#0284c7; height:100%; border-radius:3px;"></div></div>
+                            </div>
+                            <div class="cash-flow-item" style="margin-top:10px;">
+                                <div class="cf-header"><span>16 - 30 Gün Yaklaşan:</span> <strong>₺64.000</strong></div>
+                                <div class="cf-progress"><div style="width:29%; background:#38bdf8; height:100%; border-radius:3px;"></div></div>
+                            </div>
+                            <div class="cash-flow-item" style="margin-top:10px;">
+                                <div class="cf-header"><span>30+ Gün Uzun Vade:</span> <strong>₺26.400</strong></div>
+                                <div class="cf-progress"><div style="width:13%; background:#94a3b8; height:100%; border-radius:3px;"></div></div>
+                            </div>
+                            <div style="margin-top:14px; padding-top:10px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                                <span style="color:#64748b; font-weight:600;">Toplam Bekleyen Cari Alacak:</span>
+                                <strong style="color:#1e293b; font-size:14px;">₺218.400</strong>
+                            </div>
                         </div>
                     </div>
                 </div>

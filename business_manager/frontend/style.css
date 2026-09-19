@@ -431,10 +431,106 @@ body {
     padding: 2px 0;
 }
 
-/* 6 KPI KARTLARI (Görseldeki Top Grid) */
+/* YÖNETİCİ HIZLI FİNANS & PERFORMANS ŞERİDİ (EXECUTIVE STAT RIBBON) */
+.executive-stat-ribbon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border: 1px solid var(--g-border-light);
+    border-radius: var(--g-radius);
+    box-shadow: var(--g-shadow-card);
+    overflow-x: auto;
+}
+
+.ribbon-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: fit-content;
+}
+
+.ribbon-icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.ribbon-label {
+    font-size: 11px;
+    color: var(--g-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+}
+
+.ribbon-val {
+    font-size: 13.5px;
+    color: var(--g-text-dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ribbon-val strong {
+    font-weight: 800;
+    font-size: 15px;
+}
+
+.ribbon-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--g-border-light);
+    flex-shrink: 0;
+}
+
+.badge-success {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #15803d;
+    background: #dcfce7;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.badge-neutral {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.badge-up {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0369a1;
+    background: #e0f2fe;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+/* 8'Lİ KURUMSAL KPI KARTLARI (2x4 Grid) */
 .kpi-metrics-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 14px;
     margin-bottom: 20px;
     width: 100%;
@@ -1109,10 +1205,41 @@ body {
 /* Responsive Grid & Breakpoint Control */
 .kpi-ops-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-top: 20px;
     width: 100%;
+}
+
+/* Nakit Akışı & Vade Projeksiyon Kartı */
+.cash-flow-breakdown {
+    padding-top: 4px;
+}
+
+.cash-flow-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.cf-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #475569;
+}
+
+.cf-header strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.cf-progress {
+    width: 100%;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
 }
 
 .two-col-grid {
@@ -1151,12 +1278,15 @@ body {
 
 @media (max-width: 1560px) {
     .kpi-metrics-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (max-width: 1240px) {
     .kpi-charts-layout {
+        grid-template-columns: 1fr;
+    }
+    .kpi-ops-grid {
         grid-template-columns: 1fr;
     }
     .tracking-full-grid {
@@ -1168,6 +1298,13 @@ body {
 }
 
 @media (max-width: 960px) {
+    .executive-stat-ribbon {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .ribbon-divider {
+        display: none;
+    }
     .kpi-metrics-grid {
         grid-template-columns: repeat(2, 1fr);
     }
