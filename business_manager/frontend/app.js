@@ -42,11 +42,6 @@
 
     // 4. Veri Yükleme (JSON + LocalStorage + Supabase Hibrit)
     async function loadData() {
-        const badge = document.getElementById('backendStatusBadge');
-        if (badge) {
-            badge.textContent = 'Veriler Senkronize Ediliyor...';
-        }
-
         let jsonMusteriler = [];
         try {
             const response = await fetch('musteri_listesi.json');
@@ -1741,6 +1736,100 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
             saveAll();
             alert('Finansal tablolar ve KPI özetleri güncellendi.');
         });
+
+        // 6. Yüzen Sanal Asistan (Sekme Geçiş Motoru)
+        function initAIAssistant() {
+            const fab = document.getElementById('aiAssistantFab');
+            const flyout = document.getElementById('aiAssistantFlyout');
+            const closeBtn = document.getElementById('closeAssistantBtn');
+            const searchInput = document.getElementById('assistantSearchInput');
+            const tabsList = document.getElementById('assistantTabsList');
+            const feedback = document.getElementById('assistantFeedback');
+
+            if (!fab || !flyout) return;
+
+            function toggleFlyout(show) {
+                const willShow = (show !== undefined) ? show : !flyout.classList.contains('active');
+                if (willShow) {
+                    flyout.classList.add('active');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        tabsList?.querySelectorAll('.assistant-tab-btn').forEach(b => b.style.display = 'flex');
+                        setTimeout(() => searchInput.focus(), 100);
+                    }
+                } else {
+                    flyout.classList.remove('active');
+                }
+            }
+
+            fab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleFlyout();
+            });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFlyout(false);
+                });
+            }
+
+            // Dışına tıklandığında kapat
+            document.addEventListener('click', (e) => {
+                if (!flyout.contains(e.target) && !fab.contains(e.target)) {
+                    toggleFlyout(false);
+                }
+            });
+
+            // Sekme Butonlarına Tıklama ve Geçiş
+            tabsList?.querySelectorAll('.assistant-tab-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const targetTab = this.dataset.tab;
+                    const tabTitle = this.querySelector('.text')?.textContent || 'Sekme';
+                    
+                    const navBtn = document.querySelector(`.sidebar-rail .nav-item[data-tab="${targetTab}"]`);
+                    if (navBtn) {
+                        navBtn.click();
+                        
+                        if (feedback) {
+                            feedback.textContent = `✓ ${tabTitle} sekmesine geçildi!`;
+                            feedback.style.display = 'block';
+                            setTimeout(() => {
+                                feedback.style.display = 'none';
+                                toggleFlyout(false);
+                            }, 500);
+                        } else {
+                            toggleFlyout(false);
+                        }
+                    }
+                });
+            });
+
+            // Hızlı Arama & Filtreleme
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    const query = this.value.trim().toLowerCase();
+                    const buttons = tabsList?.querySelectorAll('.assistant-tab-btn');
+                    buttons?.forEach(btn => {
+                        const text = btn.textContent.toLowerCase();
+                        btn.style.display = text.includes(query) ? 'flex' : 'none';
+                    });
+                });
+
+                searchInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        const visibleBtns = Array.from(tabsList?.querySelectorAll('.assistant-tab-btn') || [])
+                            .filter(b => b.style.display !== 'none');
+                        if (visibleBtns.length > 0) {
+                            visibleBtns[0].click();
+                        }
+                    } else if (e.key === 'Escape') {
+                        toggleFlyout(false);
+                    }
+                });
+            }
+        }
+        initAIAssistant();
     }
 
     // Başlat

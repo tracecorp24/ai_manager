@@ -1001,6 +1001,84 @@
         </div>
     </div>
 
+    <!-- YÜZEN SANAL ASİSTAN (FLOATING AI ASSISTANT) -->
+    <div class="ai-assistant-wrapper" id="aiAssistantWrapper">
+        <!-- Açılır Asistan Paneli (Flyout) -->
+        <div class="ai-assistant-flyout" id="aiAssistantFlyout">
+            <div class="assistant-header">
+                <div class="assistant-header-left">
+                    <div class="assistant-sparkle-avatar">✨</div>
+                    <div>
+                        <div class="assistant-title">AI Asistan</div>
+                        <div class="assistant-status">Hızlı Modül Yönlendirici</div>
+                    </div>
+                </div>
+                <button class="assistant-close-btn" id="closeAssistantBtn" title="Kapat">✕</button>
+            </div>
+            
+            <div class="assistant-body">
+                <div class="assistant-msg-bubble">
+                    👋 Merhaba! Hangi çalışma modülüne geçiş yapmak istiyorsunuz?
+                </div>
+
+                <div class="assistant-search-box">
+                    <input type="text" id="assistantSearchInput" placeholder="Modül ara (örn: Müşteri, Teklif, Kanban)..." />
+                </div>
+
+                <div class="assistant-tabs-list" id="assistantTabsList">
+                    <button class="assistant-tab-btn" data-tab="tab-kpi">
+                        <span class="icon">📊</span>
+                        <span class="text">KPI & Analitik Özeti</span>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="assistant-tab-btn" data-tab="tab-customers">
+                        <span class="icon">👥</span>
+                        <span class="text">Müşteri Veri Tabanı</span>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="assistant-tab-btn" data-tab="tab-pipeline">
+                        <span class="icon">📋</span>
+                        <span class="text">Süreçler (Kanban)</span>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="assistant-tab-btn" data-tab="tab-mail">
+                        <span class="icon">✉️</span>
+                        <span class="text">AI E-Posta & Teklif</span>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="assistant-tab-btn" data-tab="tab-finance">
+                        <span class="icon">💰</span>
+                        <span class="text">Ciro & Karlılık</span>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="assistant-tab-btn" data-tab="tab-links">
+                        <span class="icon">🔗</span>
+                        <span class="text">Müşteri Linkleri</span>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="assistant-tab-btn" data-tab="tab-marketing">
+                        <span class="icon">🎨</span>
+                        <span class="text">Sunum & Marketing</span>
+                        <span class="arrow">→</span>
+                    </button>
+                </div>
+
+                <div class="assistant-feedback" id="assistantFeedback"></div>
+            </div>
+
+            <div class="assistant-footer">
+                <span>💡 Hızlı geçiş modu aktif</span>
+            </div>
+        </div>
+
+        <!-- Yüzen İkon Butonu (FAB) -->
+        <button class="ai-assistant-fab" id="aiAssistantFab" title="Sanal Asistanı Aç">
+            <span class="fab-icon">✨</span>
+            <span class="fab-label">Asistan</span>
+            <span class="fab-ping"></span>
+        </button>
+    </div>
+
     <!-- UYGULAMA MOTORU -->
     <script src="app.js"></script>
 </body>
