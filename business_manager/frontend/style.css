@@ -953,7 +953,131 @@ body {
     gap: 10px;
 }
 
-/* Responsive */
+/* Responsive & Extra Utilities */
+.g-modal-box.modal-lg {
+    width: 820px;
+    max-width: 95vw;
+}
+
+.cust-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn-whatsapp {
+    background: #25d366;
+    color: #ffffff !important;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-whatsapp:hover {
+    background: #20ba5a;
+    transform: translateY(-1px);
+}
+
+.btn-call {
+    background: #0284c7;
+    color: #ffffff !important;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-call:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+}
+
+.btn-export-csv {
+    background: #ffffff;
+    border: 1px solid var(--g-border-light);
+    color: #475569;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-export-csv:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+
+.deadline-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+.deadline-chip.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+.deadline-chip.warning {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+.deadline-chip.normal {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* Teklif / Proforma A4 Print Styles */
+#printProposalContainer {
+    display: none;
+}
+
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #printProposalContainer, #printProposalContainer * {
+        visibility: visible !important;
+    }
+    #printProposalContainer {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff;
+        color: #000000;
+        padding: 40px;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+
 @media (max-width: 1300px) {
     .kpi-metrics-grid { grid-template-columns: repeat(3, 1fr); }
     .kpi-charts-layout { grid-template-columns: 1fr; }

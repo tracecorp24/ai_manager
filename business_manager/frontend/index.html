@@ -366,6 +366,28 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Freelancer Acil Görevler & Açık Alacak Takip Paneli -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>🚨 Yaklaşan Teslimatlar & Deadline Takibi</h3>
+                            <span class="badge-info">Operasyonel Öncelik</span>
+                        </div>
+                        <div id="kpiDeadlinesContainer" style="font-size:12.5px;">
+                            <!-- Dinamik basılacak -->
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>💰 Bekleyen Alacaklar & Cari Tahsilat</h3>
+                            <span class="badge-info" style="color:#b45309; background:#fef3c7;">Tahsil Edilecek</span>
+                        </div>
+                        <div id="kpiPendingReceivablesContainer" style="font-size:12.5px;">
+                            <!-- Dinamik basılacak -->
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- 2. SEKME : MÜŞTERİ VERİ TABANI (GOOGLE MATERIAL TABLO) -->
@@ -375,7 +397,10 @@
                         <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Kurumsal Müşteri Portföyü</h2>
                         <p style="font-size:12.5px; color:#64748b;">1.629 kayıtlı şirket ve aktif müşteri temas geçmişi</p>
                     </div>
-                    <button class="btn-g-primary" id="yeniMusteriBtn">➕ Yeni Şirket / Müşteri Ekle</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-export-csv" id="exportCustomersCsvBtn">📊 Excel (CSV) İndir</button>
+                        <button class="btn-g-primary" id="yeniMusteriBtn">➕ Yeni Şirket / Müşteri Ekle</button>
+                    </div>
                 </div>
 
                 <div class="table-layout-card">
@@ -504,7 +529,10 @@
                         <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Finans & Karlılık Raporları</h2>
                         <p style="font-size:12.5px; color:#64748b;">Haftalık, aylık ve yıllık ciro gerçekleşmeleri ve kar/zarar hesabı</p>
                     </div>
-                    <button class="btn-g-primary" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-export-csv" id="exportFinanceCsvBtn">📊 Gelir-Gider Excel (CSV)</button>
+                        <button class="btn-g-primary" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
+                    </div>
                 </div>
 
                 <div class="kpi-metrics-grid" style="grid-template-columns:repeat(5, 1fr); margin-bottom:24px;">
@@ -698,6 +726,281 @@
             <div class="g-modal-footer">
                 <button class="g-page-btn" id="aiModalIptal">İptal</button>
                 <button class="btn-ai-sparkle" id="aiModalUret">✨ Özel Metni Üret</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MÜŞTERİ 360° DETAY & DÜZENLEME MODALI -->
+    <div id="musteriDetayModal" class="g-modal-overlay">
+        <div class="g-modal-box modal-lg">
+            <div class="g-modal-header">
+                <div>
+                    <h3 id="md_baslik">Şirket Profili & Müşteri 360°</h3>
+                    <div id="md_altbilgi" style="font-size:12px; color:#64748b; margin-top:2px;">Kayıt No: #101</div>
+                </div>
+                <button class="topbar-icon-btn" id="musteriDetayClose" style="color:#64748b;">&times;</button>
+            </div>
+            <div class="g-modal-body">
+                <!-- Hızlı Aksiyon Barı (Ara, WhatsApp, Teklif, Yeni İş) -->
+                <div style="background:#f1f5f9; padding:12px 16px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div class="cust-action-buttons">
+                        <a id="md_btn_call" href="#" class="btn-call" target="_blank">📞 Telefonla Ara</a>
+                        <a id="md_btn_whatsapp" href="#" class="btn-whatsapp" target="_blank">💬 WhatsApp Görüşmesi</a>
+                        <button id="md_btn_mail" class="g-page-btn" style="padding:7px 13px; font-weight:600;">✉️ Teklif Gönder</button>
+                        <button id="md_btn_yeni_is" class="btn-g-primary" style="padding:7px 13px; font-size:12.5px;">➕ Yeni Proje Başlat</button>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <span id="md_durum_chip" class="status-chip notr">İşlem Yok</span>
+                    </div>
+                </div>
+
+                <!-- Cari Özet Kartları -->
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
+                        <div style="font-size:11px; color:#64748b; font-weight:600;">Toplam Proje Tutarı</div>
+                        <div id="md_toplam_ciro" style="font-size:16px; font-weight:800; color:#1a73e8; margin-top:3px;">₺0</div>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
+                        <div style="font-size:11px; color:#64748b; font-weight:600;">Tahsil Edilen Tutar</div>
+                        <div id="md_tahsil_edilen" style="font-size:16px; font-weight:800; color:#16a34a; margin-top:3px;">₺0</div>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
+                        <div style="font-size:11px; color:#64748b; font-weight:600;">Bekleyen Açık Alacak</div>
+                        <div id="md_kalan_alacak" style="font-size:16px; font-weight:800; color:#d93025; margin-top:3px;">₺0</div>
+                    </div>
+                </div>
+
+                <!-- Bilgi Düzenleme Alanı -->
+                <div style="border-top:1px solid #e2e8f0; padding-top:14px;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:10px; color:#1e293b;">🏢 Kurumsal İletişim & Profil Bilgileri</h4>
+                    <input type="hidden" id="md_cust_id">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">Şirket / Firma Ünvanı *</label>
+                            <input type="text" id="md_ad" class="g-input" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">Yetkili Kişi / İletişim</label>
+                            <input type="text" id="md_yetkili" class="g-input" style="width:100%;" placeholder="Ad Soyad / Unvan">
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:10px;">
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">Telefon</label>
+                            <input type="text" id="md_telefon" class="g-input" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">E-Posta</label>
+                            <input type="email" id="md_email" class="g-input" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">İlçe / Bölge</label>
+                            <input type="text" id="md_ilce" class="g-input" style="width:100%;">
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">Faaliyet / Uzmanlık Alanı</label>
+                            <input type="text" id="md_faaliyet" class="g-input" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px; font-weight:600; display:block; margin-bottom:4px;">Sicil / Vergi No</label>
+                            <input type="text" id="md_sicil" class="g-input" style="width:100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Müşteriye Ait Projeler Tablosu -->
+                <div style="border-top:1px solid #e2e8f0; padding-top:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h4 style="font-size:14px; font-weight:700; color:#1e293b;">📋 Bu Müşteriye Ait Projeler & Fırsatlar</h4>
+                    </div>
+                    <div style="max-height:180px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                        <table class="g-table" style="margin:0;">
+                            <thead>
+                                <tr>
+                                    <th>İş / Proje Adı</th>
+                                    <th>Tutar (₺)</th>
+                                    <th>Durum</th>
+                                    <th>Teslim Tarihi</th>
+                                    <th style="text-align:right;">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="md_projeler_tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Müşteri Görüşme Notları & Geçmiş -->
+                <div style="border-top:1px solid #e2e8f0; padding-top:14px;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">📝 Görüşme Notu / Aktivite Geçmişi</h4>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="md_yeni_not" class="g-input" style="flex:1;" placeholder="Bugünkü telefon veya toplantı notunu yazın...">
+                        <button id="md_not_ekle_btn" class="g-page-btn" style="padding:8px 14px; font-weight:600;">Not Ekle</button>
+                    </div>
+                    <div id="md_not_gecmisi" style="margin-top:10px; max-height:110px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+                </div>
+            </div>
+            <div class="g-modal-footer">
+                <button class="g-page-btn" id="musteriDetayIptal">Kapat</button>
+                <button class="btn-g-primary" id="musteriDetayKaydet">Profil Değişikliklerini Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. İŞ / PROJE DETAY & DÜZENLEME MODALI (KANBAN) -->
+    <div id="isDetayModal" class="g-modal-overlay">
+        <div class="g-modal-box">
+            <div class="g-modal-header">
+                <div>
+                    <h3>📌 Proje Detayı & Yönetimi</h3>
+                    <div id="idm_musteri_adi" style="font-size:12px; color:#0284c7; font-weight:600; margin-top:2px;">Atlas Makine</div>
+                </div>
+                <button class="topbar-icon-btn" id="isDetayClose" style="color:#64748b;">&times;</button>
+            </div>
+            <div class="g-modal-body">
+                <input type="hidden" id="idm_is_id">
+                <input type="hidden" id="idm_musteri_id">
+
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">İş / Proje Başlığı *</label>
+                    <input type="text" id="idm_is_adi" class="g-input" style="width:100%;">
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Teklif / Anlaşma Tutarı (₺)</label>
+                        <input type="number" id="idm_tutar" class="g-input" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Maliyet / Masraf (₺)</label>
+                        <input type="number" id="idm_masraf" class="g-input" style="width:100%;">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">İş Aşaması</label>
+                        <select id="idm_durum" class="g-select" style="width:100%;">
+                            <option value="0">1. Yeni Teklif Talebi</option>
+                            <option value="1">2. Ön Görüşme / İletişimde</option>
+                            <option value="2">3. Onaylandı & Alınan İş</option>
+                            <option value="3">4. Tamamlandı & Teslim Edildi</option>
+                            <option value="4">5. Tahsilat Tamamlandı</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">🚨 Teslim Tarihi (Deadline)</label>
+                        <input type="date" id="idm_deadline" class="g-input" style="width:100%;">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">İşe Başlama Tarihi</label>
+                        <input type="date" id="idm_alinma_tarihi" class="g-input" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Tahsilat Tarihi</label>
+                        <input type="date" id="idm_odeme_tarihi" class="g-input" style="width:100%;">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Kapsam & Yapılacaklar Notu</label>
+                    <textarea id="idm_aciklama" class="g-input" style="width:100%; height:75px;" placeholder="Tasarım revizyonları, imalat şartları vb."></textarea>
+                </div>
+
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">🔗 Teslimat / Bulut Dosya Linki (Drive, Figma vb.)</label>
+                    <input type="url" id="idm_dosya_link" class="g-input" style="width:100%;" placeholder="https://drive.google.com/...">
+                </div>
+            </div>
+            <div class="g-modal-footer" style="justify-content:space-between;">
+                <div>
+                    <button class="g-page-btn" id="idm_yazdir_btn" style="color:#1a73e8; font-weight:600;">📄 Teklif Yazdır</button>
+                    <button class="g-page-btn" id="idm_sil_btn" style="color:#ef4444;">🗑️ Sil</button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="g-page-btn" id="isDetayIptal">İptal</button>
+                    <button class="btn-g-primary" id="isDetayKaydet">Değişiklikleri Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. YAZDIRILABİLİR PROFESYONEL TEKLİF & PROFORMA A4 ŞABLONU -->
+    <div id="printProposalContainer">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #1a73e8; padding-bottom:20px; margin-bottom:24px;">
+            <div>
+                <h1 style="font-size:24px; font-weight:800; color:#1a73e8; margin:0;">MÜHENDİSLİK & TASARIM ÇÖZÜMLERİ</h1>
+                <p style="font-size:13px; color:#64748b; margin:4px 0 0 0;">Serbest Mühendislik, CAD/CAM Tasarım ve Danışmanlık Hizmetleri</p>
+                <div style="font-size:12px; color:#475569; margin-top:8px;">Tel: +90 532 000 00 00 · E-Posta: iletisim@muhendislik.com</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:20px; font-weight:800; color:#1e293b;">FİYAT TEKLİFİ / PROFORMA</div>
+                <div style="font-size:12px; color:#64748b; margin-top:4px;">Tarih: <span id="pr_tarih"></span></div>
+                <div style="font-size:12px; color:#64748b;">Teklif No: <span id="pr_teklif_no"></span></div>
+            </div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:24px;">
+            <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;">SAYIN MÜŞTERİ / FİRMA BİLGİLERİ</div>
+            <div style="font-size:16px; font-weight:700; color:#1e293b;" id="pr_musteri_ad"></div>
+            <div style="font-size:13px; color:#475569; margin-top:4px;" id="pr_musteri_detay"></div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+            <thead>
+                <tr style="background:#1a73e8; color:#ffffff; font-size:12px; text-align:left;">
+                    <th style="padding:10px 12px; border-radius:4px 0 0 0;">Sıra</th>
+                    <th style="padding:10px 12px;">Hizmet / Proje Açıklaması</th>
+                    <th style="padding:10px 12px; text-align:center;">Miktar</th>
+                    <th style="padding:10px 12px; text-align:right;">Birim Fiyat</th>
+                    <th style="padding:10px 12px; text-align:right; border-radius:0 4px 0 0;">Toplam (₺)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid #e2e8f0; font-size:13px;">
+                    <td style="padding:12px;">1</td>
+                    <td style="padding:12px;">
+                        <b id="pr_is_adi"></b>
+                        <div id="pr_is_aciklama" style="font-size:12px; color:#64748b; margin-top:4px;"></div>
+                    </td>
+                    <td style="padding:12px; text-align:center;">1 Adet</td>
+                    <td style="padding:12px; text-align:right;" id="pr_birim_fiyat"></td>
+                    <td style="padding:12px; text-align:right; font-weight:700;" id="pr_toplam_fiyat"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="display:flex; justify-content:flex-end; margin-bottom:30px;">
+            <div style="width:260px; font-size:13px;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e2e8f0;">
+                    <span>Ara Toplam:</span>
+                    <b id="pr_ara_toplam"></b>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e2e8f0;">
+                    <span>KDV (%20):</span>
+                    <b id="pr_kdv"></b>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:10px 0; font-size:16px; color:#1a73e8; font-weight:800;">
+                    <span>Genel Toplam:</span>
+                    <span id="pr_genel_toplam"></span>
+                </div>
+            </div>
+        </div>
+
+        <div style="border-top:1px solid #e2e8f0; padding-top:16px; font-size:12px; color:#64748b; line-height:1.6;">
+            <b>Şartlar ve Koşullar:</b>
+            <ol style="padding-left:20px; margin-top:6px;">
+                <li>Bu teklif oluşturulduğu tarihten itibaren 15 gün süreyle geçerlidir.</li>
+                <li>İşe başlama onayının ardından %40 ön avans, iş tesliminde kalan bakiye tahsil edilecektir.</li>
+                <li>Tüm fikri haklar ve imalat verileri bakiye ödemesi sonrasında eksiksiz devredilir.</li>
+            </ol>
+            <div style="margin-top:20px; display:flex; justify-content:space-between;">
+                <div>Teklifi Hazırlayan: <b>Emin A. (Kurumsal Yönetici)</b></div>
+                <div>Kaşe / İmza: ____________________</div>
             </div>
         </div>
     </div>
