@@ -140,37 +140,37 @@
                     </div>
                 </div>
 
-                <!-- 6'LI KPI KART GRİDİ (Görseldeki Üst Kartlar) -->
+                <!-- 6'LI KPI KART GRİDİ (CİRO, KAR VE MÜŞTERİ METRİKLERİ) -->
                 <div class="kpi-metrics-grid">
                     <div class="kpi-card">
                         <div class="kpi-card-label">Toplam Müşteri Portföyü</div>
                         <div class="kpi-card-value" id="kpiTotalCases">1.629</div>
                         <div class="kpi-trend up">17.7% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">geçen aya göre</span></div>
                     </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Aktif Süreç & Görüşme</div>
-                        <div class="kpi-card-value" id="kpiResolutions">1.1K</div>
-                        <div class="kpi-trend up">5.5% ▲</div>
+                    <div class="kpi-card" style="border-top: 3px solid #1a73e8;">
+                        <div class="kpi-card-label">Toplam Ciro (Hacim)</div>
+                        <div class="kpi-card-value" id="kpiTotalRevenue" style="color:#1a73e8;">₺1.48M</div>
+                        <div class="kpi-trend up">18.4% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">hedefin üzerinde</span></div>
+                    </div>
+                    <div class="kpi-card" style="border-top: 3px solid #1e8e3e;">
+                        <div class="kpi-card-label">Net Şirket Karı</div>
+                        <div class="kpi-card-value" id="kpiNetProfit" style="color:#1e8e3e;">₺624K</div>
+                        <div class="kpi-trend up">24.1% ▲ <span style="color:#64748b; font-weight:400; font-size:10px;">%42.0 net marj</span></div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-card-label">Öncelikli Takip / Sıcak</div>
-                        <div class="kpi-card-value" id="kpiEscalations">726</div>
-                        <div class="kpi-trend down">-4.6% ▼</div>
+                        <div class="kpi-card-label">Bu Ayki Ciro</div>
+                        <div class="kpi-card-value" id="kpiMonthlyRevenue">₺385K</div>
+                        <div class="kpi-trend up">12.5% ▲</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-card-label">Sözleşme & Kapanış</div>
-                        <div class="kpi-card-value" id="kpiSlaCompliant">10K</div>
-                        <div class="kpi-trend up">2.5% ▲</div>
+                        <div class="kpi-card-label">Aktif Fırsat & Süreçler</div>
+                        <div class="kpi-card-value" id="kpiResolutions">48 Süreç</div>
+                        <div class="kpi-trend up">7.8% ▲</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-card-label">Ortalama Süreç Değeri</div>
-                        <div class="kpi-card-value" id="kpiAvgResolveTime">₺29.8K</div>
-                        <div class="kpi-trend up">9.4% ▲</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Müşteri Memnuniyeti / CSAT</div>
-                        <div class="kpi-card-value" id="kpiAvgCsat">4.14</div>
-                        <div class="kpi-trend down">-0.4% ▼</div>
+                        <div class="kpi-card-label">Müşteri Dönüşüm / Başarı</div>
+                        <div class="kpi-card-value" id="kpiAvgCsat">%74.2</div>
+                        <div class="kpi-trend up">3.5% ▲</div>
                     </div>
                 </div>
 
@@ -339,6 +339,31 @@
                                 <span>Son Durum (28)</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Son Finansal Süreçler & Ciro Özeti (Dashboard İçi Hızlı Takip) -->
+                <div class="chart-card" style="margin-top:20px;">
+                    <div class="chart-card-header">
+                        <h3>Son Gerçekleşen Sözleşmeler & Ciro Dağılımı</h3>
+                        <span class="badge-info">Kurumsal Finansal Takip</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="g-table">
+                            <thead>
+                                <tr>
+                                    <th>İş / Proje Adı</th>
+                                    <th>Müşteri Ünvanı</th>
+                                    <th>Sözleşme Tarihi</th>
+                                    <th>Teklif / Ciro (₺)</th>
+                                    <th>Net Kar (₺)</th>
+                                    <th>Aşama Durumu</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpiRecentDealsTbody">
+                                <!-- Dinamik basılacak -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
