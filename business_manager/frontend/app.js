@@ -134,14 +134,9 @@
 
         // Supabase durum kontrolü
         try {
-            const health = await checkSupabaseHealth();
-            if (health.online && badge) {
-                badge.textContent = 'Canlı Sistem (Kurumsal Bulut)';
-            } else if (badge) {
-                badge.textContent = 'Canlı Sistem (v2.4 Enterprise)';
-            }
-        } catch {
-            if (badge) badge.textContent = 'Canlı Sistem (v2.4 Enterprise)';
+            await checkSupabaseHealth();
+        } catch (e) {
+            console.warn('[AI Manager] Sağlık kontrolü:', e);
         }
 
         populateFilterDropdowns();
