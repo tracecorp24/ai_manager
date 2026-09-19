@@ -1321,7 +1321,7 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
     // 8. EVENT DİNLEYİCİLERİ
     // ==========================================================================
     function initEventHandlers() {
-        // Mobil Çekmece Menü Kontrolü (Hamburger & Backdrop)
+        // Sol Menü / Mobil Çekmece Kontrolü
         const toggleBtn = document.getElementById('toggleSidebarBtn');
         const sidebar = document.getElementById('sidebarRail');
         const backdrop = document.getElementById('sidebarBackdrop');
@@ -1339,7 +1339,11 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
 
         toggleBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleMobileSidebar();
+            if (window.innerWidth <= 900) {
+                toggleMobileSidebar();
+            } else {
+                sidebar?.classList.toggle('collapsed');
+            }
         });
 
         backdrop?.addEventListener('click', () => {
@@ -1358,7 +1362,7 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
                 if (pane) pane.classList.add('active');
 
                 // Mobilde sekmeye geçince çekmeceyi otomatik kapat
-                if (window.innerWidth <= 800) {
+                if (window.innerWidth <= 900) {
                     toggleMobileSidebar(false);
                 }
 
@@ -1387,23 +1391,6 @@ Kusursuz, profesyonel, gereksiz laf kalabalığından uzak, ikna edici bir kurum
                 globalSearch?.focus();
             }
         });
-
-        // Kenar Çubuğu Daraltma
-        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-        if (toggleSidebarBtn) {
-            toggleSidebarBtn.addEventListener('click', () => {
-                const rail = document.getElementById('sidebarRail');
-                if (rail) {
-                    if (rail.style.width === '68px') {
-                        rail.style.width = '240px';
-                        rail.querySelectorAll('.nav-label, .nav-section-title, .sidebar-footer').forEach(el => el.style.display = '');
-                    } else {
-                        rail.style.width = '68px';
-                        rail.querySelectorAll('.nav-label, .nav-section-title, .sidebar-footer').forEach(el => el.style.display = 'none');
-                    }
-                }
-            });
-        }
 
         // Müşteri Arama (Debounced)
         let searchTimer = null;
