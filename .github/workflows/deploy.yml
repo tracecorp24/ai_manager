@@ -20,5 +20,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          preCommands: >-
+            if ! wrangler pages project list --json | jq -e '.[] | select(.name == "ai-manager")' >/dev/null; then wrangler pages project create ai-manager --production-branch=main; fi
           command: pages deploy business_manager/frontend --project-name=ai-manager --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
