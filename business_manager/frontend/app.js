@@ -3192,6 +3192,37 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 if (scratchModal) scratchModal.style.display = 'none';
             });
 
+            // 3.1 Müşteri Portalı (sayfa içinde iframe penceresi olarak açılır)
+            const portalModal = document.getElementById('portalModal');
+            const portalIframe = document.getElementById('portalModalIframe');
+            const closePortalBtn = document.getElementById('closePortalModalBtn');
+            const portalNewTabBtn = document.getElementById('portalOpenNewTabBtn');
+            const portalTriggers = [
+                document.getElementById('topbarPortalBtn'),
+                document.getElementById('navItemPortal'),
+                document.getElementById('quickBtnPortal')
+            ];
+
+            function openPortalModal() {
+                if (!portalModal) return;
+                if (portalIframe && !portalIframe.src) portalIframe.src = 'portal.html';
+                portalModal.style.display = 'flex';
+            }
+
+            portalTriggers.forEach(btn => btn?.addEventListener('click', openPortalModal));
+
+            closePortalBtn?.addEventListener('click', () => {
+                if (portalModal) portalModal.style.display = 'none';
+            });
+
+            portalModal?.addEventListener('click', (e) => {
+                if (e.target === portalModal) portalModal.style.display = 'none';
+            });
+
+            portalNewTabBtn?.addEventListener('click', () => {
+                window.open('portal.html', '_blank');
+            });
+
             scratchCopyBtn?.addEventListener('click', () => {
                 if (scratchTextarea && scratchTextarea.value) {
                     navigator.clipboard.writeText(scratchTextarea.value).then(() => {

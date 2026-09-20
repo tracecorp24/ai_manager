@@ -48,9 +48,9 @@
             </button>
 
             <!-- Müşteri Portalı Hızlı Erişim -->
-            <a href="portal.html" target="_blank" class="topbar-portal-btn" id="topbarPortalBtn" title="Canlı Müşteri Portalı & İş Takibi">
+            <button type="button" class="topbar-portal-btn" id="topbarPortalBtn" title="Canlı Müşteri Portalı & İş Takibi">
                 🔍 Müşteri Portalı
-            </a>
+            </button>
 
             <!-- Koyu Tema (Dark Mode) Toggle -->
             <button class="theme-toggle-btn" id="themeToggleBtn" title="Koyu / Açık Tema Değiştir">
@@ -98,12 +98,11 @@
                 <span class="nav-label">Sunum Stüdyosu</span>
             </button>
 
-            <div class="nav-section-title">Dış Paylaşım</div>
-            <a href="portal.html" target="_blank" class="nav-item" style="text-decoration:none; color:inherit;" title="Müşterinin kendi işini takip edebildiği canlı portal">
+            <button class="nav-item" id="navItemPortal" title="Müşterinin kendi işini takip edebildiği canlı portal">
                 <span class="nav-icon">🌐</span>
                 <span class="nav-label">Müşteri Portalı</span>
                 <span class="nav-badge" style="background:rgba(2,132,199,0.2); color:#38bdf8;">Canlı</span>
-            </a>
+            </button>
 
             <div class="sidebar-footer">
                 <div style="padding:10px 14px; font-size:11px; color:#94a3b8; line-height:1.4;">
@@ -128,9 +127,9 @@
                     <button type="button" class="quick-btn btn-action-quote" id="quickBtnCreateQuote" title="Müşteriye hızlı proforma teklif hazırla">
                         <span class="btn-icon">📄</span> Teklif Hazırla
                     </button>
-                    <a href="portal.html" target="_blank" class="quick-btn btn-action-portal" title="Müşteri takip portalını aç">
+                    <button type="button" class="quick-btn btn-action-portal" id="quickBtnPortal" title="Müşteri takip portalını aç">
                         <span class="btn-icon">🌐</span> Müşteri Portalı
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -1576,6 +1575,25 @@
                         <button class="g-page-btn" id="scratchpadClearBtn" style="padding:4px 10px; font-size:11.5px; color:#ef4444;">🗑️ Temizle</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÜŞTERİ PORTALI (SAYFA İÇİNDE AÇILAN PENCERE) -->
+    <div id="portalModal" class="g-modal-overlay">
+        <div class="g-modal-box portal-modal-box">
+            <div class="g-modal-header">
+                <div>
+                    <h3>🌐 Müşteri Portalı</h3>
+                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Müşterinin kendi işini takip edebildiği canlı görünüm</div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button class="topbar-icon-btn" id="portalOpenNewTabBtn" style="color:#64748b;" title="Yeni sekmede aç">↗</button>
+                    <button class="topbar-icon-btn" id="closePortalModalBtn" style="color:#64748b;" title="Kapat">✕</button>
+                </div>
+            </div>
+            <div class="g-modal-body portal-modal-body">
+                <iframe id="portalModalIframe" class="portal-modal-iframe" title="Müşteri Portalı"></iframe>
             </div>
         </div>
     </div>
