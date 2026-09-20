@@ -3,66 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Manager — Kurumsal Giriş Portalı</title>
+    <title>Business Manager — Kurumsal Giriş & Müşteri Portalı</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="supabase.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif; }
         body {
-            background: linear-gradient(135deg, #0b1a30 0%, #172a46 50%, #081528 100%);
+            background: radial-gradient(circle at 20% 20%, #1e293b 0%, #0b1329 50%, #030712 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            padding: 16px;
+            color: #f8fafc;
+            padding: 20px;
         }
         .card {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 20px;
-            padding: 44px 36px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 38px 34px;
             width: 100%;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 460px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(2, 132, 199, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
         }
         .brand-badge {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 18px;
         }
         .brand-icon {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #1a73e8 0%, #00b8a9 100%);
-            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
-            font-size: 18px;
+            font-weight: 800;
+            font-size: 19px;
             color: #fff;
-            box-shadow: 0 4px 12px rgba(0, 184, 169, 0.35);
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
         }
         h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.6rem;
+            font-weight: 800;
             margin-bottom: 6px;
-            letter-spacing: -0.4px;
+            letter-spacing: -0.5px;
+            color: #f1f5f9;
         }
         p.sub {
             color: #94a3b8;
-            margin-bottom: 28px;
-            font-size: 0.9rem;
+            margin-bottom: 24px;
+            font-size: 0.88rem;
+            line-height: 1.4;
         }
+
+        /* Sekmeler */
+        .auth-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 22px;
+        }
+        .auth-tab-btn {
+            flex: 1;
+            padding: 9px 10px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.82rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .auth-tab-btn.active {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .auth-pane { display: none; }
+        .auth-pane.active { display: block; }
+
         .input-group {
             text-align: left;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
         .input-group label {
             display: block;
@@ -71,19 +115,23 @@
             margin-bottom: 6px;
             font-weight: 600;
         }
-        input {
+        input, select {
             width: 100%;
-            padding: 13px 16px;
+            padding: 12px 15px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.07);
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             outline: none;
             transition: all 0.2s;
         }
+        select option {
+            background: #0f172a;
+            color: #fff;
+        }
         input::placeholder { color: #64748b; }
-        input:focus {
+        input:focus, select:focus {
             border-color: #38bdf8;
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
             background: rgba(255, 255, 255, 0.12);
@@ -93,48 +141,71 @@
             padding: 13px;
             border-radius: 10px;
             border: none;
-            background: #1a73e8;
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
             color: #fff;
             font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+        }
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(26, 115, 232, 0.35);
+            margin-top: 10px;
         }
-        .btn-primary:hover {
-            background: #1557b0;
-            transform: translateY(-1px);
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .btn-quick-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
         }
         .btn-quick {
-            width: 100%;
-            margin-top: 12px;
-            padding: 11px;
-            border-radius: 10px;
-            border: 1px solid rgba(74, 222, 128, 0.4);
-            background: rgba(74, 222, 128, 0.08);
-            color: #4ade80;
-            font-size: 0.88rem;
+            flex: 1;
+            padding: 9px 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
         .btn-quick:hover {
-            background: rgba(74, 222, 128, 0.18);
-            border-color: #4ade80;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-color: #38bdf8;
         }
         .msg {
             margin-top: 14px;
             font-size: 0.85rem;
             min-height: 18px;
+            font-weight: 600;
         }
         .error { color: #f87171; }
+        .success { color: #4ade80; }
         .hint {
-            margin-top: 24px;
+            margin-top: 20px;
             font-size: 0.78rem;
             color: #64748b;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 16px;
-            line-height: 1.4;
+            padding-top: 14px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -142,62 +213,206 @@
 <div class="card">
     <div class="brand-badge">
         <span class="brand-icon">BM</span>
-        <span style="font-weight:700; font-size:18px; letter-spacing:-0.4px;">Business Manager</span>
-    </div>
-    <h1>Kurumsal Giriş Portalı</h1>
-    <p class="sub">Müşteri İlişkileri & İşletme Zekası Platformu</p>
-
-    <form id="loginForm">
-        <div class="input-group">
-            <label for="identifier">Kullanıcı Adı veya E-Posta</label>
-            <input type="text" id="identifier" placeholder="admin veya kurumsal kullanıcı adı" autocomplete="username" autofocus required />
+        <div style="text-align:left;">
+            <div style="font-weight:800; font-size:18px; letter-spacing:-0.4px;">Business Manager</div>
+            <div style="font-size:11px; color:#38bdf8; font-weight:600;">Enterprise Suite & Customer Intelligence</div>
         </div>
-        <button id="loginBtn" class="btn-primary" type="submit">Giriş Yap</button>
-    </form>
+    </div>
 
-    <button type="button" id="quickAdminBtn" class="btn-quick">⚡ Kurumsal Yönetici Hızlı Girişi</button>
+    <!-- Sekmeler -->
+    <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" data-tab="pane-login">🔐 Giriş Yap</button>
+        <button type="button" class="auth-tab-btn" data-tab="pane-register">✨ Kayıt Ol</button>
+        <button type="button" class="auth-tab-btn" data-tab="pane-portal">🔍 Müşteri Portalı</button>
+    </div>
+
+    <!-- 1. GİRİŞ YAP SEKME -->
+    <div id="pane-login" class="auth-pane active">
+        <h1 style="font-size:1.3rem;">Hoş Geldiniz</h1>
+        <p class="sub">Yönetici veya ekip hesabı bilgilerinizle oturum açın</p>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="loginIdentifier">E-Posta veya Kullanıcı Adı</label>
+                <input type="text" id="loginIdentifier" placeholder="admin@businessmanager.com veya admin" autocomplete="username" required autofocus />
+            </div>
+            <div class="input-group">
+                <label for="loginPassword">Şifre</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required />
+            </div>
+            <button id="loginBtn" class="btn-primary" type="submit">Giriş Yap</button>
+        </form>
+
+        <div class="btn-quick-row">
+            <button type="button" id="quickAdminBtn" class="btn-quick" title="Yönetici Direktör">👑 Hızlı Admin</button>
+            <button type="button" id="quickUserBtn" class="btn-quick" title="Ekip Üyesi">👤 Hızlı Ekip</button>
+            <button type="button" id="quickClientBtn" class="btn-quick" title="Müşteri Portalı">🏢 Müşteri</button>
+        </div>
+    </div>
+
+    <!-- 2. KAYIT OL SEKME -->
+    <div id="pane-register" class="auth-pane">
+        <h1 style="font-size:1.3rem;">Yeni Hesap Oluştur</h1>
+        <p class="sub">Herhangi bir e-posta adresi ile sisteme kaydolun</p>
+
+        <form id="registerForm">
+            <div class="input-group">
+                <label for="regName">Ad Soyad</label>
+                <input type="text" id="regName" placeholder="Örn: Caner Korkmaz" required />
+            </div>
+            <div class="input-group">
+                <label for="regEmail">E-Posta Adresi</label>
+                <input type="email" id="regEmail" placeholder="caner@sirketiniz.com" required />
+            </div>
+            <div class="input-group">
+                <label for="regPassword">Şifre (Min. 4 Karakter)</label>
+                <input type="password" id="regPassword" placeholder="••••••••" required />
+            </div>
+            <div class="input-group">
+                <label for="regRole">Hesap Yetki Düzeyi</label>
+                <select id="regRole">
+                    <option value="user">👤 Kullanıcı / Ekip Üyesi (Proje, Teklif & Sunum Yetkisi)</option>
+                    <option value="admin">👑 Kurumsal Yönetici / Admin (Tam Finansal & CRM Yetkisi)</option>
+                    <option value="client">🏢 Kurumsal Müşteri (Sadece Kendi Projelerini Takip Eder)</option>
+                </select>
+            </div>
+            <button id="registerBtn" class="btn-primary" type="submit" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);">Hesabı Kaydet & Giriş Yap</button>
+        </form>
+    </div>
+
+    <!-- 3. MÜŞTERİ PORTAL SORGULAMA SEKME -->
+    <div id="pane-portal" class="auth-pane">
+        <h1 style="font-size:1.3rem;">Müşteri Proje Takip Portalı</h1>
+        <p class="sub">Şifresiz doğrudan iş teslimat durumunuzu ve aşamaları sorgulayın</p>
+
+        <form id="portalQueryForm">
+            <div class="input-group">
+                <label for="portalTrackingCode">Müşteri Kodu veya Takip No</label>
+                <input type="text" id="portalTrackingCode" placeholder="Örn: CUST-8 veya TKF-108" required />
+            </div>
+            <button class="btn-primary" type="submit" style="background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">🚀 Projeyi Sorgula & Görüntüle</button>
+        </form>
+
+        <div style="margin-top:14px; text-align:left; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px; font-size:12px; color:#cbd5e1;">
+            <b>Örnek Aktif Projeler:</b>
+            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <span class="portal-sample-chip" data-code="CUST-8" style="background:rgba(2,132,199,0.25); border:1px solid #0284c7; padding:4px 10px; border-radius:6px; cursor:pointer;">CUST-8 (Fintech Cüzdan)</span>
+                <span class="portal-sample-chip" data-code="CUST-1" style="background:rgba(16,185,129,0.25); border:1px solid #10b981; padding:4px 10px; border-radius:6px; cursor:pointer;">CUST-1 (SaaS Dashboard)</span>
+            </div>
+        </div>
+    </div>
 
     <div id="msg" class="msg"></div>
 
     <div class="hint">
-        Güvenli SSL/TLS ve Kurumsal Kimlik Doğrulama ile korunmaktadır.<br>
-        Yetkili yönetici erişimi için <b>admin</b> hesabını kullanabilirsiniz.
+        🛡️ Supabase Hibrit Güvenlik & Rol Tabanlı Erişim Denetimi (RBAC).<br>
+        Varsayılan hesaplar: <b>admin@businessmanager.com</b> / <b>admin123</b>
     </div>
 </div>
 
 <script>
-function doAdminLogin() {
-    sessionStorage.setItem('ai_manager_demo_admin', '1');
-    window.location.href = 'index.html';
+// Sekme Değişimi
+document.querySelectorAll('.auth-tab-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.auth-pane').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        const target = document.getElementById(this.dataset.tab);
+        if (target) target.classList.add('active');
+        clearMsg();
+    });
+});
+
+const msgEl = document.getElementById('msg');
+function showMsg(text, isError = true) {
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.className = 'msg ' + (isError ? 'error' : 'success');
+}
+function clearMsg() {
+    if (msgEl) { msgEl.textContent = ''; msgEl.className = 'msg'; }
 }
 
-function login(event) {
-    event.preventDefault();
-    const identifier = document.getElementById('identifier').value.trim();
-    const msg = document.getElementById('msg');
+// 1. Giriş Formu
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg();
+    const id = document.getElementById('loginIdentifier')?.value.trim();
+    const pass = document.getElementById('loginPassword')?.value.trim();
 
-    // Admin bypass: "admin" veya herhangi bir admin varyasyonu ile aninda tam erisim
-    if (identifier.toLowerCase() === 'admin' || identifier.toLowerCase() === 'demo' || identifier.toLowerCase().includes('admin')) {
-        doAdminLogin();
+    const res = await authenticateUser(id, pass);
+    if (res.success) {
+        showMsg('Giriş başarılı, yönlendiriliyorsunuz...', false);
+        setTimeout(() => {
+            if (res.user.role === 'client') {
+                window.location.href = 'portal.html' + (res.user.customerId ? `?cid=${encodeURIComponent(res.user.customerId)}` : '');
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 600);
+    } else {
+        showMsg(res.error || 'Giriş başarısız.');
+    }
+});
+
+// 2. Kayıt Formu
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg();
+    const name = document.getElementById('regName')?.value.trim();
+    const email = document.getElementById('regEmail')?.value.trim();
+    const password = document.getElementById('regPassword')?.value.trim();
+    const role = document.getElementById('regRole')?.value || 'user';
+
+    const res = await registerUser({ email, password, name, role });
+    if (res.success) {
+        showMsg('Hesabınız başarıyla oluşturuldu! Oturum açılıyor...', false);
+        setCurrentSession(res.user);
+        setTimeout(() => {
+            if (role === 'client') {
+                window.location.href = 'portal.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 800);
+    } else {
+        showMsg(res.error || 'Kayıt başarısız oldu.');
+    }
+});
+
+// 3. Müşteri Portalı Hızlı Takip Formu
+document.getElementById('portalQueryForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const code = document.getElementById('portalTrackingCode')?.value.trim();
+    if (!code) {
+        showMsg('Lütfen müşteri veya takip kodu giriniz.');
         return;
     }
+    window.location.href = `portal.html?cid=${encodeURIComponent(code)}`;
+});
 
-    // Kullanici herhangi bir isim yazip girdiginde de yonetici olarak kabul et
-    if (identifier.length >= 2) {
-        doAdminLogin();
-        return;
-    }
+document.querySelectorAll('.portal-sample-chip').forEach(chip => {
+    chip.addEventListener('click', function () {
+        const code = this.dataset.code;
+        window.location.href = `portal.html?cid=${encodeURIComponent(code)}`;
+    });
+});
 
-    msg.textContent = 'Lütfen geçerli bir kullanıcı hesabı veya admin yazın.';
-    msg.className = 'msg error';
-}
+// Hızlı Giriş Butonları
+document.getElementById('quickAdminBtn')?.addEventListener('click', async () => {
+    const res = await authenticateUser('admin@businessmanager.com', 'admin123');
+    if (res.success) window.location.href = 'index.html';
+});
 
-if (sessionStorage.getItem('ai_manager_demo_admin') === '1') {
-    window.location.href = 'index.html';
-}
+document.getElementById('quickUserBtn')?.addEventListener('click', async () => {
+    const res = await authenticateUser('demo@businessmanager.com', 'demo123');
+    if (res.success) window.location.href = 'index.html';
+});
 
-document.getElementById('loginForm').addEventListener('submit', login);
-document.getElementById('quickAdminBtn').addEventListener('click', doAdminLogin);
+document.getElementById('quickClientBtn')?.addEventListener('click', async () => {
+    const res = await authenticateUser('musteri@acme.com', 'musteri123');
+    if (res.success) window.location.href = 'portal.html?cid=CUST-8';
+});
 </script>
 </body>
 </html>

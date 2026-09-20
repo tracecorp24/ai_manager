@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Proje & Teslimat Takip Portalı — Business Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="supabase.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif; }
+        :root {
+            --bg-page: #0b1120;
+            --bg-card: rgba(15, 23, 42, 0.7);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #0284c7;
+            --primary-glow: rgba(2, 132, 199, 0.35);
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            background: radial-gradient(circle at 15% 15%, #1e293b 0%, #0b1120 50%, #030712 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            padding: 24px 16px 60px;
+        }
+
+        .portal-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Üst Bar */
+        .portal-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .portal-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: #fff;
+        }
+        .portal-search-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .portal-input {
+            padding: 9px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 0.88rem;
+            outline: none;
+            width: 240px;
+            transition: all 0.2s;
+        }
+        .portal-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+        }
+        .portal-btn {
+            padding: 9px 16px;
+            border-radius: 10px;
+            border: none;
+            background: #0284c7;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.86rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .portal-btn:hover { background: #0369a1; }
+        .portal-btn-ghost {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #cbd5e1;
+        }
+        .portal-btn-ghost:hover { background: rgba(255,255,255,0.15); color:#fff; }
+
+        /* Hero Kartı */
+        .hero-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .badge-stage {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .stage-live { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .stage-wip { background: rgba(2, 132, 199, 0.15); color: #38bdf8; border: 1px solid rgba(2, 132, 199, 0.4); }
+        .stage-review { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+        /* Süreç Zaman Çizelgesi (Stepper) */
+        .stepper-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 26px 30px;
+            margin-bottom: 24px;
+        }
+        .stepper-track {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 24px;
+        }
+        .stepper-track::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            right: 40px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.12);
+            z-index: 1;
+        }
+        .stepper-track-fill {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981, #0284c7);
+            z-index: 2;
+            transition: width 0.5s ease;
+        }
+        .step-node {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            text-align: center;
+        }
+        .step-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .step-node.done .step-circle {
+            background: #10b981;
+            border-color: #10b981;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+        .step-node.active .step-circle {
+            background: #0284c7;
+            border-color: #38bdf8;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(2, 132, 199, 0.6);
+            transform: scale(1.1);
+        }
+        .step-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+        .step-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* 2 Sütunlu Grid */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 860px) {
+            .portal-grid { grid-template-columns: 1fr; }
+            .portal-search-box { display: none; }
+            .hero-card { flex-direction: column; }
+        }
+
+        .portal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+        }
+
+        /* Checklist Görevleri */
+        .task-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .task-row.done {
+            opacity: 0.75;
+            text-decoration: line-through;
+        }
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+            pointer-events: none;
+        }
+
+        /* Teslimat Kartları */
+        .deliverable-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+        .deliverable-card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        /* Proforma & IBAN */
+        .iban-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Revizyon Formu */
+        .revision-box textarea {
+            width: 100%;
+            height: 90px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .revision-box textarea:focus {
+            border-color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="portal-container">
+    <!-- Üst Gezinme Barı -->
+    <header class="portal-topbar">
+        <div class="portal-brand">
+            <span class="brand-icon">BM</span>
+            <div>
+                <div style="font-weight:800; font-size:16px;">Müşteri Proje & Teslimat Portalı</div>
+                <div style="font-size:11px; color:#38bdf8; font-weight:600;">Canlı Süreç, Görevler & Varlık Kütüphanesi</div>
+            </div>
+        </div>
+
+        <div class="portal-search-box">
+            <input type="text" id="portalSearchInput" class="portal-input" placeholder="Müşteri veya Takip No girin (CUST-8)...">
+            <button type="button" id="portalSearchBtn" class="portal-btn">🔍 Sorgula</button>
+            <button type="button" id="backToAdminBtn" class="portal-btn portal-btn-ghost">Çıkış / Giriş</button>
+        </div>
+    </header>
+
+    <!-- Ana Başlık Hero Kartı -->
+    <section class="hero-card" id="heroCard">
+        <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <span id="pStatusBadge" class="badge-stage stage-wip">⚡ Geliştirme Sürecinde</span>
+                <span id="pTrackingNo" style="font-size:12px; color:#94a3b8; font-weight:600;">Takip No: TKF-108</span>
+            </div>
+            <h1 id="pProjectName" style="font-size:26px; font-weight:800; margin-bottom:6px; color:#f1f5f9;">Fintech Mobil Cüzdan & KYC Doğrulama</h1>
+            <div style="font-size:13.5px; color:#cbd5e1;">
+                Kurumsal Müşteri: <strong id="pClientName" style="color:#38bdf8;">Acme Lojistik & Teknoloji A.Ş.</strong> · Yetkili: <span id="pClientContact">Burak K.</span>
+            </div>
+            <div id="pProjectDesc" style="font-size:12.5px; color:#94a3b8; margin-top:10px; max-width:620px; line-height:1.5;">
+                React Native ve Supabase altyapısı ile iOS ve Android platformlarında canlıya alınacak yeni nesil dijital cüzdan ve müşteri doğrulama projesi.
+            </div>
+        </div>
+
+        <div style="text-align:right; min-width:200px;">
+            <div style="font-size:11.5px; color:#94a3b8; text-transform:uppercase; font-weight:700;">Hakediş / Yatırım Tutarı</div>
+            <div id="pPrice" style="font-size:28px; font-weight:800; color:#10b981; margin:4px 0;">₺185.000</div>
+            <div id="pPaymentBadge" style="display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(16,185,129,0.2); color:#34d399;">
+                ✓ Tahsil Edildi
+            </div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:8px;">
+                Planlanan Teslim: <strong id="pDeadline" style="color:#f1f5f9;">2026-09-30</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5 Aşamalı Süreç Zaman Çizelgesi -->
+    <section class="stepper-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:15px; font-weight:700;">📌 Proje Canlı Süreç Durumu</h3>
+            <span id="pProgressPct" style="font-size:13px; font-weight:800; color:#38bdf8;">%80 Tamamlandı</span>
+        </div>
+
+        <div class="stepper-track">
+            <div id="stepperFill" class="stepper-track-fill" style="width: 80%;"></div>
+            
+            <div class="step-node done" id="step0">
+                <div class="step-circle">✓</div>
+                <div class="step-title">1. Şartname</div>
+                <div class="step-desc">İhtiyaç analizi</div>
+            </div>
+            <div class="step-node done" id="step1">
+                <div class="step-circle">✓</div>
+                <div class="step-title">2. UI/UX Tasarım</div>
+                <div class="step-desc">Figma prototipi</div>
+            </div>
+            <div class="step-node done" id="step2">
+                <div class="step-circle">✓</div>
+                <div class="step-title">3. Kodlama</div>
+                <div class="step-desc">Frontend & API</div>
+            </div>
+            <div class="step-node active" id="step3">
+                <div class="step-circle">4</div>
+                <div class="step-title">4. QA & Test</div>
+                <div class="step-desc">Müşteri onayı</div>
+            </div>
+            <div class="step-node" id="step4">
+                <div class="step-circle">5</div>
+                <div class="step-title">5. Canlı Teslim</div>
+                <div class="step-desc">Yayın & devir</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2 Sütunlu Grid: Görevler & Teslimatlar -->
+    <div class="portal-grid">
+        <!-- Sol: Proje Görev Checklisti -->
+        <div class="portal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 style="font-size:15px; font-weight:700;">📋 Proje Aşamaları & Checklist</h3>
+                <span id="pTaskRatio" style="font-size:12px; color:#34d399; font-weight:700;">4 / 5 Görev Tamam</span>
+            </div>
+            <div id="pTaskList" style="display:flex; flex-direction:column; gap:6px;">
+                <!-- Dinamik görevler -->
+            </div>
+
+            <!-- Müşteri Revizyon / Not Formu -->
+            <div class="revision-box" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+                <label style="font-size:12.5px; font-weight:700; color:#e2e8f0; display:block; margin-bottom:6px;">
+                    ✍️ Revizyon Talebi veya Not İletin
+                </label>
+                <textarea id="clientRevisionText" placeholder="Proje ekibimize iletmek istediğiniz revizyon talebini, geri bildirimi veya dekont bilgisini buraya yazın..."></textarea>
+                <button type="button" id="sendRevisionBtn" class="portal-btn" style="width:100%; background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    📨 Talebi Proje Ekibine Gönder
+                </button>
+            </div>
+        </div>
+
+        <!-- Sağ: Teslimat Varlıkları & Resmi Proforma -->
+        <div class="portal-card">
+            <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">🔗 Paylaşılan Teslimat Bağlantıları</h3>
+            <div id="pDeliverablesList">
+                <!-- Dinamik Linkler -->
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+                <h4 style="font-size:13.5px; font-weight:700; margin-bottom:10px;">💳 Resmi Banka & Hakediş Bilgileri</h4>
+                <div style="font-size:12px; color:#94a3b8; line-height:1.5;">
+                    Kurumsal fatura ve hakediş ödemelerinizi aşağıdaki stüdyo IBAN hesabımıza açıklama kısmına <b>takip numaranızı</b> yazarak iletebilirsiniz.
+                </div>
+                <div class="iban-box">
+                    <div>
+                        <div style="font-size:11px; color:#38bdf8; font-weight:700;">QNB FİNANSBANK · EMİN A. (STUDIO)</div>
+                        <div style="font-size:12px; font-family:monospace; font-weight:700; color:#f8fafc; margin-top:2px;" id="ibanText">TR84 0006 1005 1234 5678 9012 34</div>
+                    </div>
+                    <button type="button" id="copyIbanBtn" class="portal-btn" style="padding:6px 12px; font-size:11px;">📋 Kopyala</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let musteriler = [];
+let activeCustomer = null;
+let activeJob = null;
+
+function loadPortalData() {
+    // 1. CRM verisini al
+    try {
+        const stored = localStorage.getItem('mekanikCRM_v2');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            musteriler = parsed.musteriler || [];
+        }
+    } catch (e) {
+        musteriler = [];
+    }
+
+    // 2. URL'den cid parametresini oku
+    const params = new URLSearchParams(window.location.search);
+    const queryCode = params.get('cid') || 'CUST-8';
+
+    findAndRenderCustomer(queryCode);
+}
+
+function findAndRenderCustomer(code) {
+    if (!musteriler || musteriler.length === 0) {
+        // Yedek örnek müşteri verisi
+        activeCustomer = {
+            id: 'CUST-8',
+            ad: 'Fintech Çözümleri A.Ş.',
+            yetkili: 'Burak K.',
+            telefon: '0532 555 12 34',
+            email: 'burak@fintech.com',
+            isler: [{
+                id: 108,
+                isAdi: 'Fintech Mobil Cüzdan & KYC Doğrulama',
+                tutar: 185000,
+                durum: 3,
+                deadline: '2026-09-30',
+                aciklama: 'React Native & iOS TestFlight canlı test süreci yürütülüyor.',
+                tasks: [
+                    { text: 'Figma UI/UX Kullanıcı Akışları', done: true },
+                    { text: 'React Native Mobil Frontend Mimarisi', done: true },
+                    { text: 'Supabase Auth & Biyometrik Giriş', done: true },
+                    { text: 'KYC Kimlik Doğrulama API Testleri', done: true },
+                    { text: 'Canlı Mağaza Yayını (App Store & Play Store)', done: false }
+                ]
+            }],
+            linkler: [
+                { link: 'https://figma.com/@studio/fintech-wallet-v2', aciklama: 'Figma UI/UX Tasarım Paftası', kategori: 'figma' },
+                { link: 'https://github.com/freelance-studio/fintech-wallet-app', aciklama: 'TestFlight & Kod Deposu', kategori: 'github' }
+            ]
+        };
+        activeJob = activeCustomer.isler[0];
+        renderPortal();
+        return;
+    }
+
+    const clean = code.trim().toLowerCase();
+    // Müşteri ID, Sicil, Teklif No veya ada göre ara
+    let match = musteriler.find(m => 
+        String(m.id).toLowerCase() === clean ||
+        (m.ad && m.ad.toLowerCase().includes(clean)) ||
+        (m.isler || []).some(is => String(is.id).toLowerCase().includes(clean))
+    );
+
+    if (!match) {
+        // Eşleşme yoksa ilk işi olan müşteriyi seç
+        match = musteriler.find(m => m.isler && m.isler.length > 0) || musteriler[0];
+    }
+
+    activeCustomer = match;
+    activeJob = (activeCustomer.isler && activeCustomer.isler.length > 0) 
+        ? activeCustomer.isler[0] 
+        : { id: 101, isAdi: 'Dijital Ürün Geliştirme', tutar: 85000, durum: 2, tasks: [] };
+
+    renderPortal();
+}
+
+function renderPortal() {
+    if (!activeCustomer || !activeJob) return;
+
+    // Hero bilgileri
+    document.getElementById('pProjectName').textContent = activeJob.isAdi || 'Dijital Tasarım & Yazılım Projesi';
+    document.getElementById('pClientName').textContent = activeCustomer.ad || 'Kurumsal Müşteri';
+    document.getElementById('pClientContact').textContent = activeCustomer.yetkili || activeCustomer.telefon || 'Yetkili Temsilci';
+    document.getElementById('pTrackingNo').textContent = `Takip No: TKF-${activeJob.id || activeCustomer.id}`;
+    document.getElementById('pPrice').textContent = `₺${Number(activeJob.tutar || 0).toLocaleString('tr-TR')}`;
+    document.getElementById('pDeadline').textContent = activeJob.deadline || '2026-09-30';
+    if (activeJob.aciklama) document.getElementById('pProjectDesc').textContent = activeJob.aciklama;
+
+    // Durum rozeti
+    const badge = document.getElementById('pStatusBadge');
+    const payBadge = document.getElementById('pPaymentBadge');
+    const stage = Number(activeJob.durum || 0);
+
+    if (stage === 4) {
+        badge.className = 'badge-stage stage-live';
+        badge.textContent = '🚀 Proje Canlı Yayında / Teslim Edildi';
+        payBadge.textContent = '✓ Tahsilat Kapatıldı';
+        payBadge.style.background = 'rgba(16,185,129,0.2)';
+        payBadge.style.color = '#34d399';
+    } else if (stage === 3) {
+        badge.className = 'badge-stage stage-review';
+        badge.textContent = '🧪 QA & Müşteri Onayı Bekleniyor';
+        payBadge.textContent = '⏳ Hakediş Beklemede';
+        payBadge.style.background = 'rgba(245,158,11,0.2)';
+        payBadge.style.color = '#fbbf24';
+    } else {
+        badge.className = 'badge-stage stage-wip';
+        badge.textContent = '⚡ Aktif Geliştirme Sürecinde';
+        payBadge.textContent = '⏳ Hakediş Beklemede';
+        payBadge.style.background = 'rgba(2,132,199,0.2)';
+        payBadge.style.color = '#38bdf8';
+    }
+
+    // Stepper (Zaman Çizelgesi)
+    const stepperFill = document.getElementById('stepperFill');
+    const pProgressPct = document.getElementById('pProgressPct');
+    const pct = stage === 4 ? 100 : (stage === 3 ? 80 : (stage === 2 ? 55 : (stage === 1 ? 30 : 15)));
+    stepperFill.style.width = `${pct}%`;
+    pProgressPct.textContent = `%${pct} Tamamlandı`;
+
+    for (let i = 0; i <= 4; i++) {
+        const node = document.getElementById(`step${i}`);
+        if (node) {
+            node.className = 'step-node' + (i < stage ? ' done' : (i === stage ? ' active' : ''));
+            const circle = node.querySelector('.step-circle');
+            if (circle) circle.textContent = i < stage ? '✓' : (i + 1);
+        }
+    }
+
+    // Görev Checklisti
+    const tasks = activeJob.tasks && activeJob.tasks.length > 0 ? activeJob.tasks : [
+        { text: 'Gereksinim Analizi & Teknik Şartname', done: true },
+        { text: 'Figma UI/UX Tasarım Sistemi & Wireframe', done: stage >= 1 },
+        { text: 'Frontend & API Entegrasyon Geliştirmesi', done: stage >= 2 },
+        { text: 'QA Fonksiyonel ve Responsive Testler', done: stage >= 3 },
+        { text: 'Canlı Yayına Alma ve Kod/Varlık Devri', done: stage >= 4 }
+    ];
+
+    const doneCount = tasks.filter(t => t.done).length;
+    document.getElementById('pTaskRatio').textContent = `${doneCount} / ${tasks.length} Görev Tamamlandı`;
+
+    const taskList = document.getElementById('pTaskList');
+    taskList.innerHTML = tasks.map(t => `
+        <div class="task-row ${t.done ? 'done' : ''}">
+            <input type="checkbox" class="task-checkbox" ${t.done ? 'checked' : ''}>
+            <span style="flex:1; font-weight:${t.done ? '500' : '600'};">${t.text}</span>
+            <span style="font-size:11px; color:${t.done ? '#10b981' : '#f59e0b'};">${t.done ? '✓ Tamamlandı' : 'İşlemde'}</span>
+        </div>
+    `).join('');
+
+    // Teslimat Bağlantıları
+    const deliverables = activeCustomer.linkler || [];
+    const delList = document.getElementById('pDeliverablesList');
+    if (deliverables.length > 0) {
+        delList.innerHTML = deliverables.map(d => {
+            let icon = '📄';
+            if (d.kategori === 'figma' || (d.link || '').includes('figma.com')) icon = '🎨';
+            else if (d.kategori === 'github' || (d.link || '').includes('github.com') || (d.link || '').includes('vercel.app')) icon = '💻';
+            else if (d.kategori === 'drive' || (d.link || '').includes('drive.google')) icon = '📁';
+            else if (d.kategori === 'loom' || (d.link || '').includes('loom.com')) icon = '🎥';
+
+            return `
+            <a href="${d.link}" target="_blank" class="deliverable-card">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:18px;">${icon}</span>
+                    <div>
+                        <div style="font-weight:700; font-size:13px;">${d.aciklama || 'Canlı Proje Varlığı'}</div>
+                        <div style="font-size:11px; color:#38bdf8; word-break:break-all;">${d.link}</div>
+                    </div>
+                </div>
+                <span class="portal-btn" style="padding:4px 10px; font-size:11.5px;">Aç ↗</span>
+            </a>`;
+        }).join('');
+    } else {
+        delList.innerHTML = `<div style="font-size:12.5px; color:#94a3b8; padding:12px; background:rgba(255,255,255,0.02); border-radius:10px;">Bu aşamada henüz teslimat bağlantısı yüklenmedi.</div>`;
+    }
+}
+
+// Event Dinleyicileri
+document.getElementById('portalSearchBtn')?.addEventListener('click', () => {
+    const q = document.getElementById('portalSearchInput')?.value.trim();
+    if (q) findAndRenderCustomer(q);
+});
+
+document.getElementById('portalSearchInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const q = e.target.value.trim();
+        if (q) findAndRenderCustomer(q);
+    }
+});
+
+// Revizyon Gönderme
+document.getElementById('sendRevisionBtn')?.addEventListener('click', () => {
+    const text = document.getElementById('clientRevisionText')?.value.trim();
+    if (!text) {
+        alert('Lütfen iletmek istediğiniz revizyon veya geri bildirim notunu yazın.');
+        return;
+    }
+
+    if (activeCustomer) {
+        if (!activeCustomer.notlar) activeCustomer.notlar = [];
+        const revisionNote = `[Müşteri Portalı Talebi]: ${text}`;
+        activeCustomer.notlar.unshift({
+            tarih: new Date().toLocaleDateString('tr-TR'),
+            metin: revisionNote
+        });
+        activeCustomer.sonNot = revisionNote.slice(0, 45);
+        activeCustomer.sonTarih = new Date().toLocaleDateString('tr-TR');
+        activeCustomer.sonDurum = 'sari'; // Dikkat/Revizyon durumuna al
+
+        // LocalStorage'a kaydet
+        try {
+            localStorage.setItem('mekanikCRM_v2', JSON.stringify({ musteriler }));
+        } catch (e) {}
+
+        document.getElementById('clientRevisionText').value = '';
+        alert('✅ Revizyon talebiniz proje yönetici ekibimize iletildi ve sisteme işlendi. Teşekkür ederiz!');
+    }
+});
+
+// IBAN Kopyalama
+document.getElementById('copyIbanBtn')?.addEventListener('click', function () {
+    const iban = document.getElementById('ibanText')?.textContent || '';
+    navigator.clipboard.writeText(iban).then(() => {
+        this.textContent = '✓ Kopyalandı!';
+        setTimeout(() => this.textContent = '📋 Kopyala', 2000);
+    });
+});
+
+// Geri Dön / Çıkış
+document.getElementById('backToAdminBtn')?.addEventListener('click', () => {
+    const user = getCurrentUser();
+    if (user && (user.role === 'admin' || user.role === 'user')) {
+        window.location.href = 'index.html';
+    } else {
+        window.location.href = 'login.html';
+    }
+});
+
+loadPortalData();
+</script>
+</body>
+</html>
