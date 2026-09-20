@@ -3344,8 +3344,178 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             });
         }
 
+        // ==========================================================================
+        // 10. FREELANCER OS : SADE MOD & HIZLI İŞ BAŞLATICI
+        // ==========================================================================
+        function initFreelanceMode() {
+            let mode = localStorage.getItem('bm_app_mode') || 'simple';
+            applyFreelanceMode(mode);
+
+            const modeBtn = document.getElementById('modeToggleBtn');
+            modeBtn?.addEventListener('click', () => {
+                const currentMode = document.body.classList.contains('mode-simple') ? 'simple' : 'advanced';
+                const nextMode = currentMode === 'simple' ? 'advanced' : 'simple';
+                localStorage.setItem('bm_app_mode', nextMode);
+                applyFreelanceMode(nextMode);
+                showBmToast(nextMode === 'simple' ? '✨ Sade Freelance Moduna geçildi' : '🏢 Kurumsal Ajans Moduna geçildi', nextMode === 'simple' ? '✨' : '🏢');
+            });
+        }
+
+        function applyFreelanceMode(mode) {
+            const isSimple = mode === 'simple';
+            document.body.classList.toggle('mode-simple', isSimple);
+            const label = document.getElementById('modeToggleLabel');
+            if (label) {
+                label.textContent = isSimple ? 'Sade Freelance (Aktif)' : 'Kurumsal Ajans Modu';
+            }
+            const modeBtn = document.getElementById('modeToggleBtn');
+            if (modeBtn) {
+                modeBtn.style.borderColor = isSimple ? '#10b981' : '#6366f1';
+            }
+        }
+
+        function initQuickFreelanceJobModal() {
+            const modal = document.getElementById('modalQuickFreelanceJob');
+            const openBtn = document.getElementById('quickBtnNewJob');
+            const closeBtn = document.getElementById('quickJobModalClose');
+            const cancelBtn = document.getElementById('quickJobModalCancel');
+            const submitBtn = document.getElementById('quickJobModalSubmit');
+
+            function openModal() {
+                if (!modal) return;
+                modal.style.display = 'flex';
+                const d = new Date();
+                d.setDate(d.getDate() + 7);
+                const dateInput = document.getElementById('qf_tarih');
+                if (dateInput && !dateInput.value) {
+                    dateInput.value = d.toISOString().split('T')[0];
+                }
+                const nameInput = document.getElementById('qf_musteri');
+                if (nameInput) setTimeout(() => nameInput.focus(), 100);
+            }
+
+            function closeModal() {
+                if (!modal) return;
+                modal.style.display = 'none';
+            }
+
+            openBtn?.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+            cancelBtn?.addEventListener('click', closeModal);
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            submitBtn?.addEventListener('click', () => {
+                const musteriAdi = document.getElementById('qf_musteri')?.value.trim();
+                const isAdi = document.getElementById('qf_isAdi')?.value.trim();
+                const tutar = parseFloat(document.getElementById('qf_tutar')?.value) || 0;
+                const deadline = document.getElementById('qf_tarih')?.value || '';
+                const durumStr = document.getElementById('qf_durum')?.value || 'devam';
+
+                if (!musteriAdi || !isAdi || tutar <= 0) {
+                    alert('Lütfen müşteri adı, yapılacak iş ve geçerli bir ücret giriniz.');
+                    return;
+                }
+
+                const durumMap = { teklif: 0, devam: 1, revizyon: 2, tamam: 3 };
+                const durumIndex = durumMap[durumStr] !== undefined ? durumMap[durumStr] : 1;
+
+                let m = musteriler.find(x => x.ad.toLowerCase() === musteriAdi.toLowerCase());
+                if (!m) {
+                    const newId = `CUST-${musteriler.length + 1}`;
+                    m = {
+                        id: newId,
+                        ad: musteriAdi,
+                        adres: 'İstanbul',
+                        ilce: 'Merkez',
+                        durum: 'Faal',
+                        faaliyet: 'Freelance & Dijital Proje',
+                        telefon: '0532 000 00 00',
+                        email: 'musteri@proje.com',
+                        sonDurum: 'yesil',
+                        sonNot: 'Hızlı iş başlatıldı',
+                        sonTarih: new Date().toLocaleDateString('tr-TR'),
+                        sonTarihISO: new Date().toISOString(),
+                        isler: [],
+                        linkler: []
+                    };
+                    musteriler.unshift(m);
+                }
+
+                const newJobId = Date.now();
+                const newJob = {
+                    id: newJobId,
+                    musteriId: m.id,
+                    isAdi: isAdi,
+                    tutar: tutar,
+                    durum: durumIndex,
+                    oncelik: 'yuksek',
+                    deadline: deadline,
+                    aciklama: 'Hızlı Freelance Başlatıcı ile oluşturuldu.',
+                    revizyon: '1/2',
+                    gorevSayi: '0/3 Görev',
+                    checklist: [
+                        { text: 'Tasarım / Kodlama taslağı hazırla', done: false },
+                        { text: 'Müşteriye ön izleme linki ilet', done: false },
+                        { text: 'Onay al ve teslim et', done: false }
+                    ]
+                };
+
+                if (!m.isler) m.isler = [];
+                m.isler.push(newJob);
+
+                if (!m.linkler) m.linkler = [];
+                m.linkler.push({
+                    id: `link_${Date.now()}`,
+                    baslik: `${isAdi} (Canlı Ön İzleme / Teslimat)`,
+                    url: `portal.html?cid=${encodeURIComponent(m.id)}`,
+                    kategori: 'figma',
+                    eklenmeTarihi: new Date().toLocaleDateString('tr-TR')
+                });
+
+                saveAll();
+                closeModal();
+                showBmToast(`🚀 "${isAdi}" işi başarıyla başlatıldı!`, '🎉');
+
+                // İş takibi sekmesine yönlendir
+                switchHubView('tab-customers', 'subpane-kanban');
+            });
+        }
+
+        window.copyJobPortalLink = function(mid) {
+            const portalUrl = `${window.location.origin}/portal.html?cid=${encodeURIComponent(mid || 'CUST-8')}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(portalUrl).then(() => {
+                    showBmToast('Müşteri canlı takip linki panoya kopyalandı!', '🔗');
+                }).catch(() => {
+                    prompt('Müşteri Portal Takip Linki:', portalUrl);
+                });
+            } else {
+                prompt('Müşteri Portal Takip Linki:', portalUrl);
+            }
+        };
+
+        function showBmToast(msg, icon = '✅') {
+            let toast = document.getElementById('bmToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'bmToast';
+                toast.className = 'bm-toast';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+            toast.style.display = 'flex';
+            clearTimeout(window._bmToastTimer);
+            window._bmToastTimer = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
         initAIAssistant();
         initFreelanceTools();
+        initFreelanceMode();
+        initQuickFreelanceJobModal();
     }
 
     // Başlat

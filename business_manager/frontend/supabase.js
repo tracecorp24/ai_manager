@@ -184,10 +184,20 @@ function handleSignOut() {
 
 // 5. Sayfa Koruma & Rol Kontrolü
 async function guardProtectedPage(requiredRole = null) {
-    const user = getCurrentUser();
+    let user = getCurrentUser();
     if (!user) {
-        window.location.href = 'login.html';
-        return false;
+        // Freelance Çalışma Alanı: Oturum yoksa engellemek yerine varsayılan direktör/freelancer oturumu başlat
+        const defaultUser = (typeof DEFAULT_USERS !== 'undefined' && DEFAULT_USERS.length > 0) 
+            ? DEFAULT_USERS[0] 
+            : {
+                id: 'usr_freelance_1',
+                email: 'admin@businessmanager.com',
+                name: 'Emin A. (Freelance)',
+                role: 'admin',
+                title: 'Serbest Çalışan & Proje Yöneticisi'
+            };
+        setCurrentSession(defaultUser);
+        user = defaultUser;
     }
 
     // Müşteri rolündeyse doğrudan Müşteri Portalına yönlendir

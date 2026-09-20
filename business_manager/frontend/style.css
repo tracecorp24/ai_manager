@@ -3139,6 +3139,108 @@ body {
     }
 }
 
+/* Üst Hızlı Aksiyon Çubuğu (Quick Bar) */
+.hub-quick-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid var(--g-border);
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+[data-theme="dark"] .hub-quick-bar {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.quick-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.quick-bar-mode {
+    display: flex;
+    align-items: center;
+}
+
+.quick-btn {
+    border: 1px solid var(--g-border);
+    background: #f8fafc;
+    color: var(--g-text-dark);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] .quick-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.quick-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn-action-add {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-action-add:hover {
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+.btn-action-quote {
+    background: #ffffff;
+    border: 1px solid var(--g-border);
+    color: var(--g-text-dark);
+}
+
+[data-theme="dark"] .btn-action-quote {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.btn-action-quote:hover {
+    background: var(--g-blue-bg);
+    border-color: var(--g-blue);
+    color: var(--g-blue);
+}
+
+.btn-action-portal {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #0284c7 !important;
+}
+
+[data-theme="dark"] .btn-action-portal {
+    color: #38bdf8 !important;
+}
+
+.btn-action-portal:hover {
+    background: rgba(56, 189, 248, 0.25);
+}
+
 /* ==========================================================================
    FREELANCER OS — Sade Mod (Simple Freelance Mode) & Günün Odak Paneli
    ========================================================================== */

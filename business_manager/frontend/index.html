@@ -100,6 +100,30 @@
 
         <!-- MERKEZİ GÖRÜNÜM ALANI -->
         <main class="main-viewport">
+            <!-- ÜST HIZLI AKSİYON ÇUBUĞU & FREELANCE MOD SEÇİCİ -->
+            <div class="hub-quick-bar" id="hubQuickBar">
+                <div class="quick-bar-actions">
+                    <button type="button" class="quick-btn btn-action-add" id="quickBtnNewJob" title="Sadece 30 saniyede yeni iş ve müşteri başlat">
+                        <span class="quick-btn-icon">⚡</span>
+                        <span class="quick-btn-label">Yeni İş Başlat</span>
+                    </button>
+                    <button type="button" class="quick-btn btn-action-quote" id="quickBtnCreateQuote" title="Müşteriye özel proforma teklif hazırla">
+                        <span class="quick-btn-icon">📄</span>
+                        <span class="quick-btn-label">Teklif Hazırla</span>
+                    </button>
+                    <a href="portal.html?cid=CUST-8" target="_blank" class="quick-btn btn-action-portal" id="quickBtnClientPortal" title="Müşterinizin gördüğü canlı onay ve takip ekranı">
+                        <span class="quick-btn-icon">🌐</span>
+                        <span class="quick-btn-label">Müşteri Portalı</span>
+                    </a>
+                </div>
+                <div class="quick-bar-mode">
+                    <button type="button" class="quick-btn btn-action-mode" id="modeToggleBtn" title="Sade Freelance veya Kurumsal Ajans Modu Arasında Geçiş Yap">
+                        <span class="quick-btn-icon">✨</span>
+                        <span class="quick-btn-label" id="modeToggleLabel">Sade Freelance (Aktif)</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- 1. ANA HUB : GENEL BAKIŞ & FİNANSAL ZEKA -->
             <section id="tab-kpi" class="tab-pane active">
                 <!-- FREELANCE GÜNÜN ODAK PANELİ -->
