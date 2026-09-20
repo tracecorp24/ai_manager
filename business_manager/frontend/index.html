@@ -538,6 +538,13 @@
                     <div class="table-toolbar">
                         <div class="table-filters-group">
                             <input type="text" id="arama" class="g-input" placeholder="🔍 Firma adı, sicil no, ilçe veya yetkili ara..." style="min-width:240px;">
+                            <select id="siralamaSelect" class="g-select" style="min-width:180px;">
+                                <option value="ciro_desc">💰 Ciroya Göre (En Yüksek)</option>
+                                <option value="ciro_asc">💰 Ciroya Göre (En Düşük)</option>
+                                <option value="ad_asc">🔤 İsim (A - Z)</option>
+                                <option value="ad_desc">🔤 İsim (Z - A)</option>
+                                <option value="tarih_desc">📅 En Yeni İletişim</option>
+                            </select>
                             <select id="filtreFaaliyet" class="g-select"><option value="">Tüm Sektörler</option></select>
                             <select id="filtreIlce" class="g-select"><option value="">Tüm İlçeler</option></select>
                             <select id="filtreDurum" class="g-select">
@@ -671,6 +678,20 @@
                             </div>
                         </div>
 
+                        <!-- Kalemli Teklif Dökümü (Itemized Line Items) -->
+                        <div class="proposal-itemized-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <span style="font-size:12.5px; font-weight:700; color:#1e293b;">📋 Hizmet Kalemleri (Proforma Dökümü)</span>
+                                <button type="button" class="g-page-btn" id="btnAddProposalItem" style="padding:4px 10px; font-size:11.5px; color:#0284c7; font-weight:700;">➕ Kalem Ekle</button>
+                            </div>
+                            <div id="proposalItemsList" class="proposal-items-grid"></div>
+                            <div class="proposal-summary-line">
+                                <span>Ara Toplam: <b id="propCalcSubtotal">₺0</b></span>
+                                <span>KDV (%20): <b id="propCalcKdv">₺0</b></span>
+                                <span class="prop-total-highlight">Genel Toplam: <span id="propCalcTotal">₺0</span></span>
+                            </div>
+                        </div>
+
                         <label style="font-weight:600; font-size:13px; margin-bottom:6px; display:block;">📝 Hazırlanan Teklif / E-Posta Metni</label>
                         <textarea id="mailTaslak" class="g-input" style="width:100%; height:230px; line-height:1.5; font-family:inherit; resize:vertical; margin-bottom:16px;" placeholder="Taslak oluşturmak için aşağıdaki butonları kullanın..."></textarea>
 
@@ -703,6 +724,7 @@
                         <p style="font-size:12.5px; color:#64748b;">Haftalık, aylık ve yıllık nakit akışı, net kar marjı ve serbest çalışma maliyet dağılımı</p>
                     </div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-g-primary" id="yeniMasrafBtn" style="background:#dc2626;">➕ Yeni Masraf / Gider Ekle</button>
                         <button class="btn-export-csv" id="exportFinanceCsvBtn">📊 Gelir-Gider Excel (CSV)</button>
                         <button class="btn-g-primary" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
                     </div>
@@ -790,7 +812,32 @@
                     </div>
                 </div>
 
-                <div class="table-layout-card" style="margin-top:20px;">
+                <!-- Aylık Nakit Akışı Karşılaştırma Grafiği (Son 6 Ay) -->
+                <div class="chart-card" style="margin-top:20px;">
+                    <div class="chart-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3 style="font-size:14px; font-weight:700; color:#1e293b; margin:0;">📈 Aylık Nakit Akışı & Karlılık Trendi (Son 6 Ay)</h3>
+                            <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Aylık gerçekleşen ciro, operasyonel masraflar ve net nakit fazlası</div>
+                        </div>
+                        <div style="display:flex; gap:12px; font-size:12px; font-weight:600;">
+                            <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#1a73e8; display:inline-block;"></span> Ciro</span>
+                            <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#ef4444; display:inline-block;"></span> Masraf</span>
+                            <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#10b981; display:inline-block;"></span> Net Kar</span>
+                        </div>
+                    </div>
+                    <div id="financeMonthlyTrendBar" class="monthly-trend-container" style="padding:16px 8px 6px 8px; display:flex; align-items:flex-end; justify-content:space-around; min-height:180px;">
+                        <!-- Dinamik Trend Çubukları -->
+                    </div>
+                </div>
+
+                <!-- Finans Tablosu Durum Filtre Çipleri -->
+                <div class="crm-quick-chips-bar" id="financeFilterChips" style="margin-top:20px;">
+                    <button class="crm-quick-chip active" data-finance-filter="all">Tüm Kayıtlar</button>
+                    <button class="crm-quick-chip" data-finance-filter="paid">💰 Tahsil Edilenler</button>
+                    <button class="crm-quick-chip" data-finance-filter="pending">⏳ Bekleyen Açık Faturalar</button>
+                </div>
+
+                <div class="table-layout-card" style="margin-top:12px;">
                     <div style="overflow-x:auto;">
                         <table class="g-table" id="ciroTable">
                             <thead>
@@ -819,7 +866,13 @@
                         <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Müşteri Portalı & Teslimat Varlıkları</h2>
                         <p style="font-size:12.5px; color:#64748b;">Teslim edilen projelerin Figma, GitHub, Vercel, Drive ve dokümantasyon bağlantıları</p>
                     </div>
-                    <button class="btn-g-primary" id="copyAllClientDeliverablesBtn" style="background:#16a34a;">📋 Müşteri Teslim Metnini Kopyala (WhatsApp Formatı)</button>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                        <select id="filtreLinkMusteri" class="g-select" style="min-width:180px;">
+                            <option value="">Tüm Müşteriler</option>
+                        </select>
+                        <button class="btn-g-primary" id="linkEkleModalBtn">➕ Yeni Varlık Ekle</button>
+                        <button class="btn-g-primary" id="copyAllClientDeliverablesBtn" style="background:#16a34a;">📋 Teslim Metnini Kopyala (WhatsApp)</button>
+                    </div>
                 </div>
                 <div class="two-col-grid">
                     <div class="studio-card">
@@ -845,6 +898,15 @@
                         <a href="marketing.html" target="_blank" class="btn-g-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">🖥️ Yeni Sekmede Aç</a>
                     </div>
                 </div>
+
+                <!-- Hızlı Şablon Başlatıcı Çubuğu -->
+                <div class="marketing-tpl-bar" style="display:flex; gap:10px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px;">
+                    <button class="marketing-tpl-btn" data-tpl="saas">📊 SaaS Dashboard Sunumu</button>
+                    <button class="marketing-tpl-btn" data-tpl="mobile">📱 Mobil Uygulama Pitch Deck</button>
+                    <button class="marketing-tpl-btn" data-tpl="portfolio">💼 Ajans Portfolyo Sunumu</button>
+                    <button class="marketing-tpl-btn" data-tpl="strategy">🎯 B2B Pazarlama Stratejisi</button>
+                </div>
+
                 <div style="width:100%; height:calc(100vh - 200px); min-height:600px; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0; background:#fff;">
                     <iframe id="marketingIframe" src="marketing.html" style="width:100%; height:100%; border:none;" title="ProSunum Marketing Modülü"></iframe>
                 </div>
@@ -871,9 +933,19 @@
                     <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">İş / Proje Başlığı</label>
                     <input type="text" id="modalIsAdi" class="g-input" style="width:100%;" placeholder="Örn: 3D Mekanik Tasarım ve Dayanım Analizi">
                 </div>
-                <div>
-                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Teklif Tutarı (₺)</label>
-                    <input type="number" id="modalIsTutar" class="g-input" style="width:100%;" placeholder="50000">
+                <div class="form-grid-2">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Teklif Tutarı (₺)</label>
+                        <input type="number" id="modalIsTutar" class="g-input" style="width:100%;" placeholder="50000">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Öncelik Seviyesi</label>
+                        <select id="modalOncelik" class="g-select" style="width:100%;">
+                            <option value="normal">🟢 Normal Öncelik</option>
+                            <option value="yuksek">🟡 Yüksek Öncelik</option>
+                            <option value="kritik">🔴 Kritik Öncelik</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Detay / Kapsam Notu</label>
@@ -901,6 +973,21 @@
                 </div>
                 <div class="form-grid-2">
                     <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Müşteri Segmenti / Seviye</label>
+                        <select id="ym_seviye" class="g-select" style="width:100%;">
+                            <option value="Kurumsal">🏢 Kurumsal Şirket</option>
+                            <option value="VIP">⭐ VIP Portföy (>₺100k Potansiyel)</option>
+                            <option value="KOBI">🏪 KOBİ & İşletme</option>
+                            <option value="Girisim">🚀 Girişim & Startup</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Tahmini Yıllık Bütçe (₺)</label>
+                        <input type="number" id="ym_butce" class="g-input" style="width:100%;" placeholder="100000">
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div>
                         <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Sicil / Vergi No</label>
                         <input type="text" id="ym_sicil" class="g-input" style="width:100%;" placeholder="1009842">
                     </div>
@@ -919,9 +1006,15 @@
                         <input type="text" id="ym_telefon" class="g-input" style="width:100%;" placeholder="0216 123 45 67">
                     </div>
                 </div>
-                <div>
-                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Kurumsal E-Posta</label>
-                    <input type="email" id="ym_email" class="g-input" style="width:100%;" placeholder="info@atlasmakine.com">
+                <div class="form-grid-2">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Kurumsal E-Posta</label>
+                        <input type="email" id="ym_email" class="g-input" style="width:100%;" placeholder="info@atlasmakine.com">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:6px;">Web Sitesi / LinkedIn</label>
+                        <input type="url" id="ym_web" class="g-input" style="width:100%;" placeholder="https://atlasmakine.com">
+                    </div>
                 </div>
             </div>
             <div class="g-modal-footer">
@@ -1115,7 +1208,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
                     <div>
                         <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">İş Aşaması</label>
                         <select id="idm_durum" class="g-select" style="width:100%;">
@@ -1127,7 +1220,15 @@
                         </select>
                     </div>
                     <div>
-                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">🚨 Teslim Tarihi (Deadline)</label>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Öncelik Seviyesi</label>
+                        <select id="idm_oncelik" class="g-select" style="width:100%;">
+                            <option value="normal">🟢 Normal</option>
+                            <option value="yuksek">🟡 Yüksek</option>
+                            <option value="kritik">🔴 Kritik</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">🚨 Teslim Tarihi</label>
                         <input type="date" id="idm_deadline" class="g-input" style="width:100%;">
                     </div>
                 </div>
@@ -1197,7 +1298,7 @@
                     <th style="padding:10px 12px; text-align:right; border-radius:0 4px 0 0;">Toplam (₺)</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="pr_tbody">
                 <tr style="border-bottom:1px solid #e2e8f0; font-size:13px;">
                     <td style="padding:12px;">1</td>
                     <td style="padding:12px;">
@@ -1242,6 +1343,154 @@
         </div>
     </div>
 
+    <!-- 7. İNTERAKTİF PROJE KONTROL LİSTESİ (CHECKLIST) MODALI -->
+    <div id="checklistModal" class="g-modal-overlay">
+        <div class="g-modal-box">
+            <div class="g-modal-header">
+                <div>
+                    <h3 id="cl_proje_adi">📌 Proje Görev Listesi & Checklist</h3>
+                    <div id="cl_musteri_adi" style="font-size:12px; color:#0284c7; font-weight:600; margin-top:2px;"></div>
+                </div>
+                <button class="topbar-icon-btn" id="checklistCloseBtn" style="color:#64748b;">&times;</button>
+            </div>
+            <div class="g-modal-body">
+                <input type="hidden" id="cl_is_id">
+                <input type="hidden" id="cl_musteri_id">
+
+                <div class="checklist-progress-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;">
+                        <span>Tamamlanma: <strong id="clProgressText" style="color:#10b981;">0%</strong></span>
+                        <span id="clTaskRatio" style="color:#64748b;">0 / 0 Görev</span>
+                    </div>
+                    <div style="height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
+                        <div id="clProgressBar" style="height:100%; width:0%; background:#10b981; transition:width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <input type="text" id="clNewTaskInput" class="g-input" placeholder="Yeni alt görev ekle (örn: Supabase Auth Entegrasyonu)..." style="flex:1;">
+                    <button type="button" id="clAddTaskBtn" class="btn-g-primary" style="padding:0 16px;">➕ Ekle</button>
+                </div>
+
+                <div id="clTaskList" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+            <div class="g-modal-footer">
+                <button type="button" class="btn-g-primary" id="checklistSaveBtn" style="width:100%;">Kaydet & Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. GÖRSEL A4 PROFORMA VE TEKLİF ÖNİZLEME MODALI -->
+    <div id="proformaModal" class="g-modal-overlay">
+        <div class="g-modal-box modal-lg" style="max-width:880px;">
+            <div class="g-modal-header" style="justify-content:space-between;">
+                <div>
+                    <h3>📄 Resmi Teklif & A4 Proforma Önizleme</h3>
+                    <div style="font-size:12px; color:#64748b; margin-top:2px;">Yazdırmadan önce antetli proforma belgenizi ekranda inceleyin</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn-g-primary" id="proformaModalPrintBtn" style="padding:6px 14px; font-size:13px; background:#0284c7;">🖨️ PDF / Yazdır</button>
+                    <button class="topbar-icon-btn" id="proformaModalCloseBtn" style="color:#64748b;">&times;</button>
+                </div>
+            </div>
+            <div class="g-modal-body" style="background:#f1f5f9; padding:20px; max-height:75vh; overflow-y:auto;">
+                <div id="proformaModalSheet" style="background:#ffffff; border-radius:8px; padding:32px; box-shadow:0 4px 15px rgba(0,0,0,0.08); max-width:800px; margin:0 auto;">
+                    <!-- Proforma belgesi içeriği buraya render edilecek -->
+                </div>
+            </div>
+            <div class="g-modal-footer">
+                <button class="g-page-btn" id="proformaModalFooterClose">Kapat</button>
+                <button class="btn-g-primary" id="proformaModalFooterPrint">🖨️ Yazdır (Ctrl+P)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. YENİ MASRAF / GİDER EKLEME MODALI -->
+    <div id="yeniMasrafModal" class="g-modal-overlay">
+        <div class="g-modal-box">
+            <div class="g-modal-header">
+                <h3>➕ Yeni Masraf & Operasyonel Gider Ekle</h3>
+                <button class="topbar-icon-btn" id="yeniMasrafClose" style="color:#64748b;">&times;</button>
+            </div>
+            <div class="g-modal-body">
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Gider / Masraf Başlığı *</label>
+                    <input type="text" id="ymasraf_baslik" class="g-input" style="width:100%;" placeholder="Örn: Vercel Pro & Cloudflare Yıllık Lisansı" required>
+                </div>
+                <div class="form-grid-2">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Gider Kategorisi</label>
+                        <select id="ymasraf_kategori" class="g-select" style="width:100%;">
+                            <option value="cloud">☁️ Bulut & Sunucu Altyapısı</option>
+                            <option value="software">🎨 Tasarım & Yazılım Lisansları</option>
+                            <option value="subcontract">🤝 Dış Kaynak & Taşeron</option>
+                            <option value="hardware">💻 Donanım & Ofis Giderleri</option>
+                            <option value="other">📦 Diğer Operasyonel Giderler</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Tutar (₺) *</label>
+                        <input type="number" id="ymasraf_tutar" class="g-input" style="width:100%;" placeholder="3500" required>
+                    </div>
+                </div>
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">İşlem Tarihi</label>
+                    <input type="date" id="ymasraf_tarih" class="g-input" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">İlişkili Proje (Opsiyonel)</label>
+                    <select id="ymasraf_is_secim" class="g-select" style="width:100%;">
+                        <option value="">Genel Şirket Masrafı</option>
+                    </select>
+                </div>
+            </div>
+            <div class="g-modal-footer">
+                <button class="g-page-btn" id="yeniMasrafIptal">İptal</button>
+                <button class="btn-g-primary" id="yeniMasrafKaydet" style="background:#dc2626;">Masrafı Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. YENİ TESLİMAT / MÜŞTERİ VARLIĞI EKLEME MODALI -->
+    <div id="linkEkleModal" class="g-modal-overlay">
+        <div class="g-modal-box">
+            <div class="g-modal-header">
+                <h3>🔗 Yeni Teslimat Varlığı Ekle</h3>
+                <button class="topbar-icon-btn" id="linkEkleClose" style="color:#64748b;">&times;</button>
+            </div>
+            <div class="g-modal-body">
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Hedef Proje / Müşteri *</label>
+                    <select id="lm_proje_sec" class="g-select" style="width:100%;"></select>
+                </div>
+                <div class="form-grid-2">
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Varlık Türü</label>
+                        <select id="lm_tur" class="g-select" style="width:100%;">
+                            <option value="figma">🎨 Figma UI/UX Tasarımı</option>
+                            <option value="github">💻 GitHub / Vercel Canlı Link</option>
+                            <option value="drive">📁 Google Drive / Dropbox Paketi</option>
+                            <option value="loom">🎥 Loom Video Anlatımı</option>
+                            <option value="doc">📄 Dokümantasyon / Notion</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Varlık Başlığı *</label>
+                        <input type="text" id="lm_baslik" class="g-input" style="width:100%;" placeholder="Örn: Figma Mobil UI Tasarım Dosyası">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-weight:600; font-size:12.5px; display:block; margin-bottom:4px;">Bağlantı URL (https://...) *</label>
+                    <input type="url" id="lm_url" class="g-input" style="width:100%;" placeholder="https://figma.com/file/...">
+                </div>
+            </div>
+            <div class="g-modal-footer">
+                <button class="g-page-btn" id="linkEkleIptal">İptal</button>
+                <button class="btn-g-primary" id="linkEkleKaydet">Varlığı Kaydet</button>
+            </div>
+        </div>
+    </div>
+
     <!-- HIZLI KARALAMA & TOPLANTI NOTLARI MODALI (SCRATCHPAD) -->
     <div id="scratchpadModal" class="g-modal-overlay">
         <div class="g-modal-box" style="max-width:560px;">
@@ -1271,10 +1520,19 @@
         <div class="ai-assistant-flyout" id="aiAssistantFlyout">
             <div class="assistant-header">
                 <div class="assistant-header-left">
-                    <div class="assistant-sparkle-avatar">✨</div>
+                    <div class="assistant-sparkle-avatar" aria-hidden="true">
+                        <svg viewBox="0 0 64 64" class="crocodile-mark" role="img">
+                            <path d="M13 35c0-14 8-24 20-24 13 0 22 9 22 22 0 13-10 21-23 21-11 0-19-7-19-19Z" fill="#38a169"/>
+                            <path d="M17 40c8 7 27 8 38-1-2 10-11 16-23 16-9 0-15-5-15-15Z" fill="#1f7a4d"/>
+                            <circle cx="25" cy="27" r="7" fill="#f7fafc"/><circle cx="43" cy="27" r="7" fill="#f7fafc"/>
+                            <circle cx="27" cy="28" r="2.8" fill="#102a43"/><circle cx="41" cy="28" r="2.8" fill="#102a43"/>
+                            <path d="M23 39c5 5 14 5 19 0" fill="none" stroke="#f7fafc" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M12 27 18 21l2 7M51 27l-6-6-2 7" fill="#76d49a"/>
+                        </svg>
+                    </div>
                     <div>
-                        <div class="assistant-title">AI Asistan</div>
-                        <div class="assistant-status">Hızlı Modül Yönlendirici</div>
+                        <div class="assistant-title">Timsah Asistan</div>
+                        <div class="assistant-status">İş akışı rehberiniz</div>
                     </div>
                 </div>
                 <button class="assistant-close-btn" id="closeAssistantBtn" title="Kapat">✕</button>
@@ -1282,7 +1540,7 @@
             
             <div class="assistant-body">
                 <div class="assistant-msg-bubble">
-                    👋 Merhaba! Hangi çalışma modülüne geçiş yapmak istiyorsunuz?
+                    <strong>Merhaba!</strong> Ben Timsah Asistan. Hangi çalışma modülüne geçmek istersiniz?
                 </div>
 
                 <div class="assistant-search-box">
@@ -1337,8 +1595,17 @@
 
         <!-- Yüzen İkon Butonu (FAB) -->
         <button class="ai-assistant-fab" id="aiAssistantFab" title="Sanal Asistanı Aç">
-            <span class="fab-icon">✨</span>
-            <span class="fab-label">Asistan</span>
+            <span class="fab-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" class="crocodile-mark" role="img">
+                    <path d="M13 35c0-14 8-24 20-24 13 0 22 9 22 22 0 13-10 21-23 21-11 0-19-7-19-19Z" fill="#38a169"/>
+                    <path d="M17 40c8 7 27 8 38-1-2 10-11 16-23 16-9 0-15-5-15-15Z" fill="#1f7a4d"/>
+                    <circle cx="25" cy="27" r="7" fill="#f7fafc"/><circle cx="43" cy="27" r="7" fill="#f7fafc"/>
+                    <circle cx="27" cy="28" r="2.8" fill="#102a43"/><circle cx="41" cy="28" r="2.8" fill="#102a43"/>
+                    <path d="M23 39c5 5 14 5 19 0" fill="none" stroke="#f7fafc" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M12 27 18 21l2 7M51 27l-6-6-2 7" fill="#76d49a"/>
+                </svg>
+            </span>
+            <span class="fab-label">Merhaba</span>
             <span class="fab-ping"></span>
         </button>
     </div>

@@ -11,28 +11,28 @@
 }
 
 :root {
-    --g-bg: #f8f9fa;
+    --g-bg: #f5f7fa;
     --g-card-bg: #ffffff;
-    --g-border: #dadce0;
-    --g-border-light: #e8eaed;
-    --g-text-dark: #202124;
-    --g-text-muted: #5f6368;
-    --g-text-light: #80868b;
-    --g-blue: #1a73e8;
-    --g-blue-hover: #1557b0;
-    --g-blue-bg: #e8f0fe;
-    --g-green: #1e8e3e;
-    --g-green-bg: #e6f4ea;
-    --g-red: #d93025;
-    --g-red-bg: #fce8e6;
-    --g-yellow: #f9ab00;
-    --g-yellow-bg: #fef7e0;
-    --g-purple: #9334e6;
-    --g-topbar-bg: #0b1a30;
+    --g-border: #d9e2ec;
+    --g-border-light: #edf2f7;
+    --g-text-dark: #102a43;
+    --g-text-muted: #486581;
+    --g-text-light: #829ab1;
+    --g-blue: #176b87;
+    --g-blue-hover: #12566e;
+    --g-blue-bg: #e6f4f7;
+    --g-green: #218c5c;
+    --g-green-bg: #e9f7ef;
+    --g-red: #c94c4c;
+    --g-red-bg: #fff0f0;
+    --g-yellow: #b7791f;
+    --g-yellow-bg: #fff8e6;
+    --g-purple: #5b5fc7;
+    --g-topbar-bg: #102a43;
     --g-sidebar-bg: #ffffff;
-    --g-shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-    --g-shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --g-shadow-hover: 0 4px 12px rgba(60,64,67,0.15);
+    --g-shadow-sm: 0 1px 2px rgba(16,42,67,0.12), 0 2px 5px rgba(16,42,67,0.08);
+    --g-shadow-card: 0 2px 8px rgba(16,42,67,0.06);
+    --g-shadow-hover: 0 8px 20px rgba(16,42,67,0.12);
     --g-radius: 12px;
 }
 
@@ -315,7 +315,7 @@ body {
 .brand-icon {
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, #1a73e8 0%, #00b8a9 100%);
+    background: linear-gradient(135deg, #176b87 0%, #218c5c 100%);
     color: #ffffff;
     border-radius: 8px;
     display: flex;
@@ -1882,23 +1882,23 @@ body {
 }
 
 .ai-assistant-fab {
-    background: linear-gradient(135deg, #1a73e8 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #102a43 0%, #176b87 100%);
     color: #ffffff;
     border: none;
     border-radius: 28px;
-    padding: 10px 18px 10px 14px;
+    padding: 8px 18px 8px 10px;
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4), 0 2px 6px rgba(26, 115, 232, 0.25);
+    box-shadow: 0 8px 22px rgba(16, 42, 67, 0.28);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
 }
 
 .ai-assistant-fab:hover {
     transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 10px 28px rgba(124, 58, 237, 0.5), 0 4px 10px rgba(26, 115, 232, 0.35);
+    box-shadow: 0 12px 28px rgba(16, 42, 67, 0.36);
 }
 
 .ai-assistant-fab:active {
@@ -1906,18 +1906,20 @@ body {
 }
 
 .fab-icon {
-    font-size: 18px;
+    width: 34px;
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    animation: sparkleSpin 4s ease-in-out infinite alternate;
+    animation: mascotBob 3s ease-in-out infinite;
 }
 
-@keyframes sparkleSpin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(12deg) scale(1.15); }
-    100% { transform: rotate(-8deg) scale(1); }
+@keyframes mascotBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
 }
+
+.crocodile-mark { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,.13)); }
 
 .fab-label {
     font-size: 13px;
@@ -1946,7 +1948,7 @@ body {
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(124, 58, 237, 0.2);
+    border: 1px solid #c9e3e8;
     overflow: hidden;
     display: none;
     flex-direction: column;
@@ -1969,7 +1971,7 @@ body {
 }
 
 .assistant-header {
-    background: linear-gradient(135deg, #0b1a30 0%, #1e1b4b 100%);
+    background: linear-gradient(135deg, #102a43 0%, #176b87 100%);
     color: #ffffff;
     padding: 14px 16px;
     display: flex;
@@ -1986,12 +1988,12 @@ body {
 .assistant-sparkle-avatar {
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, #1a73e8 0%, #9334e6 100%);
+    background: #e9f7ef;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    padding: 2px;
 }
 
 .assistant-title {
@@ -2001,7 +2003,7 @@ body {
 
 .assistant-status {
     font-size: 10.5px;
-    color: #a5b4fc;
+    color: #b9e1ea;
 }
 
 .assistant-close-btn {
@@ -2034,12 +2036,12 @@ body {
 }
 
 .assistant-msg-bubble {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: #eef8f4;
+    border: 1px solid #c8e8d5;
     border-radius: 10px 10px 10px 2px;
     padding: 10px 12px;
     font-size: 12px;
-    color: #334155;
+    color: #1f5f45;
     line-height: 1.45;
 }
 
@@ -2055,8 +2057,8 @@ body {
 }
 
 .assistant-search-box input:focus {
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+    border-color: #176b87;
+    box-shadow: 0 0 0 2px rgba(23, 107, 135, 0.15);
 }
 
 .assistant-tabs-list {
@@ -2084,9 +2086,9 @@ body {
 }
 
 .assistant-tab-btn:hover {
-    background: #f5f3ff;
-    border-color: #c4b5fd;
-    color: #6d28d9;
+    background: #eaf6f7;
+    border-color: #9fd2dc;
+    color: #12566e;
     transform: translateX(3px);
 }
 
@@ -2109,7 +2111,7 @@ body {
 }
 
 .assistant-tab-btn:hover .arrow {
-    color: #6d28d9;
+    color: #12566e;
     transform: translateX(2px);
 }
 
@@ -2547,6 +2549,365 @@ body {
 }
 [data-theme="dark"] .expense-cat-amount {
     color: #2dd4bf;
+}
+
+/* ==========================================================================
+   FAZ 2: YENİ SEKME FONKSİYON VE BİLEŞEN STİLLERİ
+   ========================================================================== */
+
+/* 1. Kalemli Teklif Dökümü (Itemized Line Items) */
+.proposal-itemized-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.proposal-items-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.prop-item-row {
+    display: grid;
+    grid-template-columns: 1fr 65px 110px 32px;
+    gap: 8px;
+    align-items: center;
+    background: #ffffff;
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.prop-item-row input {
+    font-size: 12.5px;
+    padding: 5px 8px;
+}
+
+.prop-item-del-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    height: 30px;
+}
+
+.prop-item-del-btn:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.proposal-summary-line {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 12.5px;
+    color: #475569;
+}
+
+.prop-total-highlight {
+    font-weight: 800;
+    font-size: 14px;
+    color: #1a73e8;
+}
+
+/* 2. Son 6 Aylık Finans Trend Çizelgesi (Monthly Trend Bar) */
+.monthly-trend-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 14px;
+    min-height: 180px;
+    padding: 18px 12px 6px 12px;
+    background: #ffffff;
+    border-radius: 8px;
+}
+
+.trend-month-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.trend-bars-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 130px;
+    width: 100%;
+    justify-content: center;
+}
+
+.trend-bar {
+    width: 13px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    cursor: pointer;
+}
+
+.trend-bar.bar-rev { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); }
+.trend-bar.bar-exp { background: linear-gradient(180deg, #f87171 0%, #dc2626 100%); }
+.trend-bar.bar-net { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
+
+.trend-bar:hover {
+    filter: brightness(1.15);
+    transform: scaleX(1.15);
+}
+
+.trend-month-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: capitalize;
+}
+
+/* 3. Kanban Kart Öncelik Rozetleri */
+.priority-pill-kritik {
+    font-size: 10px;
+    font-weight: 700;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    padding: 1px 6px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.priority-pill-yuksek {
+    font-size: 10px;
+    font-weight: 700;
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    border-radius: 4px;
+    padding: 1px 6px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.priority-pill-normal {
+    font-size: 10px;
+    font-weight: 600;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    border-radius: 4px;
+    padding: 1px 6px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 4. Checklist Görev Listesi */
+.checklist-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+}
+
+.checklist-task-item:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.checklist-task-item.done {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.checklist-task-item.done .cl-task-text {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+.cl-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #10b981;
+    cursor: pointer;
+}
+
+.cl-task-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+}
+
+.cl-delete-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+.cl-delete-btn:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+/* 5. Marketing Hızlı Şablon Butonları */
+.marketing-tpl-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.marketing-tpl-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 7px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.marketing-tpl-btn:hover {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    color: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
+}
+
+/* Sector tag in table */
+.sector-tag {
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sector-tag:hover {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+}
+
+/* ==========================================================================
+   FAZ 2: KOYU TEMA (DARK MODE) ENTEGRASYONU
+   ========================================================================== */
+[data-theme="dark"] .proposal-itemized-box {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .prop-item-row {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .proposal-summary-line {
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .prop-total-highlight {
+    color: #38bdf8;
+}
+
+[data-theme="dark"] .monthly-trend-container {
+    background: #0f172a;
+    border: 1px solid #334155;
+}
+
+[data-theme="dark"] .trend-month-label {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .checklist-task-item {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .checklist-task-item:hover {
+    background: #243248;
+}
+
+[data-theme="dark"] .checklist-task-item.done {
+    background: #064e3b;
+    border-color: #047857;
+}
+
+[data-theme="dark"] .checklist-task-item.done .cl-task-text {
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] .cl-task-text {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .marketing-tpl-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .marketing-tpl-btn:hover {
+    background: #0f172a;
+    border-color: #38bdf8;
+    color: #38bdf8;
+}
+
+[data-theme="dark"] .priority-pill-kritik {
+    background: #450a0a;
+    color: #fca5a5;
+    border-color: #7f1d1d;
+}
+
+[data-theme="dark"] .priority-pill-yuksek {
+    background: #451a03;
+    color: #fcd34d;
+    border-color: #78350f;
+}
+
+[data-theme="dark"] .priority-pill-normal {
+    background: #052e16;
+    color: #86efac;
+    border-color: #14532d;
+}
+
+[data-theme="dark"] #proformaModalSheet {
+    background: #1e293b !important;
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] #proformaModalSheet span,
+[data-theme="dark"] #proformaModalSheet p,
+[data-theme="dark"] #proformaModalSheet li,
+[data-theme="dark"] #proformaModalSheet div {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] #proformaModalSheet h1,
+[data-theme="dark"] #proformaModalSheet strong,
+[data-theme="dark"] #proformaModalSheet b {
+    color: #f8fafc;
 }
 
 

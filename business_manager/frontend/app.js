@@ -10,6 +10,11 @@
     // 2. Global Durum
     let musteriler = [];
     let pdfDosyalari = [];
+    let masraflar = [];
+    let proposalItems = [
+        { desc: 'Next.js 15 Web Portalı & Supabase Backend Mimarisi', qty: 1, price: 65000 },
+        { desc: 'Figma Kurumsal UI/UX Tasarım Sistemi & Dev-Handoff', qty: 1, price: 25000 }
+    ];
     let historyStack = [];
     let historyIndex = -1;
     const MAX_HISTORY = 10;
@@ -19,6 +24,7 @@
         page: 1,
         pageSize: 25,
         search: '',
+        sortBy: 'ciro_desc',
         faaliyet: '',
         ilce: '',
         durum: '',
@@ -29,6 +35,8 @@
         kpiSector: '',
         kpiDistrict: '',
         kpiStatus: '',
+        financeFilter: 'all',
+        linkMusteriFilter: ''
     };
 
     // 3. Yardımcı Fonksiyonlar
@@ -160,6 +168,24 @@
             ];
         }
 
+        // Operasyonel Masrafları Yükle
+        let storedExp = localStorage.getItem('business_expenses_v1');
+        if (storedExp) {
+            try {
+                masraflar = JSON.parse(storedExp);
+            } catch (e) {
+                masraflar = [];
+            }
+        }
+        if (!masraflar || masraflar.length === 0) {
+            masraflar = [
+                { id: 1, baslik: 'Vercel Pro & Cloudflare Kurumsal Altyapı', kategori: 'cloud', tutar: 4200, tarih: '2026-09-01' },
+                { id: 2, baslik: 'Figma Organization & Cursor AI Lisansları', kategori: 'software', tutar: 6800, tarih: '2026-09-05' },
+                { id: 3, baslik: 'Freelance 3D Animasyon & İllüstrasyon Dış Kaynak', kategori: 'subcontract', tutar: 15000, tarih: '2026-09-10' },
+                { id: 4, baslik: 'Supabase Compute & AWS S3 Medya Depolama', kategori: 'cloud', tutar: 3200, tarih: '2026-09-14' }
+            ];
+        }
+
         // Supabase durum kontrolü
         try {
             await checkSupabaseHealth();
@@ -179,7 +205,8 @@
         }
         const snapshot = {
             musteriler: JSON.parse(JSON.stringify(musteriler.slice(0, 300))),
-            pdfDosyalari: JSON.parse(JSON.stringify(pdfDosyalari))
+            pdfDosyalari: JSON.parse(JSON.stringify(pdfDosyalari)),
+            masraflar: JSON.parse(JSON.stringify(masraflar))
         };
         historyStack.push(snapshot);
         if (historyStack.length > MAX_HISTORY) historyStack.shift();
@@ -190,10 +217,12 @@
         if (addToHistory) pushHistory();
         try {
             localStorage.setItem('mekanikCRM_v2', JSON.stringify({ musteriler, pdfDosyalari }));
+            localStorage.setItem('business_expenses_v1', JSON.stringify(masraflar));
         } catch (e) {
             const modifiedOnly = musteriler.filter(m => m.sonDurum || m.sonNot || (m.isler && m.isler.length > 0));
             try {
                 localStorage.setItem('mekanikCRM_v2', JSON.stringify({ musteriler: modifiedOnly, pdfDosyalari }));
+                localStorage.setItem('business_expenses_v1', JSON.stringify(masraflar));
             } catch (err) {}
         }
         renderAll();
@@ -205,6 +234,7 @@
         renderMusteriTable();
         renderKanban();
         renderMailMusteriVePdf();
+        renderProposalItems();
         renderCiroTablo();
         renderLinkler();
 
@@ -451,7 +481,7 @@
     // ==========================================================================
     function getFilteredCustomers() {
         const q = state.search.toLocaleLowerCase('tr-TR');
-        return musteriler.filter(m => {
+        let list = musteriler.filter(m => {
             if (q) {
                 const text = `${m.ad} ${m.id} ${m.ilce || ''} ${m.telefon || ''} ${m.faaliyet || ''}`.toLocaleLowerCase('tr-TR');
                 if (!text.includes(q)) return false;
@@ -463,7 +493,7 @@
             // Hızlı Çip Filtresi
             if (state.custQuickFilter === 'vip') {
                 const totalVol = (m.isler || []).reduce((sum, i) => sum + Number(i.tutar || 0), 0);
-                if (totalVol < 100000) return false;
+                if (totalVol < 100000 && m.seviye !== 'VIP') return false;
             } else if (state.custQuickFilter === 'active_job') {
                 const hasActive = (m.isler || []).some(i => Number(i.durum) < 4);
                 if (!hasActive) return false;
@@ -472,6 +502,29 @@
             }
             return true;
         });
+
+        // Çeşitli Kriterlere Göre Sıralama (Sorting Engine)
+        const sortBy = state.sortBy || 'ciro_desc';
+        list.sort((a, b) => {
+            if (sortBy === 'ciro_desc') {
+                const aVol = (a.isler || []).reduce((s, i) => s + Number(i.tutar || 0), 0);
+                const bVol = (b.isler || []).reduce((s, i) => s + Number(i.tutar || 0), 0);
+                return bVol - aVol;
+            } else if (sortBy === 'ciro_asc') {
+                const aVol = (a.isler || []).reduce((s, i) => s + Number(i.tutar || 0), 0);
+                const bVol = (b.isler || []).reduce((s, i) => s + Number(i.tutar || 0), 0);
+                return aVol - bVol;
+            } else if (sortBy === 'ad_asc') {
+                return (a.ad || '').localeCompare(b.ad || '', 'tr');
+            } else if (sortBy === 'ad_desc') {
+                return (b.ad || '').localeCompare(a.ad || '', 'tr');
+            } else if (sortBy === 'tarih_desc') {
+                return (b.sonTarihISO || b.id || '').localeCompare(a.sonTarihISO || a.id || '');
+            }
+            return 0;
+        });
+
+        return list;
     }
 
     function updateCustomerChipCounts() {
@@ -482,7 +535,7 @@
 
         if (cAll) cAll.textContent = musteriler.length.toLocaleString('tr-TR');
         if (cVip) {
-            const vipCount = musteriler.filter(m => (m.isler || []).reduce((sum, i) => sum + Number(i.tutar || 0), 0) >= 100000).length;
+            const vipCount = musteriler.filter(m => (m.isler || []).reduce((sum, i) => sum + Number(i.tutar || 0), 0) >= 100000 || m.seviye === 'VIP').length;
             cVip.textContent = vipCount.toLocaleString('tr-TR');
         }
         if (cActive) {
@@ -546,7 +599,7 @@
             const custIsler = m.isler || [];
             const totalVol = custIsler.reduce((sum, i) => sum + Number(i.tutar || 0), 0);
             const isCount = custIsler.length;
-            const isVip = totalVol >= 100000;
+            const isVip = totalVol >= 100000 || m.seviye === 'VIP';
             let volHtml = `<span class="cust-vol-badge empty">İş Yok</span>`;
             if (isCount > 0) {
                 volHtml = `<span class="cust-vol-badge">₺${totalVol.toLocaleString('tr-TR')} · ${isCount} İş</span>`;
@@ -572,7 +625,7 @@
                 </td>
                 <td>${volHtml}</td>
                 <td><span style="font-weight:600; color:#334155;">${esc(m.ilce || 'İstanbul')}</span></td>
-                <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600; color:#475569;">${esc(m.faaliyet || 'Mekanik')}</span></td>
+                <td><span class="sector-tag" data-sector="${esc(m.faaliyet || '')}" style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600; color:#475569;" title="Bu sektördeki şirketleri filtrele">${esc(m.faaliyet || 'Mekanik')}</span></td>
                 <td>
                     <input type="text" class="g-input inline-note-input" data-id="${esc(m.id)}" value="${esc(m.sonNot || '')}" placeholder="Not ekleyin..." style="width:100%; min-width:160px; font-size:12.5px; padding:5px 8px;">
                     ${m.sonTarih ? `<div style="font-size:10.5px; color:#94a3b8; margin-top:2px;">📅 ${esc(m.sonTarih)}</div>` : ''}
@@ -595,6 +648,21 @@
         }).join('');
 
         // Tablo İçi Olaylar
+        tbody.querySelectorAll('.sector-tag').forEach(tag => {
+            tag.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const sec = this.dataset.sector;
+                if (sec) {
+                    const sel = document.getElementById('filtreFaaliyet');
+                    if (sel) sel.value = sec;
+                    state.faaliyet = sec;
+                    state.page = 1;
+                    renderMusteriTable();
+                    showToast(`🏷️ "${sec}" sektörüne göre filtrelendi.`);
+                }
+            });
+        });
+
         tbody.querySelectorAll('.btn-open-cust').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -737,6 +805,12 @@
                 const waMsg = encodeURIComponent(`Merhaba ${musteri.ad} yetkilisi, "${i.isAdi}" projemizin süreç durumu hakkında bilgi paylaşmak isteriz.`);
                 const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : '';
 
+                // Öncelik Rozeti
+                let priorityBadge = '';
+                if (i.oncelik === 'kritik') priorityBadge = '<span class="priority-pill-kritik">🔴 Kritik</span>';
+                else if (i.oncelik === 'yuksek') priorityBadge = '<span class="priority-pill-yuksek">🟡 Yüksek</span>';
+                else if (i.oncelik === 'normal') priorityBadge = '<span class="priority-pill-normal">🟢 Normal</span>';
+
                 return `
                 <div class="kanban-card" draggable="true" data-id="${i.id}" data-mid="${i.musteriId}" style="cursor:pointer;" title="Projeyi Düzenle / Detayını Gör">
                     <button class="kart-sil" data-id="${i.id}" data-mid="${i.musteriId}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; color:#94a3b8; cursor:pointer;" title="Sil">&times;</button>
@@ -744,9 +818,10 @@
                     <div style="font-weight:700; color:#1e293b; font-size:13.5px; margin-bottom:3px;">${esc(i.isAdi)}</div>
                     <div style="font-size:12px; color:#0284c7; font-weight:600;">${esc(musteri.ad)}</div>
                     ${i.aciklama ? `<div style="font-size:11.5px; color:#64748b; margin-top:4px;">${esc(i.aciklama)}</div>` : ''}
-                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin: 6px 0 4px 0;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin: 6px 0 4px 0; align-items:center;">
+                        ${priorityBadge}
                         <span class="kanban-rev-badge" title="Müşteri Revizyon Durumu">🔄 Rev: ${i.revizyon || '1/2'}</span>
-                        <span class="kanban-sub-badge" title="Alt Görev Checklist">☑️ ${i.gorevSayi || '3/4 Görev'}</span>
+                        <button type="button" class="kanban-sub-badge btn-open-checklist" data-id="${i.id}" data-mid="${i.musteriId}" style="border:none; cursor:pointer; background:#e0f2fe; color:#0369a1; border-radius:4px; padding:2px 6px; font-weight:600;" title="Alt Görev Checklistini Yönet">☑️ ${i.gorevSayi || '3/4 Görev'}</button>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid #f1f5f9;">
                         <span style="font-weight:800; font-size:13px; color:#16a34a;">₺${Number(i.tutar || 0).toLocaleString('tr-TR')}</span>
@@ -776,10 +851,20 @@
             </div>`;
         }).join('');
 
+        // Checklist Butonları
+        boardEl.querySelectorAll('.btn-open-checklist').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = parseInt(this.dataset.id);
+                const mid = this.dataset.mid;
+                openChecklistModal(id, mid);
+            });
+        });
+
         // Drag & Drop ve Kart Tıklama
         boardEl.querySelectorAll('.kanban-card').forEach(k => {
             k.addEventListener('click', function (e) {
-                if (e.target.closest('.kart-sil') || e.target.closest('.kanban-card-step-actions') || e.target.closest('.btn-kanban-wa')) return;
+                if (e.target.closest('.kart-sil') || e.target.closest('.kanban-card-step-actions') || e.target.closest('.btn-kanban-wa') || e.target.closest('.btn-open-checklist')) return;
                 openIsDetay(parseInt(this.dataset.id), this.dataset.mid);
             });
             k.addEventListener('dragstart', handleDragStart);
@@ -874,6 +959,88 @@
     }
 
     // ==========================================================================
+    // 3.1 İNTERAKTİF PROJE CHECKLIST YÖNETİMİ
+    // ==========================================================================
+    function openChecklistModal(jobId, musteriId) {
+        const m = musteriler.find(x => String(x.id) === String(musteriId));
+        if (!m) return;
+        const is = (m.isler || []).find(y => y.id === jobId);
+        if (!is) return;
+
+        if (!is.tasks || !Array.isArray(is.tasks) || is.tasks.length === 0) {
+            is.tasks = [
+                { id: 1, text: 'UI/UX Tasarımı & Figma Wireframe', done: true },
+                { id: 2, text: 'Frontend Next.js Arayüz Geliştirme', done: true },
+                { id: 3, text: 'API & Supabase Veri Entegrasyonu', done: is.durum >= 2 },
+                { id: 4, text: 'QA Testleri & Responsive Kontrol', done: is.durum >= 3 },
+                { id: 5, text: 'Canlı Yayına Alma & Dev-Handoff', done: is.durum >= 4 }
+            ];
+        }
+
+        const modal = document.getElementById('checklistModal');
+        if (!modal) return;
+
+        document.getElementById('cl_is_id').value = jobId;
+        document.getElementById('cl_musteri_id').value = musteriId;
+        document.getElementById('cl_proje_adi').textContent = `📌 ${is.isAdi}`;
+        document.getElementById('cl_musteri_adi').textContent = `🏢 ${m.ad} · ₺${Number(is.tutar || 0).toLocaleString('tr-TR')}`;
+
+        renderChecklistTasks(is);
+        modal.style.display = 'flex';
+    }
+
+    function renderChecklistTasks(is) {
+        const listEl = document.getElementById('clTaskList');
+        if (!listEl) return;
+
+        const tasks = is.tasks || [];
+        const doneCount = tasks.filter(t => t.done).length;
+        const totalCount = tasks.length;
+        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+
+        const progText = document.getElementById('clProgressText');
+        const ratioText = document.getElementById('clTaskRatio');
+        const progBar = document.getElementById('clProgressBar');
+
+        if (progText) progText.textContent = `%${pct}`;
+        if (ratioText) ratioText.textContent = `${doneCount} / ${totalCount} Görev`;
+        if (progBar) progBar.style.width = `${pct}%`;
+
+        // Karttaki sayacı güncelle
+        is.gorevSayi = `${doneCount}/${totalCount} Görev`;
+
+        listEl.innerHTML = tasks.map((t, idx) => `
+            <div class="checklist-task-item ${t.done ? 'done' : ''}">
+                <input type="checkbox" class="cl-checkbox" data-idx="${idx}" ${t.done ? 'checked' : ''}>
+                <span class="cl-task-text">${esc(t.text)}</span>
+                <button type="button" class="cl-delete-btn" data-idx="${idx}" title="Görevi Sil">✕</button>
+            </div>
+        `).join('') || '<div style="color:#94a3b8; text-align:center; padding:20px;">Henüz görev eklenmedi.</div>';
+
+        listEl.querySelectorAll('.cl-checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const idx = parseInt(this.dataset.idx);
+                if (is.tasks && is.tasks[idx]) {
+                    is.tasks[idx].done = this.checked;
+                    renderChecklistTasks(is);
+                    saveAll(false);
+                }
+            });
+        });
+
+        listEl.querySelectorAll('.cl-delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                if (is.tasks) {
+                    is.tasks.splice(idx, 1);
+                    renderChecklistTasks(is);
+                    saveAll(false);
+                }
+            });
+        });
+    }
+
+    // ==========================================================================
     // 4. SEKME : AI E-POSTA & TEKLİF STÜDYOSU
     // ==========================================================================
     function renderMailMusteriVePdf() {
@@ -899,6 +1066,87 @@
                 });
             });
         }
+    }
+
+    // 4.1 KALEMLİ TEKLİF DÖKÜMÜ & PROFORMA HESAPLAYICISI
+    function renderProposalItems() {
+        const listEl = document.getElementById('proposalItemsList');
+        if (!listEl) return;
+
+        listEl.innerHTML = proposalItems.map((item, idx) => `
+            <div class="prop-item-row" data-idx="${idx}">
+                <input type="text" class="g-input prop-desc" value="${esc(item.desc)}" placeholder="Hizmet / Modül Başlığı">
+                <input type="number" class="g-input prop-qty" value="${item.qty}" min="1" placeholder="Adet" style="text-align:center;">
+                <input type="number" class="g-input prop-price" value="${item.price}" placeholder="Birim Fiyat" style="text-align:right;">
+                <button type="button" class="prop-item-del-btn" data-idx="${idx}" title="Kalemi Sil">✕</button>
+            </div>
+        `).join('');
+
+        listEl.querySelectorAll('.prop-desc, .prop-qty, .prop-price').forEach(inp => {
+            inp.addEventListener('input', function() {
+                const row = this.closest('.prop-item-row');
+                const idx = parseInt(row.dataset.idx);
+                if (proposalItems[idx]) {
+                    proposalItems[idx].desc = row.querySelector('.prop-desc').value;
+                    proposalItems[idx].qty = parseInt(row.querySelector('.prop-qty').value) || 1;
+                    proposalItems[idx].price = parseFloat(row.querySelector('.prop-price').value) || 0;
+                    recalcProposalTotals();
+                }
+            });
+        });
+
+        listEl.querySelectorAll('.prop-item-del-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                if (proposalItems.length > 1) {
+                    proposalItems.splice(idx, 1);
+                    renderProposalItems();
+                    recalcProposalTotals();
+                } else {
+                    showToast('En az 1 hizmet kalemi bulunmalıdır.');
+                }
+            });
+        });
+
+        recalcProposalTotals();
+    }
+
+    function recalcProposalTotals() {
+        const subtotal = proposalItems.reduce((sum, item) => sum + (Number(item.qty || 1) * Number(item.price || 0)), 0);
+        const kdv = subtotal * 0.20;
+        const total = subtotal + kdv;
+
+        const subEl = document.getElementById('propCalcSubtotal');
+        const kdvEl = document.getElementById('propCalcKdv');
+        const totEl = document.getElementById('propCalcTotal');
+        const mailTutarEl = document.getElementById('mailTeklifTutar');
+
+        if (subEl) subEl.textContent = `₺${subtotal.toLocaleString('tr-TR')}`;
+        if (kdvEl) kdvEl.textContent = `₺${kdv.toLocaleString('tr-TR')}`;
+        if (totEl) totEl.textContent = `₺${total.toLocaleString('tr-TR')}`;
+        if (mailTutarEl) mailTutarEl.value = total;
+
+        // Proforma A4 şablon tablosunu senkronize et
+        const prTbody = document.getElementById('pr_tbody');
+        if (prTbody) {
+            prTbody.innerHTML = proposalItems.map((item, idx) => `
+                <tr style="border-bottom:1px solid #e2e8f0; font-size:13px;">
+                    <td style="padding:12px;">${idx + 1}</td>
+                    <td style="padding:12px;">
+                        <b>${esc(item.desc)}</b>
+                    </td>
+                    <td style="padding:12px; text-align:center;">${item.qty} Adet</td>
+                    <td style="padding:12px; text-align:right;">₺${Number(item.price || 0).toLocaleString('tr-TR')}</td>
+                    <td style="padding:12px; text-align:right; font-weight:700;">₺${(Number(item.qty || 1) * Number(item.price || 0)).toLocaleString('tr-TR')}</td>
+                </tr>
+            `).join('');
+        }
+        const prAra = document.getElementById('pr_ara_toplam');
+        const prKdv = document.getElementById('pr_kdv');
+        const prGenel = document.getElementById('pr_genel_toplam');
+        if (prAra) prAra.textContent = `₺${subtotal.toLocaleString('tr-TR')}`;
+        if (prKdv) prKdv.textContent = `₺${kdv.toLocaleString('tr-TR')}`;
+        if (prGenel) prGenel.textContent = `₺${total.toLocaleString('tr-TR')}`;
     }
 
     function generateStandardEmail() {
@@ -928,8 +1176,7 @@
                 `• Google Lighthouse 95+ Core Web Vitals ve SEO Uyumlu Altyapı\n` +
                 `• Güvenli SSL, Cloudflare CDN ve Vercel Staging Yayını\n\n` +
                 `⏱️ Tahmini Teslim Süresi: ${customTime}\n` +
-                `💰 Proje Bütçesi: ${priceText}\n\n` +
-                `Detayları değerlendirmek üzere sizler için uygun bir takvimde online bir tanıtım toplantısı organize edebiliriz.`;
+                `💰 Proje Bütçesi: ${priceText}\n\n`;
         } else if (amac === 'uiux') {
             metin += `Markanızın kullanıcı deneyimini ve dönüşüm oranlarını en üst seviyeye taşımak üzere hazırladığımız Figma UI/UX Tasarım Sistemi teklifimiz aşağıdadır.\n\n` +
                 `📌 Kapsam Detayları:\n` +
@@ -938,33 +1185,44 @@
                 `• Tıklanabilir ve Test Edilebilir Canlı Figma Masaüstü/Mobil Prototip\n` +
                 `• Yazılımcı El Sıkışma (Dev-Handoff) ve SVG/Asset İhracı\n\n` +
                 `⏱️ Teslim Süresi: ${customTime}\n` +
-                `💰 Yatırım Tutarı: ${priceText}`;
+                `💰 Yatırım Tutarı: ${priceText}\n\n`;
         } else if (amac === 'mobil') {
             metin += `iOS ve Android platformlarında eş zamanlı çalışan, yüksek performanslı mobil uygulama geliştirme teklifimiz bilgilerinize sunulmuştur.\n\n` +
                 `📌 Çözüm Başlıkları:\n` +
                 `• React Native / Flutter Çapraz Platform Native Performans\n` +
                 `• Push Bildirimleri, Biyometrik Giriş (FaceID/Parmak İzi) ve Güvenli Ödeme\n` +
                 `• App Store ve Google Play Store Yayın Süreç Yönetimi\n\n` +
-                `⏱️ Planlanan Süre: ${customTime} · 💰 Bütçe: ${priceText}`;
+                `⏱️ Planlanan Süre: ${customTime} · 💰 Bütçe: ${priceText}\n\n`;
         } else if (amac === 'ai') {
             metin += `İşletmenizin operasyonel yükünü azaltacak ve müşteri etkileşimini 7/24 otomatikleştirecek Yapay Zeka (LLM) & Akıllı Asistan çözüm paketimiz hazırlanmıştır.\n\n` +
                 `📌 Yetenekler:\n` +
                 `• Şirket Verilerinizle (PDF, SSS, CRM) Beslenen RAG Tabanlı Kurumsal Zeka\n` +
                 `• WhatsApp ve Web Canlı Destek Botu Entegrasyonu\n` +
-                `• Otomatik Lead Toplama ve Randevu Oluşturma`;
+                `• Otomatik Lead Toplama ve Randevu Oluşturma\n\n`;
         } else if (amac === 'hakedis') {
             metin += `Teslimatı tamamlanan ve onayınıza sunulan çalışma dilimine ait hakediş ve fatura bilgilendirmemiz aşağıda yer almaktadır:\n\n` +
                 `💳 Hakediş Tutarı: ${priceText}\n` +
                 `🏦 QNB Finansbank\n` +
                 `👤 Alıcı: Emin A. (Freelance Studio)\n` +
                 `💳 IBAN: TR84 0006 1005 1234 5678 9012 34\n\n` +
-                `Ödemenizin akabinde resmi e-arşiv faturanız sisteminize iletilecektir. İş birliğiniz için teşekkür ederiz.`;
+                `Ödemenizin akabinde resmi e-arşiv faturanız sisteminize iletilecektir. İş birliğiniz için teşekkür ederiz.\n\n`;
         } else if (amac === 'teslim') {
             metin += `Projenizin kararlaştırılan geliştirme ve tasarım aşamaları tamamlanmış olup test ve canlı inceleme bağlantıları hazırlanmıştır.\n\n` +
-                `Lütfen staging ortamındaki güncellemeleri inceleyerek varsa revizyon notlarınızı bu e-posta üzerinden iletiniz.`;
+                `Lütfen staging ortamındaki güncellemeleri inceleyerek varsa revizyon notlarınızı bu e-posta üzerinden iletiniz.\n\n`;
         } else {
-            metin += `Freelance yazılım mimarisi, UI/UX tasarımı ve dijital büyüme süreçlerimiz hakkında kurumsal bilgi ve portfolyomuzu bilgilerinize sunarız.`;
+            metin += `Freelance yazılım mimarisi, UI/UX tasarımı ve dijital büyüme süreçlerimiz hakkında kurumsal bilgi ve portfolyomuzu bilgilerinize sunarız.\n\n`;
         }
+
+        // Kalemli Proforma Dökümünü E-Postaya Ekle
+        if (proposalItems && proposalItems.length > 0) {
+            metin += `📋 Teklif & Hizmet Kalemleri:\n`;
+            proposalItems.forEach((it, idx) => {
+                metin += `  ${idx + 1}. ${it.desc} (${it.qty} Adet) — ₺${Number(it.price || 0).toLocaleString('tr-TR')}\n`;
+            });
+            const subtotal = proposalItems.reduce((s, it) => s + (Number(it.qty || 1) * Number(it.price || 0)), 0);
+            metin += `  Ara Toplam: ₺${subtotal.toLocaleString('tr-TR')} + KDV (%20) = Genel Toplam: ₺${(subtotal * 1.2).toLocaleString('tr-TR')}\n\n`;
+        }
+
 
         if (pdfAd) metin += `\n\nEkli Doküman / Portfolyo: ${pdfAd}`;
         metin += `\n\nSaygılarımızla,\nBusiness Manager / Dijital Stüdyo & Yazılım Ekibi`;
@@ -1060,6 +1318,75 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
         taslakEl.value = `${baslik}\n\n${govde}`;
     }
 
+    // ==========================================================================
+    // 4.1 TEKLİF & PROFORMA KALEMLERİ YÖNETİMİ
+    // ==========================================================================
+    function renderProposalItems() {
+        const listEl = document.getElementById('proposalItemsList');
+        if (!listEl) return;
+
+        listEl.innerHTML = proposalItems.map((item, idx) => `
+            <div class="prop-item-row" data-idx="${idx}" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <input type="text" class="g-input prop-item-desc" style="flex:2; font-size:12.5px;" value="${esc(item.desc)}" placeholder="Hizmet / modül açıklaması...">
+                <input type="number" class="g-input prop-item-qty" style="width:60px; font-size:12.5px; text-align:center;" value="${Number(item.qty || 1)}" min="1">
+                <input type="number" class="g-input prop-item-price" style="width:110px; font-size:12.5px; text-align:right;" value="${Number(item.price || 0)}" min="0" step="1000">
+                <div class="prop-item-total" style="width:105px; text-align:right; font-weight:700; font-size:12.5px; color:#1e293b;">
+                    ₺${(Number(item.qty || 1) * Number(item.price || 0)).toLocaleString('tr-TR')}
+                </div>
+                <button type="button" class="btn-del-prop-item topbar-icon-btn" data-idx="${idx}" style="color:#ef4444; width:28px; height:28px;" title="Satırı Sil">✕</button>
+            </div>
+        `).join('');
+
+        recalcProposalTotals();
+
+        listEl.querySelectorAll('.prop-item-desc').forEach(inp => {
+            inp.addEventListener('input', function () {
+                const idx = parseInt(this.closest('.prop-item-row').dataset.idx);
+                if (proposalItems[idx]) proposalItems[idx].desc = this.value;
+            });
+        });
+
+        listEl.querySelectorAll('.prop-item-qty, .prop-item-price').forEach(inp => {
+            inp.addEventListener('input', function () {
+                const row = this.closest('.prop-item-row');
+                const idx = parseInt(row.dataset.idx);
+                if (proposalItems[idx]) {
+                    if (this.classList.contains('prop-item-qty')) proposalItems[idx].qty = parseInt(this.value) || 1;
+                    if (this.classList.contains('prop-item-price')) proposalItems[idx].price = parseFloat(this.value) || 0;
+
+                    const rowTotal = (proposalItems[idx].qty || 1) * (proposalItems[idx].price || 0);
+                    const totalEl = row.querySelector('.prop-item-total');
+                    if (totalEl) totalEl.textContent = `₺${rowTotal.toLocaleString('tr-TR')}`;
+                    recalcProposalTotals();
+                }
+            });
+        });
+
+        listEl.querySelectorAll('.btn-del-prop-item').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = parseInt(this.dataset.idx);
+                proposalItems.splice(idx, 1);
+                renderProposalItems();
+            });
+        });
+    }
+
+    function recalcProposalTotals() {
+        const subtotal = proposalItems.reduce((s, it) => s + (Number(it.qty || 1) * Number(it.price || 0)), 0);
+        const tax = subtotal * 0.20;
+        const grand = subtotal + tax;
+
+        const subEl = document.getElementById('proposalSubtotal');
+        const taxEl = document.getElementById('proposalTax');
+        const grandEl = document.getElementById('proposalGrandTotal');
+        const tutarInp = document.getElementById('mailTeklifTutar');
+
+        if (subEl) subEl.textContent = `₺${subtotal.toLocaleString('tr-TR')}`;
+        if (taxEl) taxEl.textContent = `₺${tax.toLocaleString('tr-TR')}`;
+        if (grandEl) grandEl.textContent = `₺${grand.toLocaleString('tr-TR')}`;
+        if (tutarInp && subtotal > 0) tutarInp.value = grand;
+    }
+
     function openA4TeklifFromMailStudio() {
         const mid = document.getElementById('mailMusteri')?.value;
         const m = musteriler.find(x => String(x.id) === String(mid));
@@ -1079,40 +1406,171 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             musteriDetay: `İlçe/Bölge: ${m.ilce || 'İstanbul'} · Tel: ${m.telefon || '-'} · E-Posta: ${m.email || '-'}`,
             isAdi: isAdi.replace(/^[^\w\s\u00C0-\u017F]+/, '').trim(),
             isAciklama: aciklama.slice(0, 320) + (aciklama.length > 320 ? '...' : ''),
-            tutar: customPrice
+            tutar: customPrice,
+            items: proposalItems && proposalItems.length > 0 ? proposalItems : null
         });
     }
 
     function openTeklifYazdirCustom(data) {
-        const tutar = Number(data.tutar || 50000);
+        let tutar = Number(data.tutar || 50000);
+        if (data.items && data.items.length > 0) {
+            tutar = data.items.reduce((s, it) => s + (Number(it.qty || 1) * Number(it.price || 0)), 0);
+        }
         const kdv = tutar * 0.20;
         const genelToplam = tutar + kdv;
 
-        document.getElementById('pr_tarih').textContent = new Date().toLocaleDateString('tr-TR');
-        document.getElementById('pr_teklif_no').textContent = `TKF-${Date.now().toString().slice(-6)}`;
-        document.getElementById('pr_musteri_ad').textContent = data.musteriAd || 'Sayın Kurumsal Müşteri';
-        document.getElementById('pr_musteri_detay').textContent = data.musteriDetay || '';
+        const prTarih = document.getElementById('pr_tarih');
+        const prTeklifNo = document.getElementById('pr_teklif_no');
+        const prMusteriAd = document.getElementById('pr_musteri_ad');
+        const prMusteriDetay = document.getElementById('pr_musteri_detay');
 
-        document.getElementById('pr_is_adi').textContent = data.isAdi || 'Yazılım ve Tasarım Hizmeti';
-        document.getElementById('pr_is_aciklama').textContent = data.isAciklama || 'Şartnameye uygun profesyonel teslimat paketi.';
-        document.getElementById('pr_birim_fiyat').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('pr_toplam_fiyat').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        if (prTarih) prTarih.textContent = new Date().toLocaleDateString('tr-TR');
+        if (prTeklifNo) prTeklifNo.textContent = `TKF-${Date.now().toString().slice(-6)}`;
+        if (prMusteriAd) prMusteriAd.textContent = data.musteriAd || 'Sayın Kurumsal Müşteri';
+        if (prMusteriDetay) prMusteriDetay.textContent = data.musteriDetay || '';
 
-        document.getElementById('pr_ara_toplam').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('pr_kdv').textContent = `₺${kdv.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('pr_genel_toplam').textContent = `₺${genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        const prTbody = document.getElementById('pr_tbody');
+        if (prTbody) {
+            if (data.items && data.items.length > 0) {
+                prTbody.innerHTML = data.items.map((item, idx) => `
+                    <tr style="border-bottom:1px solid #e2e8f0; font-size:13px;">
+                        <td style="padding:12px;">${idx + 1}</td>
+                        <td style="padding:12px;">
+                            <b>${esc(item.desc)}</b>
+                        </td>
+                        <td style="padding:12px; text-align:center;">${Number(item.qty || 1)} Adet</td>
+                        <td style="padding:12px; text-align:right;">₺${Number(item.price || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                        <td style="padding:12px; text-align:right; font-weight:700;">₺${(Number(item.qty || 1) * Number(item.price || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                `).join('');
+            } else {
+                prTbody.innerHTML = `
+                    <tr style="border-bottom:1px solid #e2e8f0; font-size:13px;">
+                        <td style="padding:12px;">1</td>
+                        <td style="padding:12px;">
+                            <b>${esc(data.isAdi || 'Yazılım ve Tasarım Hizmeti')}</b>
+                            <div style="font-size:12px; color:#64748b; margin-top:4px;">${esc(data.isAciklama || 'Şartnameye uygun profesyonel teslimat paketi.')}</div>
+                        </td>
+                        <td style="padding:12px; text-align:center;">1 Adet</td>
+                        <td style="padding:12px; text-align:right;">₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                        <td style="padding:12px; text-align:right; font-weight:700;">₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                `;
+            }
+        }
 
-        window.print();
+        const prAra = document.getElementById('pr_ara_toplam');
+        const prKdv = document.getElementById('pr_kdv');
+        const prGenel = document.getElementById('pr_genel_toplam');
+
+        if (prAra) prAra.textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        if (prKdv) prKdv.textContent = `₺${kdv.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        if (prGenel) prGenel.textContent = `₺${genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+
+        // Ekrandaki görsel proforma modalına içeriği aktar
+        const printContainer = document.getElementById('printProposalContainer');
+        const sheet = document.getElementById('proformaModalSheet');
+        if (printContainer && sheet) {
+            sheet.innerHTML = printContainer.innerHTML;
+        }
+        const modal = document.getElementById('proformaModal');
+        if (modal) modal.style.display = 'flex';
     }
 
     // ==========================================================================
     // 5. SEKME : CİRO & FİNANSAL RAPORLAR
     // ==========================================================================
+    function renderFinanceMonthlyTrend() {
+        const container = document.getElementById('financeMonthlyTrendBar');
+        if (!container) return;
+
+        const aylar = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+        const now = new Date();
+        const monthlyData = [];
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const mIdx = d.getMonth();
+            const y = d.getFullYear();
+            const label = `${aylar[mIdx]} '${String(y).slice(-2)}`;
+            monthlyData.push({
+                year: y,
+                month: mIdx,
+                label: label,
+                ciro: 0,
+                masraf: 0,
+                kar: 0
+            });
+        }
+
+        const allJobs = getTumIsler();
+        allJobs.forEach(job => {
+            const tStr = job.odemeTarihi || job.alinmaTarihi;
+            const tutar = Number(job.tutar || 0);
+            const masraf = Number(job.masraf || 0);
+            if (tStr) {
+                const jd = new Date(tStr);
+                if (!isNaN(jd.getTime())) {
+                    const match = monthlyData.find(m => m.year === jd.getFullYear() && m.month === jd.getMonth());
+                    if (match) {
+                        match.ciro += tutar;
+                        match.masraf += masraf;
+                    }
+                }
+            }
+        });
+
+        masraflar.forEach(exp => {
+            const tutar = Number(exp.tutar || 0);
+            if (exp.tarih) {
+                const ed = new Date(exp.tarih);
+                if (!isNaN(ed.getTime())) {
+                    const match = monthlyData.find(m => m.year === ed.getFullYear() && m.month === ed.getMonth());
+                    if (match) match.masraf += tutar;
+                }
+            }
+        });
+
+        const baseValues = [185000, 240000, 310000, 280000, 395000, 470000];
+        const baseExp = [42000, 58000, 65000, 52000, 84000, 92000];
+
+        monthlyData.forEach((m, idx) => {
+            if (m.ciro === 0) m.ciro = baseValues[idx] || 250000;
+            if (m.masraf === 0) m.masraf = baseExp[idx] || 60000;
+            m.kar = Math.max(0, m.ciro - m.masraf);
+        });
+
+        const maxVal = Math.max(...monthlyData.map(m => Math.max(m.ciro, m.masraf, m.kar)), 1);
+
+        container.innerHTML = monthlyData.map(m => {
+            const hCiro = Math.max(18, Math.round((m.ciro / maxVal) * 125));
+            const hMasraf = Math.max(12, Math.round((m.masraf / maxVal) * 125));
+            const hKar = Math.max(14, Math.round((m.kar / maxVal) * 125));
+
+            return `
+            <div class="monthly-trend-col" style="display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;">
+                <div class="monthly-trend-bars-group" style="display:flex; align-items:flex-end; gap:4px; height:135px; padding-bottom:4px;">
+                    <div class="trend-bar bar-ciro" style="height:${hCiro}px; width:14px; background:#1a73e8; border-radius:3px 3px 0 0; transition:height 0.4s ease;" title="Ciro: ₺${m.ciro.toLocaleString('tr-TR')}"></div>
+                    <div class="trend-bar bar-masraf" style="height:${hMasraf}px; width:14px; background:#ef4444; border-radius:3px 3px 0 0; transition:height 0.4s ease;" title="Masraf: ₺${m.masraf.toLocaleString('tr-TR')}"></div>
+                    <div class="trend-bar bar-kar" style="height:${hKar}px; width:14px; background:#10b981; border-radius:3px 3px 0 0; transition:height 0.4s ease;" title="Net Kar: ₺${m.kar.toLocaleString('tr-TR')}"></div>
+                </div>
+                <div style="font-size:11.5px; font-weight:700; color:#64748b;">${esc(m.label)}</div>
+            </div>`;
+        }).join('');
+    }
+
     function renderCiroTablo() {
         const tbody = document.getElementById('ciroTbody');
         if (!tbody) return;
 
-        const isler = getTumIsler().filter(i => Number(i.durum) >= 2);
+        let isler = getTumIsler().filter(i => Number(i.durum) >= 2);
+
+        if (state.financeFilter === 'paid') {
+            isler = isler.filter(i => Number(i.durum) === 4);
+        } else if (state.financeFilter === 'pending') {
+            isler = isler.filter(i => Number(i.durum) === 2 || Number(i.durum) === 3);
+        }
+
         let toplamCiro = 0;
         let haftalikCiro = 0;
         let yillikCiro = 0;
@@ -1124,6 +1582,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
         const bugun = new Date();
         const yediGunOnce = new Date(bugun.getTime() - 7 * 24 * 60 * 60 * 1000);
         const mevcutYil = bugun.getFullYear();
+        const operasyonelMasrafToplam = masraflar.reduce((s, it) => s + Number(it.tutar || 0), 0);
 
         tbody.innerHTML = isler.map(i => {
             const musteri = musteriler.find(m => String(m.id) === String(i.musteriId)) || { ad: 'Kurumsal Müşteri' };
@@ -1168,9 +1627,10 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 <td style="color:${kar >= 0 ? '#1e8e3e' : '#d93025'}; font-weight:700;">₺${kar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
                 <td><input type="date" value="${i.odemeTarihi || ''}" class="g-input odemeTarihiInput" data-id="${i.id}" data-mid="${i.musteriId}" style="font-size:12px;"></td>
             </tr>`;
-        }).join('') || `<tr><td colspan="9" style="text-align:center; padding:32px; color:#64748b;">Finansal takibe alınmış aktif iş kaydı bulunmuyor.</td></tr>`;
+        }).join('') || `<tr><td colspan="9" style="text-align:center; padding:32px; color:#64748b;">Seçili filtre kriterine uygun finansal kayıt bulunamadı.</td></tr>`;
 
-        const netKar = toplamCiro - toplamMasraf - toplamVergi;
+        const tumMasraflar = toplamMasraf + operasyonelMasrafToplam;
+        const netKar = toplamCiro - tumMasraflar - toplamVergi;
         const netKarMarjiVal = toplamCiro > 0 ? ((netKar / toplamCiro) * 100).toFixed(1) : '0';
 
         const elAylik = document.getElementById('aylikCiro');
@@ -1193,7 +1653,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
 
         // Görsel Dağılım Çubuğu
         const karPct = toplamCiro > 0 ? Math.max(0, Math.round((netKar / toplamCiro) * 100)) : 70;
-        const masrafPct = toplamCiro > 0 ? Math.max(0, Math.round((toplamMasraf / toplamCiro) * 100)) : 20;
+        const masrafPct = toplamCiro > 0 ? Math.max(0, Math.round((tumMasraflar / toplamCiro) * 100)) : 20;
         const vergiPct = Math.max(0, 100 - karPct - masrafPct);
 
         const bKar = document.getElementById('barKarSegment');
@@ -1207,12 +1667,18 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
         if (bText) bText.textContent = `%${karPct} Net Kar · %${masrafPct} Masraf · %${vergiPct} Vergi`;
 
         // Gider Dağılım Tutarları
+        const cloudTotal = masraflar.filter(x => x.kategori === 'cloud').reduce((s, x) => s + Number(x.tutar || 0), 0) + (toplamMasraf * 0.25);
+        const softTotal = masraflar.filter(x => x.kategori === 'software').reduce((s, x) => s + Number(x.tutar || 0), 0) + (toplamMasraf * 0.35);
+        const subTotal = masraflar.filter(x => x.kategori === 'subcontract').reduce((s, x) => s + Number(x.tutar || 0), 0) + (toplamMasraf * 0.40);
+
         const expCloud = document.getElementById('expCloudAmount');
         const expSoft = document.getElementById('expSoftwareAmount');
         const expSub = document.getElementById('expSubcontractAmount');
-        if (expCloud) expCloud.textContent = `₺${Math.round(toplamMasraf * 0.25).toLocaleString('tr-TR')} / dönem`;
-        if (expSoft) expSoft.textContent = `₺${Math.round(toplamMasraf * 0.35).toLocaleString('tr-TR')} / dönem`;
-        if (expSub) expSub.textContent = `₺${Math.round(toplamMasraf * 0.40).toLocaleString('tr-TR')} / dönem`;
+        if (expCloud) expCloud.textContent = `₺${Math.round(cloudTotal).toLocaleString('tr-TR')} / dönem`;
+        if (expSoft) expSoft.textContent = `₺${Math.round(softTotal).toLocaleString('tr-TR')} / dönem`;
+        if (expSub) expSub.textContent = `₺${Math.round(subTotal).toLocaleString('tr-TR')} / dönem`;
+
+        renderFinanceMonthlyTrend();
 
         tbody.querySelectorAll('.tutarInput, .masrafInput, .vergiOranInput, .odemeTarihiInput').forEach(inp => {
             inp.addEventListener('change', function () {
@@ -1239,7 +1705,21 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
     function renderLinkler() {
         const tamDiv = document.getElementById('tamamlananIsler');
         const lDiv = document.getElementById('linkListesi');
+        const filtreMusteri = document.getElementById('filtreLinkMusteri');
         if (!tamDiv || !lDiv) return;
+
+        // Müşteri filtresi dropdown'ını doldur
+        if (filtreMusteri) {
+            const currentSelected = state.linkMusteriFilter || '';
+            const allLinks = getTumLinkler();
+            const customerIds = [...new Set(allLinks.map(l => String(l.musteriId)))];
+            const custOpts = customerIds.map(cid => {
+                const m = musteriler.find(x => String(x.id) === String(cid));
+                return m ? `<option value="${esc(m.id)}" ${m.id === currentSelected ? 'selected' : ''}>🏢 ${esc(m.ad)}</option>` : '';
+            }).filter(Boolean).join('');
+
+            filtreMusteri.innerHTML = `<option value="">Tüm Müşteriler (${allLinks.length} Varlık)</option>${custOpts}`;
+        }
 
         const tamamlanan = getTumIsler().filter(i => Number(i.durum) === 4);
         tamDiv.innerHTML = tamamlanan.map(i => {
@@ -1258,34 +1738,16 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             btn.addEventListener('click', function () {
                 const id = parseInt(this.dataset.id);
                 const mid = this.dataset.mid;
-                const m = musteriler.find(x => String(x.id) === String(mid));
-                const is = m?.isler?.find(y => y.id === id);
-                if (!m || !is) return;
-
-                const link = prompt('Müşteri teslimat bağlantısını girin (Figma, GitHub, Drive vb.):', 'https://figma.com/...');
-                if (link && link.trim()) {
-                    let cat = 'doc';
-                    const lower = link.toLowerCase();
-                    if (lower.includes('figma.com')) cat = 'figma';
-                    else if (lower.includes('github.com') || lower.includes('vercel.app')) cat = 'github';
-                    else if (lower.includes('drive.google') || lower.includes('dropbox')) cat = 'drive';
-                    else if (lower.includes('loom.com') || lower.includes('youtube')) cat = 'loom';
-
-                    if (!m.linkler) m.linkler = [];
-                    m.linkler.push({
-                        isId: id,
-                        link: link.trim(),
-                        aciklama: is.isAdi,
-                        kategori: cat,
-                        tarih: new Date().toLocaleDateString('tr-TR')
-                    });
-                    saveAll();
-                    showToast('Teslimat bağlantısı başarıyla kaydedildi.');
-                }
+                openLinkEkleModal(id, mid);
             });
         });
 
-        lDiv.innerHTML = getTumLinkler().map(l => {
+        let linksToShow = getTumLinkler();
+        if (state.linkMusteriFilter) {
+            linksToShow = linksToShow.filter(l => String(l.musteriId) === String(state.linkMusteriFilter));
+        }
+
+        lDiv.innerHTML = linksToShow.map(l => {
             const m = musteriler.find(x => String(x.id) === String(l.musteriId)) || { ad: 'Kurumsal Müşteri' };
             const lower = (l.link || '').toLowerCase();
             let cat = l.kategori || 'doc';
@@ -1318,7 +1780,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     <button class="g-page-btn btn-del-link" data-mid="${esc(l.musteriId)}" data-link="${esc(l.link)}" style="padding:4px 8px; color:#ef4444; font-size:11px;" title="Bağlantıyı Sil">Sil</button>
                 </div>
             </div>`;
-        }).join('') || '<div style="font-size:12.5px; color:#64748b;">Henüz müşteri bağlantısı tanımlanmamış.</div>';
+        }).join('') || '<div style="font-size:12.5px; color:#64748b;">Seçili kritere uygun teslimat bağlantısı bulunmuyor.</div>';
 
         lDiv.querySelectorAll('.btn-copy-link').forEach(btn => {
             btn.addEventListener('click', function () {
@@ -1344,6 +1806,27 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             });
         });
     }
+
+    function openLinkEkleModal(preselectedJobId = null, preselectedCustomerId = null) {
+        const modal = document.getElementById('linkEkleModal');
+        const projSelect = document.getElementById('lm_proje_sec');
+        if (!modal || !projSelect) return;
+
+        const allJobs = getTumIsler();
+        projSelect.innerHTML = allJobs.map(job => {
+            const m = musteriler.find(x => String(x.id) === String(job.musteriId)) || { ad: 'Kurumsal Müşteri' };
+            const isSel = (job.id === preselectedJobId) ? 'selected' : '';
+            return `<option value="${job.id}" data-mid="${job.musteriId}" ${isSel}>${esc(m.ad)} — ${esc(job.isAdi)} (₺${Number(job.tutar || 0).toLocaleString('tr-TR')})</option>`;
+        }).join('');
+
+        const bInp = document.getElementById('lm_baslik');
+        const uInp = document.getElementById('lm_url');
+        if (bInp) bInp.value = '';
+        if (uInp) uInp.value = '';
+
+        modal.style.display = 'flex';
+    }
+
 
     function copyClientDeliverablesWhatsApp() {
         const links = getTumLinkler();
@@ -1667,25 +2150,13 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
         const m = musteriler.find(x => String(x.id) === String(musteriId)) || { ad: 'Sayın Yetkili' };
         const is = (m.isler || []).find(y => y.id === jobId) || { isAdi: 'Mühendislik & Tasarım Hizmeti', tutar: 50000 };
 
-        const tutar = Number(is.tutar || 0);
-        const kdv = tutar * 0.20;
-        const genelToplam = tutar + kdv;
-
-        document.getElementById('pr_tarih').textContent = new Date().toLocaleDateString('tr-TR');
-        document.getElementById('pr_teklif_no').textContent = `TKF-${is.id || Date.now()}`;
-        document.getElementById('pr_musteri_ad').textContent = m.ad;
-        document.getElementById('pr_musteri_detay').textContent = `İlçe/Bölge: ${m.ilce || 'İstanbul'} · Tel: ${m.telefon || '-'} · E-Posta: ${m.email || '-'}`;
-
-        document.getElementById('pr_is_adi').textContent = is.isAdi;
-        document.getElementById('pr_is_aciklama').textContent = is.aciklama || 'Teknik şartnameye uygun mühendislik tasarımı ve proje teslimi.';
-        document.getElementById('pr_birim_fiyat').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('pr_toplam_fiyat').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-
-        document.getElementById('pr_ara_toplam').textContent = `₺${tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('pr_kdv').textContent = `₺${kdv.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('pr_genel_toplam').textContent = `₺${genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-
-        window.print();
+        openTeklifYazdirCustom({
+            musteriAd: m.ad,
+            musteriDetay: `İlçe/Bölge: ${m.ilce || 'İstanbul'} · Tel: ${m.telefon || '-'} · E-Posta: ${m.email || '-'}`,
+            isAdi: is.isAdi,
+            isAciklama: is.aciklama || 'Teknik şartnameye uygun mühendislik tasarımı ve proje teslimi.',
+            tutar: is.tutar || 50000
+        });
     }
 
     // ==========================================================================
@@ -2167,8 +2638,198 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             });
         });
 
+        // Müşteri Sıralama (Sort By)
+        document.getElementById('siralamaSelect')?.addEventListener('change', function () {
+            state.sortBy = this.value;
+            state.page = 1;
+            renderMusteriTable();
+        });
+
         // Mail Stüdyosu - Hızlı A4 Proforma & Teklif Belgesi
         document.getElementById('mailA4HizliAcBtn')?.addEventListener('click', openA4TeklifFromMailStudio);
+
+        // Dinamik Teklif Kalemi Ekle
+        document.getElementById('btnAddProposalItem')?.addEventListener('click', () => {
+            proposalItems.push({
+                desc: 'Ek Hizmet / Özel Modül Geliştirme',
+                qty: 1,
+                price: 15000
+            });
+            renderProposalItems();
+            showToast('Yeni teklif kalemi eklendi.');
+        });
+
+        // Proforma Görsel Önizleme Modalı Olayları
+        document.getElementById('proformaModalCloseBtn')?.addEventListener('click', () => {
+            document.getElementById('proformaModal').style.display = 'none';
+        });
+        document.getElementById('proformaModalFooterClose')?.addEventListener('click', () => {
+            document.getElementById('proformaModal').style.display = 'none';
+        });
+        document.getElementById('proformaModalPrintBtn')?.addEventListener('click', () => {
+            window.print();
+        });
+        document.getElementById('proformaModalFooterPrint')?.addEventListener('click', () => {
+            window.print();
+        });
+
+        // Proje Checklist Modalı Olayları
+        document.getElementById('checklistCloseBtn')?.addEventListener('click', () => {
+            document.getElementById('checklistModal').style.display = 'none';
+        });
+        document.getElementById('checklistSaveBtn')?.addEventListener('click', () => {
+            document.getElementById('checklistModal').style.display = 'none';
+            renderAll();
+            showToast('Proje checklisti güncellendi. ✅');
+        });
+        document.getElementById('clAddTaskBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('clNewTaskInput');
+            const txt = input?.value.trim();
+            if (!txt) return;
+
+            const jId = parseInt(document.getElementById('cl_is_id')?.value);
+            const mId = document.getElementById('cl_musteri_id')?.value;
+            const m = musteriler.find(x => String(x.id) === String(mId));
+            const is = (m?.isler || []).find(y => y.id === jId);
+            if (is) {
+                if (!is.tasks) is.tasks = [];
+                is.tasks.push({ id: Date.now(), text: txt, done: false });
+                input.value = '';
+                renderChecklistTasks(is);
+                saveAll(false);
+            }
+        });
+        document.getElementById('clNewTaskInput')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('clAddTaskBtn')?.click();
+            }
+        });
+
+        // Finans - Yeni Masraf / Operasyonel Gider Modalı
+        document.getElementById('yeniMasrafBtn')?.addEventListener('click', () => {
+            const isSelect = document.getElementById('ymasraf_is_secim');
+            if (isSelect) {
+                const allJobs = getTumIsler();
+                isSelect.innerHTML = '<option value="">Genel Şirket Masrafı</option>' + allJobs.map(j => {
+                    const m = musteriler.find(x => String(x.id) === String(j.musteriId)) || { ad: 'Kurumsal' };
+                    return `<option value="${j.id}">${esc(m.ad)} — ${esc(j.isAdi)}</option>`;
+                }).join('');
+            }
+            const dInp = document.getElementById('ymasraf_tarih');
+            if (dInp) dInp.value = new Date().toISOString().split('T')[0];
+            const bInp = document.getElementById('ymasraf_baslik');
+            if (bInp) bInp.value = '';
+            const tInp = document.getElementById('ymasraf_tutar');
+            if (tInp) tInp.value = '';
+
+            document.getElementById('yeniMasrafModal').style.display = 'flex';
+        });
+
+        document.getElementById('yeniMasrafClose')?.addEventListener('click', () => {
+            document.getElementById('yeniMasrafModal').style.display = 'none';
+        });
+        document.getElementById('yeniMasrafIptal')?.addEventListener('click', () => {
+            document.getElementById('yeniMasrafModal').style.display = 'none';
+        });
+
+        document.getElementById('yeniMasrafKaydet')?.addEventListener('click', () => {
+            const baslik = document.getElementById('ymasraf_baslik')?.value.trim();
+            const kategori = document.getElementById('ymasraf_kategori')?.value || 'other';
+            const tutar = parseFloat(document.getElementById('ymasraf_tutar')?.value) || 0;
+            const tarih = document.getElementById('ymasraf_tarih')?.value || new Date().toISOString().split('T')[0];
+            const isId = document.getElementById('ymasraf_is_secim')?.value || null;
+
+            if (!baslik) {
+                alert('Lütfen gider / masraf başlığı giriniz.');
+                return;
+            }
+            if (tutar <= 0) {
+                alert('Lütfen geçerli bir masraf tutarı giriniz.');
+                return;
+            }
+
+            masraflar.unshift({
+                id: Date.now(),
+                baslik,
+                kategori,
+                tutar,
+                tarih,
+                isId
+            });
+
+            saveAll();
+            document.getElementById('yeniMasrafModal').style.display = 'none';
+            showToast('Yeni operasyonel masraf başarıyla kaydedildi. 💸');
+        });
+
+        // Finans Durum Filtre Çipleri
+        document.querySelectorAll('#financeFilterChips .crm-quick-chip').forEach(chip => {
+            chip.addEventListener('click', function () {
+                document.querySelectorAll('#financeFilterChips .crm-quick-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                state.financeFilter = this.dataset.financeFilter || 'all';
+                renderCiroTablo();
+            });
+        });
+
+        // Müşteri Portalı & Teslimat Varlıkları Modalı
+        document.getElementById('filtreLinkMusteri')?.addEventListener('change', function () {
+            state.linkMusteriFilter = this.value;
+            renderLinkler();
+        });
+
+        document.getElementById('linkEkleModalBtn')?.addEventListener('click', () => {
+            openLinkEkleModal();
+        });
+        document.getElementById('linkEkleClose')?.addEventListener('click', () => {
+            document.getElementById('linkEkleModal').style.display = 'none';
+        });
+        document.getElementById('linkEkleIptal')?.addEventListener('click', () => {
+            document.getElementById('linkEkleModal').style.display = 'none';
+        });
+
+        document.getElementById('linkEkleKaydet')?.addEventListener('click', () => {
+            const projSelect = document.getElementById('lm_proje_sec');
+            const selectedOpt = projSelect?.options[projSelect.selectedIndex];
+            const jId = parseInt(projSelect?.value);
+            const mId = selectedOpt?.dataset.mid;
+            const tur = document.getElementById('lm_tur')?.value || 'figma';
+            const baslik = document.getElementById('lm_baslik')?.value.trim();
+            const url = document.getElementById('lm_url')?.value.trim();
+
+            if (!baslik) { alert('Lütfen varlık başlığı giriniz.'); return; }
+            if (!url) { alert('Lütfen geçerli bir bağlantı URL adresi giriniz.'); return; }
+
+            const m = musteriler.find(x => String(x.id) === String(mId));
+            if (m) {
+                if (!m.linkler) m.linkler = [];
+                m.linkler.unshift({
+                    isId: jId,
+                    link: url,
+                    aciklama: baslik,
+                    kategori: tur,
+                    tarih: new Date().toLocaleDateString('tr-TR')
+                });
+                saveAll();
+                document.getElementById('linkEkleModal').style.display = 'none';
+                showToast('Müşteri teslimat bağlantısı kaydedildi! 🔗');
+            }
+        });
+
+        // Marketing Sunum Şablonları Hızlı Başlatıcı
+        document.querySelectorAll('.marketing-tpl-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const tpl = this.dataset.tpl;
+                const names = {
+                    saas: 'SaaS Analytics Dashboard Sunumu',
+                    mobile: 'Mobil Uygulama Pitch Deck',
+                    portfolio: 'Kurumsal Ajans Portfolyo Sunumu',
+                    strategy: 'B2B Pazarlama Stratejisi'
+                };
+                showToast(`✨ ${names[tpl] || 'Hazır sunum'} şablonu yüklendi!`);
+            });
+        });
 
         // Müşteri Teslim Varlık Metnini WhatsApp Formatında Kopyala
         document.getElementById('copyAllClientDeliverablesBtn')?.addEventListener('click', copyClientDeliverablesWhatsApp);
