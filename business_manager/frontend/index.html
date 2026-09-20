@@ -1535,10 +1535,28 @@
                         <div class="assistant-status">İş akışı rehberiniz</div>
                     </div>
                 </div>
-                <button class="assistant-close-btn" id="closeAssistantBtn" title="Kapat">✕</button>
+                <div class="assistant-header-right">
+                    <button class="assistant-key-btn" id="assistantKeyBtn" title="AI API Anahtarı Ayarla">⚙️</button>
+                    <button class="assistant-close-btn" id="closeAssistantBtn" title="Kapat">✕</button>
+                </div>
             </div>
-            
-            <div class="assistant-body">
+
+            <div class="assistant-mode-switch">
+                <button class="assistant-mode-btn active" id="assistantModeNavBtn" data-mode="nav">🧭 Hızlı Geçiş</button>
+                <button class="assistant-mode-btn" id="assistantModeChatBtn" data-mode="chat">💬 AI Sohbet</button>
+            </div>
+
+            <!-- API Anahtarı Ayar Paneli (yalnızca bu tarayıcıda saklanır) -->
+            <div class="assistant-key-panel" id="assistantKeyPanel" style="display:none;">
+                <div class="assistant-key-hint">Groq API anahtarınız yalnızca bu tarayıcıda (localStorage) saklanır; koda veya sunucuya asla gönderilmez.</div>
+                <input type="password" id="assistantGroqKey" class="g-input" style="width:100%;" placeholder="gsk_...">
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button class="g-page-btn" id="assistantKeySaveBtn" style="flex:1;">Kaydet</button>
+                    <button class="g-page-btn" id="assistantKeyClearBtn" style="color:#ef4444;">Sil</button>
+                </div>
+            </div>
+
+            <div class="assistant-body" id="assistantNavView">
                 <div class="assistant-msg-bubble">
                     <strong>Merhaba!</strong> Ben Timsah Asistan. Hangi çalışma modülüne geçmek istersiniz?
                 </div>
@@ -1588,8 +1606,21 @@
                 <div class="assistant-feedback" id="assistantFeedback"></div>
             </div>
 
+            <!-- Gerçek AI Sohbet Görünümü (Groq API) -->
+            <div class="assistant-body assistant-chat-view" id="assistantChatView" style="display:none;">
+                <div class="assistant-chat-messages" id="assistantChatMessages">
+                    <div class="assistant-msg-bubble">
+                        <strong>Merhaba!</strong> Ben Timsah Asistan, Groq destekli yapay zeka ile konuşabilirsin. Müşteri, teklif, e-posta metni veya genel işletme sorularında yardımcı olabilirim.
+                    </div>
+                </div>
+                <div class="assistant-chat-input-row">
+                    <input type="text" id="assistantChatInput" class="g-input" placeholder="Bir şey sor..." style="flex:1;">
+                    <button class="btn-ai-sparkle" id="assistantChatSendBtn" style="padding:10px 14px;">➤</button>
+                </div>
+            </div>
+
             <div class="assistant-footer">
-                <span>💡 Hızlı geçiş modu aktif</span>
+                <span id="assistantFooterHint">💡 Hızlı geçiş modu aktif</span>
             </div>
         </div>
 

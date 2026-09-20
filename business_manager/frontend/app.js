@@ -2934,6 +2934,136 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     }
                 });
             }
+
+            // ---- Mod Seçici: Hızlı Geçiş <-> Gerçek AI Sohbet ----
+            const navView = document.getElementById('assistantNavView');
+            const chatView = document.getElementById('assistantChatView');
+            const modeNavBtn = document.getElementById('assistantModeNavBtn');
+            const modeChatBtn = document.getElementById('assistantModeChatBtn');
+            const footerHint = document.getElementById('assistantFooterHint');
+
+            function setMode(mode) {
+                const isChat = mode === 'chat';
+                navView.style.display = isChat ? 'none' : 'flex';
+                chatView.style.display = isChat ? 'flex' : 'none';
+                modeNavBtn.classList.toggle('active', !isChat);
+                modeChatBtn.classList.toggle('active', isChat);
+                if (footerHint) footerHint.textContent = isChat ? '💬 Groq AI sohbet modu aktif' : '💡 Hızlı geçiş modu aktif';
+                if (isChat) setTimeout(() => chatInput?.focus(), 100);
+            }
+            modeNavBtn?.addEventListener('click', () => setMode('nav'));
+            modeChatBtn?.addEventListener('click', () => setMode('chat'));
+
+            // ---- API Anahtarı Paneli (yalnızca localStorage'da saklanır) ----
+            const keyBtn = document.getElementById('assistantKeyBtn');
+            const keyPanel = document.getElementById('assistantKeyPanel');
+            const keyInput = document.getElementById('assistantGroqKey');
+            const keySaveBtn = document.getElementById('assistantKeySaveBtn');
+            const keyClearBtn = document.getElementById('assistantKeyClearBtn');
+            const GROQ_KEY_STORAGE = 'ai_manager_groq_key';
+
+            if (keyInput) keyInput.value = localStorage.getItem(GROQ_KEY_STORAGE) || '';
+
+            keyBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const showing = keyPanel.style.display !== 'none';
+                keyPanel.style.display = showing ? 'none' : 'block';
+                if (!showing) setTimeout(() => keyInput?.focus(), 50);
+            });
+
+            keySaveBtn?.addEventListener('click', () => {
+                const val = (keyInput?.value || '').trim();
+                if (val) {
+                    localStorage.setItem(GROQ_KEY_STORAGE, val);
+                    showToast('API anahtarı bu tarayıcıda kaydedildi.');
+                } else {
+                    showToast('Lütfen geçerli bir anahtar girin.');
+                }
+                keyPanel.style.display = 'none';
+            });
+
+            keyClearBtn?.addEventListener('click', () => {
+                localStorage.removeItem(GROQ_KEY_STORAGE);
+                if (keyInput) keyInput.value = '';
+                showToast('API anahtarı silindi.');
+            });
+
+            // ---- Gerçek AI Sohbet (Groq) ----
+            const chatMessages = document.getElementById('assistantChatMessages');
+            const chatInput = document.getElementById('assistantChatInput');
+            const chatSendBtn = document.getElementById('assistantChatSendBtn');
+            let assistantChatHistory = [];
+
+            function appendChatBubble(text, cls) {
+                const div = document.createElement('div');
+                div.className = cls;
+                div.textContent = text;
+                chatMessages.appendChild(div);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return div;
+            }
+
+            async function sendAssistantChat() {
+                const text = (chatInput?.value || '').trim();
+                if (!text) return;
+
+                const apiKey = localStorage.getItem(GROQ_KEY_STORAGE) || '';
+                if (!apiKey) {
+                    appendChatBubble('Önce sağ üstteki ⚙️ ikonundan Groq API anahtarınızı girin.', 'assistant-chat-bubble-error');
+                    keyPanel.style.display = 'block';
+                    return;
+                }
+
+                appendChatBubble(text, 'assistant-chat-bubble-user');
+                assistantChatHistory.push({ role: 'user', content: text });
+                chatInput.value = '';
+                chatSendBtn.disabled = true;
+
+                const loadingEl = appendChatBubble('Timsah Asistan yazıyor...', 'assistant-chat-bubble-loading');
+
+                try {
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'llama-3.3-70b-versatile',
+                            messages: [
+                                { role: 'system', content: 'Sen Business Manager uygulamasında çalışan "Timsah Asistan" adlı yardımsever bir yapay zeka asistanısın. Müşteri ilişkileri, satış teklifleri, e-posta metinleri ve genel işletme soruları konusunda kısa, net ve Türkçe yanıtlar ver.' },
+                                ...assistantChatHistory.slice(-10)
+                            ],
+                            temperature: 0.7
+                        })
+                    });
+
+                    loadingEl.remove();
+
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        const msg = errData?.error?.message || `HTTP ${res.status}`;
+                        appendChatBubble(`Hata: ${msg}`, 'assistant-chat-bubble-error');
+                        return;
+                    }
+
+                    const data = await res.json();
+                    const reply = data.choices?.[0]?.message?.content || 'Yanıt alınamadı.';
+                    appendChatBubble(reply, 'assistant-chat-bubble-ai');
+                    assistantChatHistory.push({ role: 'assistant', content: reply });
+                } catch (err) {
+                    loadingEl.remove();
+                    appendChatBubble('Bağlantı hatası: ' + (err?.message || 'bilinmeyen hata'), 'assistant-chat-bubble-error');
+                } finally {
+                    chatSendBtn.disabled = false;
+                    chatInput.focus();
+                }
+            }
+
+            chatSendBtn?.addEventListener('click', sendAssistantChat);
+            chatInput?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendAssistantChat();
+            });
         }
 
         // ==========================================================================

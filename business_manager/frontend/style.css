@@ -2151,6 +2151,193 @@ body {
 }
 
 /* ==========================================================================
+   AI SOHBET (GROQ) — MOD SEÇİCİ, ANAHTAR PANELİ VE SOHBET GÖRÜNÜMÜ
+   ========================================================================== */
+.assistant-header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.assistant-key-btn {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    font-size: 14px;
+    cursor: pointer;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.assistant-key-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.assistant-mode-switch {
+    display: flex;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.assistant-mode-btn {
+    flex: 1;
+    padding: 9px 8px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.assistant-mode-btn:hover {
+    color: #176b87;
+}
+
+.assistant-mode-btn.active {
+    color: #176b87;
+    border-bottom-color: #176b87;
+    background: #ffffff;
+}
+
+.assistant-key-panel {
+    padding: 12px 14px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+}
+
+.assistant-key-hint {
+    font-size: 10.5px;
+    color: #92400e;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.assistant-chat-view {
+    padding: 0;
+}
+
+.assistant-chat-messages {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.assistant-chat-bubble-user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #1a73e8 0%, #176b87 100%);
+    color: #ffffff;
+    border-radius: 10px 10px 2px 10px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    max-width: 85%;
+    white-space: pre-wrap;
+}
+
+.assistant-chat-bubble-ai {
+    align-self: flex-start;
+    background: #eef8f4;
+    border: 1px solid #c8e8d5;
+    border-radius: 10px 10px 10px 2px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    color: #1f5f45;
+    line-height: 1.45;
+    max-width: 85%;
+    white-space: pre-wrap;
+}
+
+.assistant-chat-bubble-error {
+    align-self: flex-start;
+    background: #fff0f0;
+    border: 1px solid #f5c2c2;
+    border-radius: 10px 10px 10px 2px;
+    padding: 9px 12px;
+    font-size: 12px;
+    color: #c94c4c;
+    line-height: 1.45;
+    max-width: 90%;
+}
+
+.assistant-chat-bubble-loading {
+    align-self: flex-start;
+    background: #eef8f4;
+    border: 1px solid #c8e8d5;
+    border-radius: 10px 10px 10px 2px;
+    padding: 9px 12px;
+    font-size: 12px;
+    color: #1f5f45;
+    opacity: 0.75;
+}
+
+.assistant-chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+
+.assistant-chat-input-row input {
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12.5px;
+    outline: none;
+}
+
+.assistant-chat-input-row input:focus {
+    border-color: #176b87;
+    box-shadow: 0 0 0 2px rgba(23, 107, 135, 0.15);
+}
+
+[data-theme="dark"] .assistant-mode-switch {
+    background: var(--g-card-bg);
+    border-bottom-color: var(--g-border);
+}
+[data-theme="dark"] .assistant-mode-btn {
+    color: var(--g-text-muted);
+}
+[data-theme="dark"] .assistant-mode-btn.active {
+    background: var(--g-bg);
+    color: var(--g-blue);
+}
+[data-theme="dark"] .assistant-key-panel {
+    background: rgba(251, 191, 36, 0.08);
+    border-bottom-color: rgba(251, 191, 36, 0.3);
+}
+[data-theme="dark"] .assistant-chat-input-row {
+    background: var(--g-card-bg);
+    border-top-color: var(--g-border);
+}
+[data-theme="dark"] .assistant-chat-input-row input {
+    background: var(--g-bg);
+    border-color: var(--g-border);
+    color: var(--g-text-dark);
+}
+[data-theme="dark"] .assistant-chat-bubble-ai {
+    background: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.3);
+    color: #bbf7d0;
+}
+[data-theme="dark"] .assistant-chat-bubble-error {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.3);
+    color: #fca5a5;
+}
+
+/* ==========================================================================
    GELİŞMİŞ SEKME STİLLERİ (CRM, KANBAN, FİNANS, TESLİMAT)
    ========================================================================== */
 
