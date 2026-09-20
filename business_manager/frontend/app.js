@@ -2985,41 +2985,10 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 }
             });
 
-            // ---- API Anahtarı Paneli (yalnızca localStorage'da saklanır) ----
-            const keyBtn = document.getElementById('assistantKeyBtn');
-            const keyPanel = document.getElementById('assistantKeyPanel');
-            const keyInput = document.getElementById('assistantGroqKey');
-            const keySaveBtn = document.getElementById('assistantKeySaveBtn');
-            const keyClearBtn = document.getElementById('assistantKeyClearBtn');
-            const GROQ_KEY_STORAGE = 'ai_manager_groq_key';
-
-            if (keyInput) keyInput.value = localStorage.getItem(GROQ_KEY_STORAGE) || '';
-
-            keyBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const showing = keyPanel.style.display !== 'none';
-                keyPanel.style.display = showing ? 'none' : 'block';
-                if (!showing) setTimeout(() => keyInput?.focus(), 50);
-            });
-
-            keySaveBtn?.addEventListener('click', () => {
-                const val = (keyInput?.value || '').trim();
-                if (val) {
-                    localStorage.setItem(GROQ_KEY_STORAGE, val);
-                    showToast('API anahtarı bu tarayıcıda kaydedildi.');
-                } else {
-                    showToast('Lütfen geçerli bir anahtar girin.');
-                }
-                keyPanel.style.display = 'none';
-            });
-
-            keyClearBtn?.addEventListener('click', () => {
-                localStorage.removeItem(GROQ_KEY_STORAGE);
-                if (keyInput) keyInput.value = '';
-                showToast('API anahtarı silindi.');
-            });
-
-            // ---- Gerçek AI Sohbet (Groq) ----
+            // ---- Gerçek AI Sohbet (Supabase Edge Function → Groq proxy) ----
+            // Groq anahtarı yalnızca Supabase'in secret store'unda durur; tüm kullanıcılar
+            // aynı sunucu tarafı fonksiyonu üzerinden geçer, hiçbir key tarayıcıya inmez.
+            const AI_ASSISTANT_ENDPOINT = `${SUPABASE_URL}/functions/v1/ai-assistant`;
             const chatMessages = document.getElementById('assistantChatMessages');
             const chatInput = document.getElementById('assistantChatInput');
             const chatSendBtn = document.getElementById('assistantChatSendBtn');
@@ -3069,13 +3038,6 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 const text = (chatInput?.value || '').trim();
                 if (!text) return;
 
-                const apiKey = localStorage.getItem(GROQ_KEY_STORAGE) || '';
-                if (!apiKey) {
-                    appendChatBubble('Önce sağ üstteki ⚙️ ikonundan Groq API anahtarınızı girin.', 'assistant-chat-bubble-error');
-                    keyPanel.style.display = 'block';
-                    return;
-                }
-
                 appendChatBubble(text, 'assistant-chat-bubble-user');
                 assistantChatHistory.push({ role: 'user', content: text });
                 updateAssistantChatSuggestions(text);
@@ -3085,19 +3047,18 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 const loadingEl = appendChatBubble('Sanal CEO yazıyor...', 'assistant-chat-bubble-loading');
 
                 try {
-                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    const res = await fetch(AI_ASSISTANT_ENDPOINT, {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${apiKey}`,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'apikey': SUPABASE_ANON_KEY,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            model: 'openai/gpt-oss-120b',
                             messages: [
                                 { role: 'system', content: 'Sen kullanıcının freelance yazılım/tasarım şirketinin "Sanal CEO"sun. Kullanıcı bu şirketin sahibi ve senin patronun; asıl görevin onun iş süreçlerini (müşteri takibi, teklifler, e-posta iletişimi, nakit akışı, önceliklendirme) düzenli ve verimli hale getirmek. Ona resmi ama sıcak bir dille, deneyimli bir CEO/COO gibi "Patron" diye hitap et. Kısa, net, aksiyon odaklı ve Türkçe yanıt ver; her fırsatta somut bir sonraki adım öner (örn. "şu müşteriye teklif gönderelim", "bugün şu 3 işi önceliklendirelim") ve gerekiyorsa hangi modülü açması gerektiğini söyle.' },
                                 ...assistantChatHistory.slice(-10)
-                            ],
-                            temperature: 0.7
+                            ]
                         })
                     });
 
