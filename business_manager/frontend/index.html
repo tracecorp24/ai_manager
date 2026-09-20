@@ -73,71 +73,240 @@
 
     <!-- APP LAYOUT (Sidebar Rail + Main Content) -->
     <div class="app-layout">
-        <!-- SOL NAVİGASYON (PowerBI / Google Rail) -->
+        <!-- SOL NAVİGASYON (Sadeleştirilmiş 4 Ana Merkez) -->
         <aside class="sidebar-rail" id="sidebarRail">
-            <div class="nav-section-title">Genel Bakış</div>
-            <button class="nav-item active" data-tab="tab-kpi">
+            <div class="nav-section-title">Yönetim Paneli</div>
+            
+            <button class="nav-item active" data-tab="tab-kpi" id="navItemOverview" title="Ciro, Karlılık, Nakit Akışı ve Temel Göstergeler">
                 <span class="nav-icon">📊</span>
-                <span class="nav-label">KPI & Analitik Özeti</span>
+                <span class="nav-label">Genel Bakış & Finans</span>
             </button>
-            <button class="nav-item" data-tab="tab-customers">
+            
+            <button class="nav-item" data-tab="tab-customers" id="navItemOperations" title="Kanban Süreçleri, Müşteri Veritabanı ve Teslimat Linkleri">
                 <span class="nav-icon">👥</span>
-                <span class="nav-label">Müşteri Veri Tabanı</span>
+                <span class="nav-label">Müşteriler & İş Takibi</span>
                 <span class="nav-badge" id="navCustomerCount">1.6K</span>
             </button>
-            <button class="nav-item" data-tab="tab-pipeline">
-                <span class="nav-icon">📋</span>
-                <span class="nav-label">Süreçler (Kanban)</span>
+            
+            <button class="nav-item" data-tab="tab-mail" id="navItemProposals" title="Kalemli Proforma Teklif, AI E-posta ve WhatsApp Paylaşımı">
+                <span class="nav-icon">📄</span>
+                <span class="nav-label">Teklif & İletişim</span>
             </button>
-
-            <div class="nav-section-title">İletişim & Finans</div>
-            <button class="nav-item" data-tab="tab-mail">
-                <span class="nav-icon">✉️</span>
-                <span class="nav-label">AI E-Posta & Teklif</span>
-            </button>
-            <button class="nav-item" data-tab="tab-finance">
-                <span class="nav-icon">💰</span>
-                <span class="nav-label">Ciro & Karlılık</span>
-            </button>
-            <button class="nav-item" data-tab="tab-links">
-                <span class="nav-icon">🔗</span>
-                <span class="nav-label">Müşteri Linkleri</span>
-            </button>
-            <button class="nav-item" data-tab="tab-marketing">
+            
+            <button class="nav-item" data-tab="tab-marketing" id="navItemMarketing" title="B2B SaaS, UI/UX ve Ajans Pitch Deck Sunum Stüdyosu">
                 <span class="nav-icon">🎨</span>
-                <span class="nav-label">Sunum & Marketing</span>
+                <span class="nav-label">Sunum Stüdyosu</span>
             </button>
 
             <div class="nav-section-title">Dış Paylaşım</div>
-            <a href="portal.html" target="_blank" class="nav-item" style="text-decoration:none; color:inherit;">
-                <span class="nav-icon">🔍</span>
+            <a href="portal.html" target="_blank" class="nav-item" style="text-decoration:none; color:inherit;" title="Müşterinin kendi işini takip edebildiği canlı portal">
+                <span class="nav-icon">🌐</span>
                 <span class="nav-label">Müşteri Portalı</span>
                 <span class="nav-badge" style="background:rgba(2,132,199,0.2); color:#38bdf8;">Canlı</span>
             </a>
 
             <div class="sidebar-footer">
                 <div style="padding:10px 14px; font-size:11px; color:#94a3b8; line-height:1.4;">
-                    <b>Business Manager v2.4</b><br>
-                    EMEA Kurumsal Bulut Sistemi
+                    <b>Business Manager v2.5</b><br>
+                    Yalın & Profesyonel CRM
                 </div>
             </div>
         </aside>
 
         <!-- MERKEZİ GÖRÜNÜM ALANI -->
         <main class="main-viewport">
-            <!-- 1. SEKME : REFERANS GÖRSELDEKİ KPI & YÖNETİCİ ÖZETİ -->
+            <!-- HIZLI BAŞLAT ÇUBUĞU (CRM Bilmeyen Kullanıcı İçin 1 Saniyede Eylem) -->
+            <div class="hub-quick-bar">
+                <div class="quick-bar-left">
+                    <span class="quick-bar-greeting" id="quickGreeting">İyi çalışmalar! 👋</span>
+                    <span class="quick-bar-desc">Bugün ne yapmak istiyorsunuz? Hızlıca işlem başlatın:</span>
+                </div>
+                <div class="quick-bar-actions">
+                    <button type="button" class="quick-btn btn-action-add" id="quickBtnNewDeal" title="Yeni müşteri veya iş fırsatı tanımla">
+                        <span class="btn-icon">➕</span> Yeni İş / Fırsat Ekle
+                    </button>
+                    <button type="button" class="quick-btn btn-action-quote" id="quickBtnCreateQuote" title="Müşteriye hızlı proforma teklif hazırla">
+                        <span class="btn-icon">📄</span> Teklif Hazırla
+                    </button>
+                    <a href="portal.html" target="_blank" class="quick-btn btn-action-portal" title="Müşteri takip portalını aç">
+                        <span class="btn-icon">🌐</span> Müşteri Portalı
+                    </a>
+                </div>
+            </div>
+
+            <!-- 1. ANA HUB : GENEL BAKIŞ & FİNANSAL ZEKA -->
             <section id="tab-kpi" class="tab-pane active">
-                <div class="kpi-header">
-                    <div class="kpi-title-area">
-                        <h1>KPI summary / Müşteri Hizmet & Satış Zekası</h1>
-                        <div class="kpi-subtitle">
-                            Son Güncelleme: <span id="kpiRefreshTime">Bugün 11:00 AM</span> · Kurumsal Veri Tabanı Senkronize
+                <div class="hub-header-wrapper">
+                    <div class="hub-title-block">
+                        <h2>📊 Genel Bakış & Finansal Zeka</h2>
+                        <p>İşletme cirosu, net nakit akışı, masraflar ve müşteri analitik göstergeleri</p>
+                    </div>
+                    <div class="hub-segment-control" id="overviewSegmentControl">
+                        <button type="button" class="hub-segment-btn active" data-subpane="subpane-finance">
+                            <span>💰</span> Nakit Akışı & Masraflar
+                        </button>
+                        <button type="button" class="hub-segment-btn" data-subpane="subpane-analytics">
+                            <span>📊</span> Sektör & Bölge Dağılımı
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 8'Lİ GÜNCEL FİNANS KPI KART GRİDİ -->
+                <div class="kpi-metrics-grid finance-metrics-grid" style="margin-bottom:20px;">
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Toplam Gerçekleşen Ciro</div>
+                        <div class="kpi-card-value" id="aylikCiro">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">💰 Tahsil Edilmiş Kasa</div>
+                        <div class="kpi-card-value" id="tahsilEdilmisKasa" style="color:#16a34a;">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">⏳ Bekleyen Açık Alacak</div>
+                        <div class="kpi-card-value" id="bekleyenAlacak" style="color:#b45309;">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Net Şirket Karlılığı</div>
+                        <div class="kpi-card-value" id="toplamKar" style="color:#1e8e3e;">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Net Kar Marjı (%)</div>
+                        <div class="kpi-card-value" id="netKarMarji" style="color:#0284c7;">%0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Toplam Müşteri Portföyü</div>
+                        <div class="kpi-card-value" id="overviewTotalCases">1.629</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Bu Haftaki Ciro</div>
+                        <div class="kpi-card-value" id="haftalikCiro">₺0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-card-label">Toplam Tahakkuk Vergi</div>
+                        <div class="kpi-card-value" id="toplamVergi" style="color:#d93025;">₺0</div>
+                    </div>
+                </div>
+
+                <!-- ALT GÖRÜNÜM A: NAKİT AKIŞI, MASRAFLAR VE FATURALAR -->
+                <div id="subpane-finance" class="hub-subpane active">
+                    <div class="crm-header-action" style="margin-bottom:16px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:4px;">Nakit Akışı, Masraflar & Tahsilat Listesi</h3>
+                            <p style="font-size:12px; color:#64748b;">Aylık nakit akışı, net kar marjı ve operasyonel gider dağılımı</p>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button class="btn-g-primary" id="yeniMasrafBtn" style="background:#dc2626;">➕ Yeni Masraf / Gider Ekle</button>
+                            <button class="btn-export-csv" id="exportFinanceCsvBtn">📊 Gelir-Gider Excel (CSV)</button>
+                            <button class="btn-g-primary" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
                         </div>
                     </div>
-                    <div class="kpi-filters-bar">
-                        <div class="filter-pill">
-                            <span class="label">Dönem</span>
-                            <select id="kpiPeriodSelect">
+
+                    <!-- Görsel Gelir Dağılım Çubuğu & Gider Analiz Kartları -->
+                    <div class="finance-distribution-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:13px; font-weight:700; color:#1e293b;">📊 Gelir Dağılım Analizi (Ciro Kompozisyonu)</span>
+                            <span style="font-size:12px; color:#64748b;" id="financeBarRatioText">%70 Net Kar · %20 Masraf · %10 Vergi</span>
+                        </div>
+                        <div class="finance-progress-bar">
+                            <div class="bar-segment bar-kar" id="barKarSegment" style="width:70%;" title="Net Kar"></div>
+                            <div class="bar-segment bar-masraf" id="barMasrafSegment" style="width:20%;" title="Doğrudan Masraflar"></div>
+                            <div class="bar-segment bar-vergi" id="barVergiSegment" style="width:10%;" title="Vergi / Stopaj"></div>
+                        </div>
+                        <div class="finance-legend">
+                            <span><span class="legend-dot" style="background:#16a34a;"></span> Net Kar</span>
+                            <span><span class="legend-dot" style="background:#f59e0b;"></span> Proje Masrafları</span>
+                            <span><span class="legend-dot" style="background:#ef4444;"></span> Vergi Tahakkuku</span>
+                        </div>
+                    </div>
+
+                    <!-- Freelance Maliyet & SaaS Abonelik Dağılımı -->
+                    <div class="expense-breakdown-grid">
+                        <div class="expense-cat-card">
+                            <div class="expense-cat-icon">☁️</div>
+                            <div>
+                                <div class="expense-cat-title">Bulut & Sunucu Altyapısı</div>
+                                <div class="expense-cat-desc">Vercel, AWS, Cloudflare, Supabase</div>
+                                <div class="expense-cat-amount" id="expCloudAmount">₺14.200 / yıl</div>
+                            </div>
+                        </div>
+                        <div class="expense-cat-card">
+                            <div class="expense-cat-icon">🎨</div>
+                            <div>
+                                <div class="expense-cat-title">Yazılım & Tasarım Lisansları</div>
+                                <div class="expense-cat-desc">Figma Pro, JetBrains, OpenAI, Cursor</div>
+                                <div class="expense-cat-amount" id="expSoftwareAmount">₺21.500 / yıl</div>
+                            </div>
+                        </div>
+                        <div class="expense-cat-card">
+                            <div class="expense-cat-icon">🤝</div>
+                            <div>
+                                <div class="expense-cat-title">Dış Kaynak & Taşeron</div>
+                                <div class="expense-cat-desc">Freelance animatör, test mühendisi vb.</div>
+                                <div class="expense-cat-amount" id="expSubcontractAmount">₺36.800 / yıl</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aylık Nakit Akışı Karşılaştırma Grafiği (Son 6 Ay) -->
+                    <div class="chart-card" style="margin-top:20px;">
+                        <div class="chart-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <h3 style="font-size:14px; font-weight:700; color:#1e293b; margin:0;">📈 Aylık Nakit Akışı & Karlılık Trendi (Son 6 Ay)</h3>
+                                <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Aylık gerçekleşen ciro, operasyonel masraflar ve net nakit fazlası</div>
+                            </div>
+                            <div style="display:flex; gap:12px; font-size:12px; font-weight:600;">
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#1a73e8; display:inline-block;"></span> Ciro</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#ef4444; display:inline-block;"></span> Masraf</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#10b981; display:inline-block;"></span> Net Kar</span>
+                            </div>
+                        </div>
+                        <div id="financeMonthlyTrendBar" class="monthly-trend-container" style="padding:16px 8px 6px 8px; display:flex; align-items:flex-end; justify-content:space-around; min-height:180px;">
+                            <!-- Dinamik Trend Çubukları -->
+                        </div>
+                    </div>
+
+                    <!-- Finans Tablosu Durum Filtre Çipleri -->
+                    <div class="crm-quick-chips-bar" id="financeFilterChips" style="margin-top:20px;">
+                        <button class="crm-quick-chip active" data-finance-filter="all">Tüm Kayıtlar</button>
+                        <button class="crm-quick-chip" data-finance-filter="paid">💰 Tahsil Edilenler</button>
+                        <button class="crm-quick-chip" data-finance-filter="pending">⏳ Bekleyen Açık Faturalar</button>
+                    </div>
+
+                    <div class="table-layout-card" style="margin-top:12px;">
+                        <div style="overflow-x:auto;">
+                            <table class="g-table" id="ciroTable">
+                                <thead>
+                                    <tr>
+                                        <th>İş Adı</th>
+                                        <th>Müşteri</th>
+                                        <th>Alınma Tarihi</th>
+                                        <th>Tutar (₺)</th>
+                                        <th>Masraf (₺)</th>
+                                        <th>Vergi %</th>
+                                        <th>Vergi Tutarı</th>
+                                        <th>Net Kar</th>
+                                        <th>Ödeme Vadesi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ciroTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALT GÖRÜNÜM B: SEKTÖR, BÖLGE VE KPI ANALİTİĞİ -->
+                <div id="subpane-analytics" class="hub-subpane">
+                    <div class="kpi-header">
+                        <div class="kpi-title-area">
+                            <h1>KPI summary / Müşteri Hizmet & Satış Zekası</h1>
+                            <div class="kpi-subtitle">
+                                Son Güncelleme: <span id="kpiRefreshTime">Bugün 11:00 AM</span> · Kurumsal Veri Tabanı Senkronize
+                            </div>
+                        </div>
+                        <div class="kpi-filters-bar">
+                            <div class="filter-pill">
+                                <span class="label">Dönem</span>
+                                <select id="kpiPeriodSelect">
                                 <option value="1m">Son 1 Ay (2026/08 - 2026/09)</option>
                                 <option value="3m">Son Çeyrek (Q3)</option>
                                 <option value="1y">Bu Yıl (YTD)</option>
@@ -523,122 +692,171 @@
                         </div>
                     </div>
                 </div>
+                </div> <!-- /subpane-analytics -->
             </section>
 
-            <!-- 2. SEKME : MÜŞTERİ VERİ TABANI (GOOGLE MATERIAL TABLO & CRM) -->
+            <!-- 2. ANA HUB : MÜŞTERİLER & İŞ TAKİBİ -->
             <section id="tab-customers" class="tab-pane">
-                <div class="crm-header-action">
-                    <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Kurumsal Müşteri Portföyü & CRM</h2>
-                        <p style="font-size:12.5px; color:#64748b;">1.629 kayıtlı şirket, aktif proje hacimleri ve 360° müşteri temas geçmişi</p>
+                <div class="hub-header-wrapper">
+                    <div class="hub-title-block">
+                        <h2>👥 Müşteriler & İş Takibi</h2>
+                        <p>İş süreçlerini Kanban panosunda yönetin, müşteri veritabanını inceleyin veya teslimat bağlantılarını paylaşın</p>
                     </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn-export-csv" id="exportCustomersCsvBtn">📊 Excel (CSV) İndir</button>
-                        <button class="btn-g-primary" id="yeniMusteriBtn">➕ Yeni Şirket / Müşteri Ekle</button>
+                    <div class="hub-segment-control" id="operationsSegmentControl">
+                        <button type="button" class="hub-segment-btn active" data-subpane="subpane-kanban">
+                            <span>📋</span> Süreçler (Kanban)
+                        </button>
+                        <button type="button" class="hub-segment-btn" data-subpane="subpane-table">
+                            <span>📑</span> Müşteri Listesi (1.6K)
+                        </button>
+                        <button type="button" class="hub-segment-btn" data-subpane="subpane-links">
+                            <span>🔗</span> Teslimat Linkleri
+                        </button>
                     </div>
                 </div>
 
-                <!-- Müşteri Hızlı Filtre Çipleri -->
-                <div class="crm-quick-chips-bar" id="custQuickChipsBar">
-                    <button class="crm-quick-chip active" data-cust-filter="all">Tüm Müşteriler <span class="chip-count" id="chipCustAll">1.629</span></button>
-                    <button class="crm-quick-chip" data-cust-filter="vip">⭐ VIP Portföy (>₺100k) <span class="chip-count" id="chipCustVip">0</span></button>
-                    <button class="crm-quick-chip" data-cust-filter="active_job">🚀 Aktif Projesi Olanlar <span class="chip-count" id="chipCustActive">0</span></button>
-                    <button class="crm-quick-chip" data-cust-filter="warm">💬 İletişimde / Sıcak <span class="chip-count" id="chipCustWarm">0</span></button>
-                </div>
-
-                <div class="table-layout-card">
-                    <div class="table-toolbar">
-                        <div class="table-filters-group">
-                            <input type="text" id="arama" class="g-input" placeholder="🔍 Firma adı, sicil no, ilçe veya yetkili ara..." style="min-width:240px;">
-                            <select id="siralamaSelect" class="g-select" style="min-width:180px;">
-                                <option value="ciro_desc">💰 Ciroya Göre (En Yüksek)</option>
-                                <option value="ciro_asc">💰 Ciroya Göre (En Düşük)</option>
-                                <option value="ad_asc">🔤 İsim (A - Z)</option>
-                                <option value="ad_desc">🔤 İsim (Z - A)</option>
-                                <option value="tarih_desc">📅 En Yeni İletişim</option>
-                            </select>
-                            <select id="filtreFaaliyet" class="g-select"><option value="">Tüm Sektörler</option></select>
-                            <select id="filtreIlce" class="g-select"><option value="">Tüm İlçeler</option></select>
-                            <select id="filtreDurum" class="g-select">
-                                <option value="">Tüm Durumlar</option>
-                                <option value="yesil">İlgili (Yeşil)</option>
-                                <option value="sari">İletişimde (Sarı)</option>
-                                <option value="kirmizi">Olumsuz (Kırmızı)</option>
-                            </select>
-                            <button id="filtreUygula" class="g-page-btn" title="Filtreleri Temizle">Filtreleri Sıfırla</button>
+                <!-- ALT GÖRÜNÜM 1: KANBAN SÜREÇ PANOSU -->
+                <div id="subpane-kanban" class="hub-subpane active">
+                    <div class="crm-header-action" style="margin-bottom:16px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:4px;">Satış Süreçleri & Fırsat Pipeline</h3>
+                            <p style="font-size:12px; color:#64748b;">Teklif aşamasından tahsilata kadar uçtan uca nakit akışı ve iş takibi</p>
                         </div>
-                        <span id="filterStatsBadge" style="font-size:12px; font-weight:600; color:#64748b;">1.629 kayıt</span>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-g-primary" id="yeniIsEkle">➕ Yeni Fırsat / Teklif Ekle</button>
+                        </div>
                     </div>
 
-                    <div style="overflow-x:auto;">
-                        <table class="g-table">
-                            <thead>
-                                <tr>
-                                    <th>Sicil No</th>
-                                    <th>Firma / Şirket Ünvanı</th>
-                                    <th>Ciro & Proje Hacmi</th>
-                                    <th>Konum / İlçe</th>
-                                    <th>Faaliyet Alanı</th>
-                                    <th>Son Görüşme / Not</th>
-                                    <th>Temas Durumu</th>
-                                    <th style="text-align:right;">Hızlı Aksiyonlar</th>
-                                </tr>
-                            </thead>
-                            <tbody id="musteriTableTbody">
-                                <!-- Dinamik 25'lik sayfalar basılacak -->
-                            </tbody>
-                        </table>
+                    <!-- Kanban Hızlı Arama & Filtre Çubuğu -->
+                    <div class="kanban-toolbar">
+                        <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:260px; flex-wrap:wrap;">
+                            <input type="text" id="kanbanSearchInput" class="g-input" placeholder="🔍 Proje veya müşteri ara..." style="min-width:200px; max-width:320px;">
+                            <div class="kanban-filter-chips" id="kanbanFilterChips">
+                                <button class="crm-quick-chip active" data-kanban-filter="all">Tümü</button>
+                                <button class="crm-quick-chip" data-kanban-filter="urgent">⚠️ Acil / Geciken</button>
+                                <button class="crm-quick-chip" data-kanban-filter="high_value">💰 Yüksek Tutar (>₺100k)</button>
+                                <button class="crm-quick-chip" data-kanban-filter="active">⚡ Devam Eden İşler</button>
+                            </div>
+                        </div>
+                        <div id="kanbanTotalValueBadge" class="kanban-pipeline-badge">
+                            Pipeline Toplam Hacim: <b id="kanbanPipelineTotalText">₺0</b>
+                        </div>
                     </div>
 
-                    <!-- Sayfalama (Pagination) -->
-                    <div class="g-pagination">
-                        <span class="pagination-info" id="paginationInfo">Toplam 1.629 müşteriden 1-25 gösteriliyor</span>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <button id="prevPageBtn" class="g-page-btn">« Önceki</button>
-                            <span id="pageNumberIndicator" style="font-size:12.5px; font-weight:700; padding:0 6px;">Sayfa 1 / 66</span>
-                            <button id="nextPageBtn" class="g-page-btn">Sonraki »</button>
+                    <div class="kanban-grid" id="kanbanBoard"></div>
+                </div>
+
+                <!-- ALT GÖRÜNÜM 2: MÜŞTERİ VERİTABANI TABLOSU -->
+                <div id="subpane-table" class="hub-subpane">
+                    <div class="crm-header-action" style="margin-bottom:16px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:4px;">Kurumsal Müşteri Portföyü & CRM</h3>
+                            <p style="font-size:12px; color:#64748b;">1.629 kayıtlı şirket, aktif proje hacimleri ve 360° müşteri temas geçmişi</p>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button class="btn-export-csv" id="exportCustomersCsvBtn">📊 Excel (CSV) İndir</button>
+                            <button class="btn-g-primary" id="yeniMusteriBtn">➕ Yeni Şirket / Müşteri Ekle</button>
+                        </div>
+                    </div>
+
+                    <!-- Müşteri Hızlı Filtre Çipleri -->
+                    <div class="crm-quick-chips-bar" id="custQuickChipsBar">
+                        <button class="crm-quick-chip active" data-cust-filter="all">Tüm Müşteriler <span class="chip-count" id="chipCustAll">1.629</span></button>
+                        <button class="crm-quick-chip" data-cust-filter="vip">⭐ VIP Portföy (>₺100k) <span class="chip-count" id="chipCustVip">0</span></button>
+                        <button class="crm-quick-chip" data-cust-filter="active_job">🚀 Aktif Projesi Olanlar <span class="chip-count" id="chipCustActive">0</span></button>
+                        <button class="crm-quick-chip" data-cust-filter="warm">💬 İletişimde / Sıcak <span class="chip-count" id="chipCustWarm">0</span></button>
+                    </div>
+
+                    <div class="table-layout-card">
+                        <div class="table-toolbar">
+                            <div class="table-filters-group">
+                                <input type="text" id="arama" class="g-input" placeholder="🔍 Firma adı, sicil no, ilçe veya yetkili ara..." style="min-width:240px;">
+                                <select id="siralamaSelect" class="g-select" style="min-width:180px;">
+                                    <option value="ciro_desc">💰 Ciroya Göre (En Yüksek)</option>
+                                    <option value="ciro_asc">💰 Ciroya Göre (En Düşük)</option>
+                                    <option value="ad_asc">🔤 İsim (A - Z)</option>
+                                    <option value="ad_desc">🔤 İsim (Z - A)</option>
+                                    <option value="tarih_desc">📅 En Yeni İletişim</option>
+                                </select>
+                                <select id="filtreFaaliyet" class="g-select"><option value="">Tüm Sektörler</option></select>
+                                <select id="filtreIlce" class="g-select"><option value="">Tüm İlçeler</option></select>
+                                <select id="filtreDurum" class="g-select">
+                                    <option value="">Tüm Durumlar</option>
+                                    <option value="yesil">İlgili (Yeşil)</option>
+                                    <option value="sari">İletişimde (Sarı)</option>
+                                    <option value="kirmizi">Olumsuz (Kırmızı)</option>
+                                </select>
+                                <button id="filtreUygula" class="g-page-btn" title="Filtreleri Temizle">Filtreleri Sıfırla</button>
+                            </div>
+                            <span id="filterStatsBadge" style="font-size:12px; font-weight:600; color:#64748b;">1.629 kayıt</span>
+                        </div>
+
+                        <div style="overflow-x:auto;">
+                            <table class="g-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sicil No</th>
+                                        <th>Firma / Şirket Ünvanı</th>
+                                        <th>Ciro & Proje Hacmi</th>
+                                        <th>Konum / İlçe</th>
+                                        <th>Faaliyet Alanı</th>
+                                        <th>Son Görüşme / Not</th>
+                                        <th>Temas Durumu</th>
+                                        <th style="text-align:right;">Hızlı Aksiyonlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="musteriTableTbody">
+                                    <!-- Dinamik 25'lik sayfalar basılacak -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Sayfalama (Pagination) -->
+                        <div class="g-pagination">
+                            <span class="pagination-info" id="paginationInfo">Toplam 1.629 müşteriden 1-25 gösteriliyor</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button id="prevPageBtn" class="g-page-btn">« Önceki</button>
+                                <span id="pageNumberIndicator" style="font-size:12.5px; font-weight:700; padding:0 6px;">Sayfa 1 / 66</span>
+                                <button id="nextPageBtn" class="g-page-btn">Sonraki »</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALT GÖRÜNÜM 3: MÜŞTERİ TESLİMAT LİNKLERİ -->
+                <div id="subpane-links" class="hub-subpane">
+                    <div class="crm-header-action" style="margin-bottom:16px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:4px;">Müşteri Portalı & Teslimat Varlıkları</h3>
+                            <p style="font-size:12px; color:#64748b;">Teslim edilen projelerin Figma, GitHub, Vercel, Drive ve dokümantasyon bağlantıları</p>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <select id="filtreLinkMusteri" class="g-select" style="min-width:180px;">
+                                <option value="">Tüm Müşteriler</option>
+                            </select>
+                            <button class="btn-g-primary" id="linkEkleModalBtn">➕ Yeni Varlık Ekle</button>
+                            <button class="btn-g-primary" id="copyAllClientDeliverablesBtn" style="background:#16a34a;">📋 Teslim Metnini Kopyala (WhatsApp)</button>
+                        </div>
+                    </div>
+                    <div class="two-col-grid">
+                        <div class="studio-card">
+                            <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">✅ Teslim Edilen & Ödemesi Alınan Projeler</h3>
+                            <div id="tamamlananIsler"></div>
+                        </div>
+                        <div class="studio-card">
+                            <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">🔗 Paylaşılan Müşteri Varlıkları & Canlı Bağlantılar</h3>
+                            <div id="linkListesi"></div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 3. SEKME : SATIŞ & KANBAN PIPELINE -->
-            <section id="tab-pipeline" class="tab-pane">
-                <div class="crm-header-action">
-                    <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Satış Süreçleri & Fırsat Pipeline</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Teklif aşamasından tahsilata kadar uçtan uca nakit akışı ve iş takibi</p>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-g-primary" id="yeniIsEkle">➕ Yeni Fırsat / Teklif Ekle</button>
-                    </div>
-                </div>
-
-                <!-- Kanban Hızlı Arama & Filtre Çubuğu -->
-                <div class="kanban-toolbar">
-                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:260px; flex-wrap:wrap;">
-                        <input type="text" id="kanbanSearchInput" class="g-input" placeholder="🔍 Proje veya müşteri ara..." style="min-width:200px; max-width:320px;">
-                        <div class="kanban-filter-chips" id="kanbanFilterChips">
-                            <button class="crm-quick-chip active" data-kanban-filter="all">Tümü</button>
-                            <button class="crm-quick-chip" data-kanban-filter="urgent">⚠️ Acil / Geciken</button>
-                            <button class="crm-quick-chip" data-kanban-filter="high_value">💰 Yüksek Tutar (>₺100k)</button>
-                            <button class="crm-quick-chip" data-kanban-filter="active">⚡ Devam Eden İşler</button>
-                        </div>
-                    </div>
-                    <div id="kanbanTotalValueBadge" class="kanban-pipeline-badge">
-                        Pipeline Toplam Hacim: <b id="kanbanPipelineTotalText">₺0</b>
-                    </div>
-                </div>
-
-                <div class="kanban-grid" id="kanbanBoard"></div>
-            </section>
-
-            <!-- 4. SEKME : AI E-POSTA & TEKLİF STÜDYOSU -->
+            <!-- 3. ANA HUB : TEKLİF & İLETİŞİM STÜDYOSU -->
             <section id="tab-mail" class="tab-pane">
                 <div class="crm-header-action">
                     <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">AI Satış, Teklif & Proforma Stüdyosu</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Müşteri zekası ile güçlendirilmiş teklif mektubu ve anında yazdırılabilir A4 proforma motoru</p>
+                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">📄 Teklif & İletişim Stüdyosu</h2>
+                        <p style="font-size:12.5px; color:#64748b;">Müşteri zekası ile güçlendirilmiş kalemli proforma teklif mektubu ve anında yazdırılabilir A4 proforma motoru</p>
                     </div>
                     <button class="btn-g-primary" id="mailA4HizliAcBtn" style="background:#0284c7;">📄 A4 Proforma & Teklif Belgesi Önizle</button>
                 </div>
@@ -677,6 +895,7 @@
                                 <select id="mailParaBirimi" class="g-select" style="width:100%;">
                                     <option value="TL">₺ Türk Lirası (TL)</option>
                                     <option value="USD">$ Amerikan Doları (USD)</option>
+                                    <option value="EUR">€ Euro (EUR)</option>
                                     <option value="EUR">€ Euro (EUR)</option>
                                 </select>
                             </div>
@@ -728,175 +947,10 @@
                 </div>
             </section>
 
-            <!-- 5. SEKME : CİRO & FİNANSAL RAPORLAR -->
-            <section id="tab-finance" class="tab-pane">
-                <div class="crm-header-action">
-                    <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Finans, Nakit Akışı & Karlılık Raporları</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Haftalık, aylık ve yıllık nakit akışı, net kar marjı ve serbest çalışma maliyet dağılımı</p>
-                    </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn-g-primary" id="yeniMasrafBtn" style="background:#dc2626;">➕ Yeni Masraf / Gider Ekle</button>
-                        <button class="btn-export-csv" id="exportFinanceCsvBtn">📊 Gelir-Gider Excel (CSV)</button>
-                        <button class="btn-g-primary" id="ciroHesapla">🔄 Yeniden Hesapla ve Kaydet</button>
-                    </div>
-                </div>
-
-                <!-- Gelişmiş Finans KPI Kartları (8 Gösterge) -->
-                <div class="kpi-metrics-grid finance-metrics-grid">
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Toplam Gerçekleşen Ciro</div>
-                        <div class="kpi-card-value" id="aylikCiro">₺0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Bu Haftaki Ciro</div>
-                        <div class="kpi-card-value" id="haftalikCiro">₺0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Bu Yılki Toplam (YTD)</div>
-                        <div class="kpi-card-value" id="yillikCiro">₺0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Net Şirket Karlılığı</div>
-                        <div class="kpi-card-value" id="toplamKar" style="color:#1e8e3e;">₺0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Net Kar Marjı (%)</div>
-                        <div class="kpi-card-value" id="netKarMarji" style="color:#0284c7;">%0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">⏳ Bekleyen Açık Alacak</div>
-                        <div class="kpi-card-value" id="bekleyenAlacak" style="color:#b45309;">₺0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">💰 Tahsil Edilmiş Kasa</div>
-                        <div class="kpi-card-value" id="tahsilEdilmisKasa" style="color:#16a34a;">₺0</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-card-label">Toplam Tahakkuk Vergi</div>
-                        <div class="kpi-card-value" id="toplamVergi" style="color:#d93025;">₺0</div>
-                    </div>
-                </div>
-
-                <!-- Görsel Gelir Dağılım Çubuğu & Gider Analiz Kartları -->
-                <div class="finance-distribution-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:13px; font-weight:700; color:#1e293b;">📊 Gelir Dağılım Analizi (Ciro Kompozisyonu)</span>
-                        <span style="font-size:12px; color:#64748b;" id="financeBarRatioText">%70 Net Kar · %20 Masraf · %10 Vergi</span>
-                    </div>
-                    <div class="finance-progress-bar">
-                        <div class="bar-segment bar-kar" id="barKarSegment" style="width:70%;" title="Net Kar"></div>
-                        <div class="bar-segment bar-masraf" id="barMasrafSegment" style="width:20%;" title="Doğrudan Masraflar"></div>
-                        <div class="bar-segment bar-vergi" id="barVergiSegment" style="width:10%;" title="Vergi / Stopaj"></div>
-                    </div>
-                    <div class="finance-legend">
-                        <span><span class="legend-dot" style="background:#16a34a;"></span> Net Kar</span>
-                        <span><span class="legend-dot" style="background:#f59e0b;"></span> Proje Masrafları</span>
-                        <span><span class="legend-dot" style="background:#ef4444;"></span> Vergi Tahakkuku</span>
-                    </div>
-                </div>
-
-                <!-- Freelance Maliyet & SaaS Abonelik Dağılımı -->
-                <div class="expense-breakdown-grid">
-                    <div class="expense-cat-card">
-                        <div class="expense-cat-icon">☁️</div>
-                        <div>
-                            <div class="expense-cat-title">Bulut & Sunucu Altyapısı</div>
-                            <div class="expense-cat-desc">Vercel, AWS, Cloudflare, Supabase</div>
-                            <div class="expense-cat-amount" id="expCloudAmount">₺14.200 / yıl</div>
-                        </div>
-                    </div>
-                    <div class="expense-cat-card">
-                        <div class="expense-cat-icon">🎨</div>
-                        <div>
-                            <div class="expense-cat-title">Yazılım & Tasarım Lisansları</div>
-                            <div class="expense-cat-desc">Figma Pro, JetBrains, OpenAI, Cursor</div>
-                            <div class="expense-cat-amount" id="expSoftwareAmount">₺21.500 / yıl</div>
-                        </div>
-                    </div>
-                    <div class="expense-cat-card">
-                        <div class="expense-cat-icon">🤝</div>
-                        <div>
-                            <div class="expense-cat-title">Dış Kaynak & Taşeron</div>
-                            <div class="expense-cat-desc">Freelance animatör, test mühendisi vb.</div>
-                            <div class="expense-cat-amount" id="expSubcontractAmount">₺36.800 / yıl</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Aylık Nakit Akışı Karşılaştırma Grafiği (Son 6 Ay) -->
-                <div class="chart-card" style="margin-top:20px;">
-                    <div class="chart-card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <h3 style="font-size:14px; font-weight:700; color:#1e293b; margin:0;">📈 Aylık Nakit Akışı & Karlılık Trendi (Son 6 Ay)</h3>
-                            <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Aylık gerçekleşen ciro, operasyonel masraflar ve net nakit fazlası</div>
-                        </div>
-                        <div style="display:flex; gap:12px; font-size:12px; font-weight:600;">
-                            <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#1a73e8; display:inline-block;"></span> Ciro</span>
-                            <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#ef4444; display:inline-block;"></span> Masraf</span>
-                            <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:2px; background:#10b981; display:inline-block;"></span> Net Kar</span>
-                        </div>
-                    </div>
-                    <div id="financeMonthlyTrendBar" class="monthly-trend-container" style="padding:16px 8px 6px 8px; display:flex; align-items:flex-end; justify-content:space-around; min-height:180px;">
-                        <!-- Dinamik Trend Çubukları -->
-                    </div>
-                </div>
-
-                <!-- Finans Tablosu Durum Filtre Çipleri -->
-                <div class="crm-quick-chips-bar" id="financeFilterChips" style="margin-top:20px;">
-                    <button class="crm-quick-chip active" data-finance-filter="all">Tüm Kayıtlar</button>
-                    <button class="crm-quick-chip" data-finance-filter="paid">💰 Tahsil Edilenler</button>
-                    <button class="crm-quick-chip" data-finance-filter="pending">⏳ Bekleyen Açık Faturalar</button>
-                </div>
-
-                <div class="table-layout-card" style="margin-top:12px;">
-                    <div style="overflow-x:auto;">
-                        <table class="g-table" id="ciroTable">
-                            <thead>
-                                <tr>
-                                    <th>İş Adı</th>
-                                    <th>Müşteri</th>
-                                    <th>Alınma Tarihi</th>
-                                    <th>Tutar (₺)</th>
-                                    <th>Masraf (₺)</th>
-                                    <th>Vergi %</th>
-                                    <th>Vergi Tutarı</th>
-                                    <th>Net Kar</th>
-                                    <th>Ödeme Vadesi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ciroTbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 6. SEKME : MÜŞTERİ LİNKLERİ & TESLİMAT PORTALI -->
-            <section id="tab-links" class="tab-pane">
-                <div class="crm-header-action">
-                    <div>
-                        <h2 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:4px;">Müşteri Portalı & Teslimat Varlıkları</h2>
-                        <p style="font-size:12.5px; color:#64748b;">Teslim edilen projelerin Figma, GitHub, Vercel, Drive ve dokümantasyon bağlantıları</p>
-                    </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                        <select id="filtreLinkMusteri" class="g-select" style="min-width:180px;">
-                            <option value="">Tüm Müşteriler</option>
-                        </select>
-                        <button class="btn-g-primary" id="linkEkleModalBtn">➕ Yeni Varlık Ekle</button>
-                        <button class="btn-g-primary" id="copyAllClientDeliverablesBtn" style="background:#16a34a;">📋 Teslim Metnini Kopyala (WhatsApp)</button>
-                    </div>
-                </div>
-                <div class="two-col-grid">
-                    <div class="studio-card">
-                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">✅ Teslim Edilen & Ödemesi Alınan Projeler</h3>
-                        <div id="tamamlananIsler"></div>
-                    </div>
-                    <div class="studio-card">
-                        <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">🔗 Paylaşılan Müşteri Varlıkları & Canlı Bağlantılar</h3>
-                        <div id="linkListesi"></div>
-                    </div>
-                </div>
-            </section>
+            <!-- Geriye Dönük Uyumluluk İçin Gizli Elementler -->
+            <div id="tab-pipeline" style="display:none;"></div>
+            <div id="tab-finance" style="display:none;"></div>
+            <div id="tab-links" style="display:none;"></div>
 
             <!-- 7. SEKME : MARKETING & SUNUM STÜDYOSU -->
             <section id="tab-marketing" class="tab-pane">
@@ -1533,29 +1587,24 @@
             <div class="assistant-header">
                 <div class="assistant-header-left">
                     <div class="assistant-sparkle-avatar" aria-hidden="true">
-                        <svg viewBox="0 0 64 64" class="crocodile-mark" role="img">
-                            <path d="M13 35c0-14 8-24 20-24 13 0 22 9 22 22 0 13-10 21-23 21-11 0-19-7-19-19Z" fill="#38a169"/>
-                            <path d="M17 40c8 7 27 8 38-1-2 10-11 16-23 16-9 0-15-5-15-15Z" fill="#1f7a4d"/>
-                            <circle cx="25" cy="27" r="7" fill="#f7fafc"/><circle cx="43" cy="27" r="7" fill="#f7fafc"/>
-                            <circle cx="27" cy="28" r="2.8" fill="#102a43"/><circle cx="41" cy="28" r="2.8" fill="#102a43"/>
-                            <path d="M23 39c5 5 14 5 19 0" fill="none" stroke="#f7fafc" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M12 27 18 21l2 7M51 27l-6-6-2 7" fill="#76d49a"/>
+                        <svg viewBox="0 0 64 64" class="ceo-mark" role="img">
+                            <circle cx="32" cy="32" r="31" fill="#0e2338"/>
+                            <circle cx="32" cy="25" r="11" fill="#f0d9c0"/>
+                            <path d="M14 55c1-13 8-20 18-20s17 7 18 20" fill="#1c3a54"/>
+                            <path d="M27 35l5 4 5-4v3l-5 20-5-20z" fill="#f8fafc"/>
+                            <path d="M30.5 38l1.5 3 1.5-3-1.5-2z" fill="#b3852c"/>
+                            <path d="M29 40l3 20 3-20-3-2z" fill="#c9962f"/>
                         </svg>
                     </div>
                     <div>
                         <div class="assistant-title">Sanal CEO</div>
-                        <div class="assistant-status">Şirketinizi birlikte yönetiyoruz</div>
+                        <div class="assistant-status">İş süreçlerinizi düzenliyoruz</div>
                     </div>
                 </div>
                 <div class="assistant-header-right">
                     <button class="assistant-key-btn" id="assistantKeyBtn" title="AI API Anahtarı Ayarla">⚙️</button>
                     <button class="assistant-close-btn" id="closeAssistantBtn" title="Kapat">✕</button>
                 </div>
-            </div>
-
-            <div class="assistant-mode-switch">
-                <button class="assistant-mode-btn active" id="assistantModeNavBtn" data-mode="nav">🧭 Hızlı Geçiş</button>
-                <button class="assistant-mode-btn" id="assistantModeChatBtn" data-mode="chat">💬 AI Sohbet</button>
             </div>
 
             <!-- API Anahtarı Ayar Paneli (yalnızca bu tarayıcıda saklanır) -->
@@ -1568,58 +1617,8 @@
                 </div>
             </div>
 
-            <div class="assistant-body" id="assistantNavView">
-                <div class="assistant-msg-bubble">
-                    <strong>Günaydın Patron! ☀️</strong> Bugün neler yapalım? Hızlıca bir modüle geçmek için aşağıdan seçebilirsiniz.
-                </div>
-
-                <div class="assistant-search-box">
-                    <input type="text" id="assistantSearchInput" placeholder="Modül ara (örn: Müşteri, Teklif, Kanban)..." />
-                </div>
-
-                <div class="assistant-tabs-list" id="assistantTabsList">
-                    <button class="assistant-tab-btn" data-tab="tab-kpi">
-                        <span class="icon">📊</span>
-                        <span class="text">KPI & Analitik Özeti</span>
-                        <span class="arrow">→</span>
-                    </button>
-                    <button class="assistant-tab-btn" data-tab="tab-customers">
-                        <span class="icon">👥</span>
-                        <span class="text">Müşteri Veri Tabanı</span>
-                        <span class="arrow">→</span>
-                    </button>
-                    <button class="assistant-tab-btn" data-tab="tab-pipeline">
-                        <span class="icon">📋</span>
-                        <span class="text">Süreçler (Kanban)</span>
-                        <span class="arrow">→</span>
-                    </button>
-                    <button class="assistant-tab-btn" data-tab="tab-mail">
-                        <span class="icon">✉️</span>
-                        <span class="text">AI E-Posta & Teklif</span>
-                        <span class="arrow">→</span>
-                    </button>
-                    <button class="assistant-tab-btn" data-tab="tab-finance">
-                        <span class="icon">💰</span>
-                        <span class="text">Ciro & Karlılık</span>
-                        <span class="arrow">→</span>
-                    </button>
-                    <button class="assistant-tab-btn" data-tab="tab-links">
-                        <span class="icon">🔗</span>
-                        <span class="text">Müşteri Linkleri</span>
-                        <span class="arrow">→</span>
-                    </button>
-                    <button class="assistant-tab-btn" data-tab="tab-marketing">
-                        <span class="icon">🎨</span>
-                        <span class="text">Sunum & Marketing</span>
-                        <span class="arrow">→</span>
-                    </button>
-                </div>
-
-                <div class="assistant-feedback" id="assistantFeedback"></div>
-            </div>
-
             <!-- Gerçek AI Sohbet Görünümü (Groq API) -->
-            <div class="assistant-body assistant-chat-view" id="assistantChatView" style="display:none;">
+            <div class="assistant-body assistant-chat-view" id="assistantChatView">
                 <div class="assistant-chat-messages" id="assistantChatMessages">
                     <div class="assistant-msg-bubble">
                         <strong>Günaydın Patron! ☀️</strong> Ben Sanal CEO'nuz. Bugün neler yapalım? Müşteriler, teklifler, ciro, ekip veya genel strateji — hangisiyle başlayalım?
@@ -1633,20 +1632,20 @@
             </div>
 
             <div class="assistant-footer">
-                <span id="assistantFooterHint">💡 Hızlı geçiş modu aktif</span>
+                <span id="assistantFooterHint">💼 Sanal CEO hazır</span>
             </div>
         </div>
 
         <!-- Yüzen İkon Butonu (FAB) -->
         <button class="ai-assistant-fab" id="aiAssistantFab" title="Sanal CEO'yu Aç">
             <span class="fab-icon" aria-hidden="true">
-                <svg viewBox="0 0 64 64" class="crocodile-mark" role="img">
-                    <path d="M13 35c0-14 8-24 20-24 13 0 22 9 22 22 0 13-10 21-23 21-11 0-19-7-19-19Z" fill="#38a169"/>
-                    <path d="M17 40c8 7 27 8 38-1-2 10-11 16-23 16-9 0-15-5-15-15Z" fill="#1f7a4d"/>
-                    <circle cx="25" cy="27" r="7" fill="#f7fafc"/><circle cx="43" cy="27" r="7" fill="#f7fafc"/>
-                    <circle cx="27" cy="28" r="2.8" fill="#102a43"/><circle cx="41" cy="28" r="2.8" fill="#102a43"/>
-                    <path d="M23 39c5 5 14 5 19 0" fill="none" stroke="#f7fafc" stroke-width="3" stroke-linecap="round"/>
-                    <path d="M12 27 18 21l2 7M51 27l-6-6-2 7" fill="#76d49a"/>
+                <svg viewBox="0 0 64 64" class="ceo-mark" role="img">
+                    <circle cx="32" cy="32" r="31" fill="#0e2338"/>
+                    <circle cx="32" cy="25" r="11" fill="#f0d9c0"/>
+                    <path d="M14 55c1-13 8-20 18-20s17 7 18 20" fill="#1c3a54"/>
+                    <path d="M27 35l5 4 5-4v3l-5 20-5-20z" fill="#f8fafc"/>
+                    <path d="M30.5 38l1.5 3 1.5-3-1.5-2z" fill="#b3852c"/>
+                    <path d="M29 40l3 20 3-20-3-2z" fill="#c9962f"/>
                 </svg>
             </span>
             <span class="fab-label">Sanal CEO</span>

@@ -272,6 +272,8 @@
         const total = musteriler.length;
         const totalCasesEl = document.getElementById('kpiTotalCases');
         if (totalCasesEl) totalCasesEl.textContent = total.toLocaleString('tr-TR');
+        const overviewCasesEl = document.getElementById('overviewTotalCases');
+        if (overviewCasesEl) overviewCasesEl.textContent = total.toLocaleString('tr-TR');
 
         const allJobs = getTumIsler();
         let totalRevenue = 0;
@@ -2223,24 +2225,92 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             toggleMobileSidebar(false);
         });
 
+        // 4 Ana Hub ve Alt Görünüm Yönlendirme Motoru
+        function switchHubView(targetTab, subpaneId = null) {
+            let actualTab = targetTab;
+            let actualSubpane = subpaneId;
+
+            // Legacy veya alternatif sekme çağrılarını akıllı yönlendir
+            if (targetTab === 'tab-finance') {
+                actualTab = 'tab-kpi';
+                if (!actualSubpane) actualSubpane = 'subpane-finance';
+            } else if (targetTab === 'tab-pipeline') {
+                actualTab = 'tab-customers';
+                if (!actualSubpane) actualSubpane = 'subpane-kanban';
+            } else if (targetTab === 'tab-links') {
+                actualTab = 'tab-customers';
+                if (!actualSubpane) actualSubpane = 'subpane-links';
+            }
+
+            // Sol menü ve ana sekme aktifliğini güncelle
+            document.querySelectorAll('.sidebar-rail .nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            const navBtn = document.querySelector(`.sidebar-rail .nav-item[data-tab="${actualTab}"]`);
+            if (navBtn) navBtn.classList.add('active');
+
+            state.activeTab = actualTab;
+            const pane = document.getElementById(actualTab);
+            if (pane) pane.classList.add('active');
+
+            // Eğer alt görünüm (subpane) belirtilmişse ilgili segment butonunu ve paneli aç
+            if (actualSubpane && pane) {
+                const subBtn = pane.querySelector(`.hub-segment-btn[data-subpane="${actualSubpane}"]`);
+                if (subBtn) {
+                    pane.querySelectorAll('.hub-segment-btn').forEach(b => b.classList.remove('active'));
+                    subBtn.classList.add('active');
+                }
+                pane.querySelectorAll('.hub-subpane').forEach(p => p.classList.remove('active'));
+                const targetSub = document.getElementById(actualSubpane);
+                if (targetSub) targetSub.classList.add('active');
+            }
+
+            // Mobilde sekmeye geçince çekmeceyi otomatik kapat
+            if (window.innerWidth <= 900) {
+                toggleMobileSidebar(false);
+            }
+
+            renderAll();
+        }
+
         // Sol Menü Sekme Değişimi
         document.querySelectorAll('.sidebar-rail .nav-item[data-tab]').forEach(btn => {
             btn.addEventListener('click', function () {
-                document.querySelectorAll('.sidebar-rail .nav-item').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                switchHubView(this.dataset.tab);
+            });
+        });
 
+        // Hub İçi Alt Görünüm (Segmented Control) Dinleyicisi
+        document.querySelectorAll('.hub-segment-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const subpaneId = this.dataset.subpane;
+                const parentHub = this.closest('.tab-pane');
+                if (!parentHub || !subpaneId) return;
+
+                parentHub.querySelectorAll('.hub-segment-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                state.activeTab = this.dataset.tab;
-                const pane = document.getElementById(this.dataset.tab);
-                if (pane) pane.classList.add('active');
 
-                // Mobilde sekmeye geçince çekmeceyi otomatik kapat
-                if (window.innerWidth <= 900) {
-                    toggleMobileSidebar(false);
-                }
+                parentHub.querySelectorAll('.hub-subpane').forEach(p => p.classList.remove('active'));
+                const targetPane = document.getElementById(subpaneId);
+                if (targetPane) targetPane.classList.add('active');
 
                 renderAll();
             });
+        });
+
+        // Üst Hızlı Başlat Çubuğu Aksiyonları
+        document.getElementById('quickBtnNewDeal')?.addEventListener('click', () => {
+            switchHubView('tab-customers', 'subpane-kanban');
+            const isModal = document.getElementById('isModal');
+            if (isModal) isModal.style.display = 'flex';
+        });
+
+        document.getElementById('quickBtnCreateQuote')?.addEventListener('click', () => {
+            switchHubView('tab-mail');
+            setTimeout(() => {
+                const el = document.getElementById('proposalItemsList');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         });
 
         // Üst Evrensel Arama Çubuğu (Global Search)
@@ -2249,8 +2319,8 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             globalSearch.addEventListener('input', function () {
                 state.search = this.value.trim();
                 state.page = 1;
-                // Müşteri sekmesine yönlendir
-                document.querySelector('[data-tab="tab-customers"]')?.click();
+                // Müşteri sekmesine ve tablo alt görünümüne yönlendir
+                switchHubView('tab-customers', 'subpane-table');
                 const mSearch = document.getElementById('arama');
                 if (mSearch) mSearch.value = state.search;
                 renderMusteriTable();
@@ -2878,14 +2948,11 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             }
         });
 
-        // 6. Yüzen Sanal Asistan (Sekme Geçiş Motoru)
+        // 6. Yüzen Sanal CEO (Gerçek AI Sohbet)
         function initAIAssistant() {
             const fab = document.getElementById('aiAssistantFab');
             const flyout = document.getElementById('aiAssistantFlyout');
             const closeBtn = document.getElementById('closeAssistantBtn');
-            const searchInput = document.getElementById('assistantSearchInput');
-            const tabsList = document.getElementById('assistantTabsList');
-            const feedback = document.getElementById('assistantFeedback');
 
             if (!fab || !flyout) return;
 
@@ -2893,11 +2960,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 const willShow = (show !== undefined) ? show : !flyout.classList.contains('active');
                 if (willShow) {
                     flyout.classList.add('active');
-                    if (searchInput) {
-                        searchInput.value = '';
-                        tabsList?.querySelectorAll('.assistant-tab-btn').forEach(b => b.style.display = 'flex');
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
+                    setTimeout(() => chatInput?.focus(), 100);
                 } else {
                     flyout.classList.remove('active');
                 }
@@ -2921,73 +2984,6 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     toggleFlyout(false);
                 }
             });
-
-            // Sekme Butonlarına Tıklama ve Geçiş
-            tabsList?.querySelectorAll('.assistant-tab-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const targetTab = this.dataset.tab;
-                    const tabTitle = this.querySelector('.text')?.textContent || 'Sekme';
-                    
-                    const navBtn = document.querySelector(`.sidebar-rail .nav-item[data-tab="${targetTab}"]`);
-                    if (navBtn) {
-                        navBtn.click();
-                        
-                        if (feedback) {
-                            feedback.textContent = `✓ ${tabTitle} sekmesine geçildi!`;
-                            feedback.style.display = 'block';
-                            setTimeout(() => {
-                                feedback.style.display = 'none';
-                                toggleFlyout(false);
-                            }, 500);
-                        } else {
-                            toggleFlyout(false);
-                        }
-                    }
-                });
-            });
-
-            // Hızlı Arama & Filtreleme
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    const query = this.value.trim().toLowerCase();
-                    const buttons = tabsList?.querySelectorAll('.assistant-tab-btn');
-                    buttons?.forEach(btn => {
-                        const text = btn.textContent.toLowerCase();
-                        btn.style.display = text.includes(query) ? 'flex' : 'none';
-                    });
-                });
-
-                searchInput.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter') {
-                        const visibleBtns = Array.from(tabsList?.querySelectorAll('.assistant-tab-btn') || [])
-                            .filter(b => b.style.display !== 'none');
-                        if (visibleBtns.length > 0) {
-                            visibleBtns[0].click();
-                        }
-                    } else if (e.key === 'Escape') {
-                        toggleFlyout(false);
-                    }
-                });
-            }
-
-            // ---- Mod Seçici: Hızlı Geçiş <-> Gerçek AI Sohbet ----
-            const navView = document.getElementById('assistantNavView');
-            const chatView = document.getElementById('assistantChatView');
-            const modeNavBtn = document.getElementById('assistantModeNavBtn');
-            const modeChatBtn = document.getElementById('assistantModeChatBtn');
-            const footerHint = document.getElementById('assistantFooterHint');
-
-            function setMode(mode) {
-                const isChat = mode === 'chat';
-                navView.style.display = isChat ? 'none' : 'flex';
-                chatView.style.display = isChat ? 'flex' : 'none';
-                modeNavBtn.classList.toggle('active', !isChat);
-                modeChatBtn.classList.toggle('active', isChat);
-                if (footerHint) footerHint.textContent = isChat ? '💬 Groq AI sohbet modu aktif' : '💡 Hızlı geçiş modu aktif';
-                if (isChat) setTimeout(() => chatInput?.focus(), 100);
-            }
-            modeNavBtn?.addEventListener('click', () => setMode('nav'));
-            modeChatBtn?.addEventListener('click', () => setMode('chat'));
 
             // ---- API Anahtarı Paneli (yalnızca localStorage'da saklanır) ----
             const keyBtn = document.getElementById('assistantKeyBtn');
@@ -3043,12 +3039,12 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             const ASSISTANT_TOPIC_ACTIONS = [
                 { keywords: ['teklif', 'fiyat', 'bütçe', 'proje bedeli', 'proforma'], label: '📝 Teklif Oluştur', tab: 'tab-mail' },
                 { keywords: ['mail', 'e-posta', 'eposta', 'e posta'], label: '✉️ AI E-Posta', tab: 'tab-mail' },
-                { keywords: ['müşteri', 'firma', 'şirket', 'client'], label: '👥 Müşteri Veritabanı', tab: 'tab-customers' },
-                { keywords: ['kanban', 'süreç', 'aşama', 'pipeline'], label: '📋 Kanban Süreçleri', tab: 'tab-pipeline' },
-                { keywords: ['ciro', 'kâr', 'kar', 'finans', 'fatura', 'ödeme', 'gelir'], label: '💰 Ciro & Karlılık', tab: 'tab-finance' },
-                { keywords: ['link', 'portal', 'bağlantı'], label: '🔗 Müşteri Linkleri', tab: 'tab-links' },
-                { keywords: ['marketing', 'pazarlama', 'tasarım', 'sunum', 'reklam'], label: '🎨 Sunum & Marketing', tab: 'tab-marketing' },
-                { keywords: ['kpi', 'analitik', 'rapor', 'istatistik'], label: '📊 KPI & Analitik', tab: 'tab-kpi' }
+                { keywords: ['müşteri', 'firma', 'şirket', 'client'], label: '👥 Müşteri Portföyü', tab: 'tab-customers', subpane: 'subpane-table' },
+                { keywords: ['kanban', 'süreç', 'aşama', 'pipeline'], label: '📋 Kanban Süreçleri', tab: 'tab-customers', subpane: 'subpane-kanban' },
+                { keywords: ['ciro', 'kâr', 'kar', 'finans', 'fatura', 'ödeme', 'gelir'], label: '💰 Ciro & Finans', tab: 'tab-kpi', subpane: 'subpane-finance' },
+                { keywords: ['link', 'portal', 'bağlantı'], label: '🔗 Müşteri Linkleri', tab: 'tab-customers', subpane: 'subpane-links' },
+                { keywords: ['marketing', 'pazarlama', 'tasarım', 'sunum', 'reklam'], label: '🎨 Sunum Stüdyosu', tab: 'tab-marketing' },
+                { keywords: ['kpi', 'analitik', 'rapor', 'istatistik'], label: '📊 Genel Bakış & KPI', tab: 'tab-kpi', subpane: 'subpane-analytics' }
             ];
 
             function updateAssistantChatSuggestions(text) {
@@ -3062,8 +3058,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     btn.className = 'assistant-chip-btn';
                     btn.textContent = t.label;
                     btn.addEventListener('click', () => {
-                        const navBtn = document.querySelector(`.sidebar-rail .nav-item[data-tab="${t.tab}"]`);
-                        navBtn?.click();
+                        switchHubView(t.tab, t.subpane);
                         toggleFlyout(false);
                     });
                     chatSuggestions.appendChild(btn);
@@ -3099,7 +3094,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                         body: JSON.stringify({
                             model: 'openai/gpt-oss-120b',
                             messages: [
-                                { role: 'system', content: 'Sen kullanıcının freelance yazılım/tasarım şirketinin "Sanal CEO"sun. Kullanıcı bu şirketin sahibi ve senin patronun; sen ona operasyonu yönetmesinde yardımcı olan, güvenilir, deneyimli bir CEO/COO gibisin. Ona "Patron" diye hitap et. Müşteri ilişkileri, satış teklifleri, fiyatlandırma, e-posta metinleri, nakit akışı, önceliklendirme ve genel iş stratejisi konularında kısa, net, aksiyon odaklı ve Türkçe yanıtlar ver. Mümkün olduğunda somut bir sonraki adım öner (örn. "şu müşteriye teklif gönderelim", "bugün şu 3 işi önceliklendirelim").' },
+                                { role: 'system', content: 'Sen kullanıcının freelance yazılım/tasarım şirketinin "Sanal CEO"sun. Kullanıcı bu şirketin sahibi ve senin patronun; asıl görevin onun iş süreçlerini (müşteri takibi, teklifler, e-posta iletişimi, nakit akışı, önceliklendirme) düzenli ve verimli hale getirmek. Ona resmi ama sıcak bir dille, deneyimli bir CEO/COO gibi "Patron" diye hitap et. Kısa, net, aksiyon odaklı ve Türkçe yanıt ver; her fırsatta somut bir sonraki adım öner (örn. "şu müşteriye teklif gönderelim", "bugün şu 3 işi önceliklendirelim") ve gerekiyorsa hangi modülü açması gerektiğini söyle.' },
                                 ...assistantChatHistory.slice(-10)
                             ],
                             temperature: 0.7
