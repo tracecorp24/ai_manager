@@ -149,64 +149,6 @@
 /* ==========================================================================
    FREELANCE OPERASYON MODÜLLERİ (Time Tracker, Scratchpad, WhatsApp)
    ========================================================================== */
-.time-tracker-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12.5px;
-    color: #ffffff;
-}
-
-.time-tracker-pill.active {
-    background: rgba(34, 197, 94, 0.2);
-    border-color: #22c55e;
-}
-
-.tracker-time {
-    font-family: monospace;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-}
-
-.tracker-btn {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: background 0.15s;
-}
-
-.tracker-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.theme-toggle-btn, .scratchpad-toggle-btn {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.theme-toggle-btn:hover, .scratchpad-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.22);
-}
-
 .btn-whatsapp-collect {
     background: #16a34a;
     color: #ffffff;
@@ -326,18 +268,16 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.brand-sub {
-    font-size: 12px;
-    color: #94a3b8;
-    font-weight: 400;
-    margin-left: 4px;
-}
-
 /* Evrensel Arama Kutusu (Görseldeki Search Alanı) */
 .topbar-center {
     flex: 1;
     max-width: 680px;
     margin: 0 24px;
+}
+
+.topbar-center-compact {
+    max-width: 360px;
+    margin: 0 16px;
 }
 
 .search-box {
@@ -347,13 +287,13 @@ body {
 
 .search-box input {
     width: 100%;
-    height: 38px;
+    height: 34px;
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.18);
     border-radius: 8px;
-    padding: 0 16px 0 40px;
+    padding: 0 14px 0 36px;
     color: #ffffff;
-    font-size: 13.5px;
+    font-size: 12.5px;
     outline: none;
     transition: all 0.2s;
 }
@@ -434,12 +374,99 @@ body {
 }
 .topbar-icon-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
 
-.user-profile {
+.topbar-user-menu {
+    position: relative;
+}
+
+.topbar-user-trigger {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-left: 10px;
-    border-left: 1px solid rgba(255,255,255,0.15);
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px 4px 4px;
+    border-radius: 20px;
+    transition: background 0.15s;
+}
+
+.topbar-user-trigger:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.user-menu-dots {
+    color: #cbd5e1;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.topbar-user-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background: var(--g-card-bg);
+    border: 1px solid var(--g-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    padding: 8px;
+    z-index: 1100;
+}
+
+.topbar-user-dropdown.open {
+    display: block;
+}
+
+.dropdown-user-info {
+    padding: 8px 10px 10px;
+}
+
+.dropdown-user-info .user-name {
+    color: var(--g-text-dark);
+    font-size: 13px;
+}
+
+.dropdown-user-info .user-role {
+    color: var(--g-text-muted);
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--g-border-light);
+    margin: 4px 0;
+}
+
+.dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--g-text-dark);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.dropdown-item:hover {
+    background: var(--g-blue-bg);
+}
+
+.dropdown-item-danger {
+    color: #ef4444;
+}
+
+.dropdown-item-danger:hover {
+    background: var(--g-red-bg);
 }
 
 .avatar {
@@ -454,11 +481,6 @@ body {
     font-weight: 700;
     font-size: 13px;
     border: 2px solid rgba(255,255,255,0.3);
-}
-
-.user-info {
-    text-align: left;
-    line-height: 1.2;
 }
 
 .user-name {
@@ -1834,16 +1856,6 @@ body {
     .brand span:nth-child(2) {
         font-size: 14.5px;
     }
-    .brand-sub {
-        display: none;
-    }
-    .user-info {
-        display: none;
-    }
-    .user-profile {
-        padding-left: 6px;
-        border-left: none;
-    }
 
     .form-grid-2 {
         grid-template-columns: 1fr;
@@ -3005,40 +3017,6 @@ body {
 [data-theme="dark"] #proformaModalSheet strong,
 [data-theme="dark"] #proformaModalSheet b {
     color: #f8fafc;
-}
-
-/* Müşteri Portalı Üst Bar Butonu */
-.topbar-portal-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
-    border: 1px solid rgba(2, 132, 199, 0.4);
-    color: #0284c7;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.topbar-portal-btn:hover {
-    background: #0284c7;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
-    transform: translateY(-1px);
-}
-
-[data-theme="dark"] .topbar-portal-btn {
-    background: rgba(56, 189, 248, 0.15);
-    border-color: rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
-}
-
-[data-theme="dark"] .topbar-portal-btn:hover {
-    background: #0284c7;
-    color: #fff;
 }
 
 /* Rol Rozetleri */

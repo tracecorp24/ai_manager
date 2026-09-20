@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Manager — Kurumsal Müşteri & İşletme Zekası</title>
-    <meta name="description" content="Business Manager — Google temalı kurumsal müşteri ilişkileri, analitik gösterge paneli ve süreç yönetim platformu">
+    <title>AI Manager — Kurumsal Müşteri & İşletme Zekası</title>
+    <meta name="description" content="AI Manager — Google temalı kurumsal müşteri ilişkileri, analitik gösterge paneli ve süreç yönetim platformu">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,51 +19,39 @@
         <div class="topbar-left">
             <button class="topbar-menu-btn" id="toggleSidebarBtn" title="Menüyü Daralt/Genişlet">☰</button>
             <a href="#" class="brand">
-                <span class="brand-icon">BM</span>
-                <span>Business Manager</span>
-                <span class="brand-sub">Enterprise Insights</span>
+                <span class="brand-icon">AI</span>
+                <span>AI Manager</span>
             </a>
         </div>
 
         <!-- Evrensel Arama Çubuğu (Görseldeki Search Box) -->
-        <div class="topbar-center">
+        <div class="topbar-center topbar-center-compact">
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="globalSearchInput" placeholder="Müşteri adı, sicil no, sektör veya teklif ara...">
+                <input type="text" id="globalSearchInput" placeholder="Müşteri, sicil no, teklif ara...">
                 <span class="search-shortcut">⌘K</span>
             </div>
         </div>
 
         <div class="topbar-right" style="display:flex; align-items:center; gap:10px;">
-            <!-- Canlı Zaman Sayacı (Time Tracker) -->
-            <div class="time-tracker-pill" id="timeTrackerPill" title="Freelance Zaman & Efor Takipçisi">
-                <span id="trackerPlayBtn" class="tracker-btn" title="Başlat/Durdur">▶️</span>
-                <span class="tracker-time" id="trackerDisplay">00:00:00</span>
-                <span id="trackerResetBtn" class="tracker-btn" style="font-size:11px; color:#94a3b8;" title="Sıfırla">↺</span>
-            </div>
-
-            <!-- Hızlı Notlar / Karalama Defteri -->
-            <button class="scratchpad-toggle-btn" id="scratchpadToggleBtn" title="Hızlı Toplantı & Karalama Notları">
-                <span>📝</span> Notlar
-            </button>
-
-            <!-- Müşteri Portalı Hızlı Erişim -->
-            <button type="button" class="topbar-portal-btn" id="topbarPortalBtn" title="Canlı Müşteri Portalı & İş Takibi">
-                🔍 Müşteri Portalı
-            </button>
-
-            <!-- Koyu Tema (Dark Mode) Toggle -->
-            <button class="theme-toggle-btn" id="themeToggleBtn" title="Koyu / Açık Tema Değiştir">
-                <span id="themeIcon">🌙</span>
-            </button>
-
-            <div class="user-profile">
-                <div class="avatar" id="topbarAvatar">EM</div>
-                <div class="user-info">
-                    <div class="user-name" id="topbarUserName">Emin A.</div>
-                    <div class="user-role" id="topbarUserRole">👑 Kurumsal Yönetici</div>
+            <div class="topbar-user-menu" id="topbarUserMenu">
+                <button class="topbar-user-trigger" id="topbarUserMenuBtn" title="Hesap ve Ayarlar">
+                    <div class="avatar" id="topbarAvatar">EM</div>
+                    <span class="user-menu-dots">⋯</span>
+                </button>
+                <div class="topbar-user-dropdown" id="topbarUserDropdown">
+                    <div class="dropdown-user-info">
+                        <div class="user-name" id="topbarUserName">Emin A.</div>
+                        <div class="user-role" id="topbarUserRole">👑 Kurumsal Yönetici</div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" id="themeToggleBtn">
+                        <span id="themeIcon">🌙</span> <span>Koyu / Açık Tema</span>
+                    </button>
+                    <button class="dropdown-item dropdown-item-danger" onclick="handleSignOut()">
+                        <span>⏻</span> <span>Güvenli Çıkış Yap</span>
+                    </button>
                 </div>
-                <button onclick="handleSignOut()" class="topbar-icon-btn" style="color:#f87171; margin-left:4px;" title="Güvenli Çıkış Yap">⏻</button>
             </div>
         </div>
     </header>
@@ -1618,6 +1606,7 @@
                     </div>
                 </div>
                 <div class="assistant-header-right">
+                    <button class="assistant-close-btn" id="openScratchpadFromCeoBtn" title="Hızlı Not Al">📝</button>
                     <button class="assistant-close-btn" id="closeAssistantBtn" title="Kapat">✕</button>
                 </div>
             </div>

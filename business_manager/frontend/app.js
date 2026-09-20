@@ -3092,7 +3092,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
         }
 
         // ==========================================================================
-        // 9. FREELANCE İŞLETİM SİSTEMİ ARAÇLARI (Zaman Sayacı, Scratchpad, Dark Mode)
+        // 9. FREELANCE İŞLETİM SİSTEMİ ARAÇLARI (Scratchpad, Dark Mode, Hesap Menüsü)
         // ==========================================================================
         function initFreelanceTools() {
             // 1. Dark Mode Yönetimi
@@ -3110,62 +3110,23 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 if (themeIcon) themeIcon.textContent = next === 'dark' ? '☀️' : '🌙';
             });
 
-            // 2. Canlı Zaman Sayacı (Time Tracker)
-            let trackerRunning = false;
-            let trackerSeconds = parseInt(localStorage.getItem('freelance_tracker_seconds') || '0', 10);
-            let trackerInterval = null;
+            // 2. Sağ Üst Hesap Menüsü (Tema, Kullanıcı Bilgisi, Çıkış)
+            const userMenuBtn = document.getElementById('topbarUserMenuBtn');
+            const userDropdown = document.getElementById('topbarUserDropdown');
 
-            function formatTime(totalSec) {
-                const h = Math.floor(totalSec / 3600);
-                const m = Math.floor((totalSec % 3600) / 60);
-                const s = totalSec % 60;
-                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            }
-
-            const displayEl = document.getElementById('trackerDisplay');
-            const playBtn = document.getElementById('trackerPlayBtn');
-            const resetBtn = document.getElementById('trackerResetBtn');
-            const pillEl = document.getElementById('timeTrackerPill');
-
-            if (displayEl) displayEl.textContent = formatTime(trackerSeconds);
-
-            function updateDisplay() {
-                if (displayEl) displayEl.textContent = formatTime(trackerSeconds);
-                localStorage.setItem('freelance_tracker_seconds', trackerSeconds);
-            }
-
-            playBtn?.addEventListener('click', (e) => {
+            userMenuBtn?.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (trackerRunning) {
-                    clearInterval(trackerInterval);
-                    trackerRunning = false;
-                    playBtn.textContent = '▶️';
-                    pillEl?.classList.remove('active');
-                } else {
-                    trackerRunning = true;
-                    playBtn.textContent = '⏸️';
-                    pillEl?.classList.add('active');
-                    trackerInterval = setInterval(() => {
-                        trackerSeconds++;
-                        updateDisplay();
-                    }, 1000);
+                userDropdown?.classList.toggle('open');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (userDropdown?.classList.contains('open') && !userDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                    userDropdown.classList.remove('open');
                 }
             });
 
-            resetBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (confirm('Aktif zaman sayacı sıfırlansın mı?')) {
-                    clearInterval(trackerInterval);
-                    trackerRunning = false;
-                    trackerSeconds = 0;
-                    if (playBtn) playBtn.textContent = '▶️';
-                    pillEl?.classList.remove('active');
-                    updateDisplay();
-                }
-            });
-
-            // 3. Hızlı Karalama & Toplantı Notları (Scratchpad)
-            const scratchToggleBtn = document.getElementById('scratchpadToggleBtn');
+            // 3. Hızlı Karalama & Toplantı Notları (Scratchpad) — Sanal CEO üzerinden açılır
+            const scratchToggleBtn = document.getElementById('openScratchpadFromCeoBtn');
             const scratchModal = document.getElementById('scratchpadModal');
             const closeScratchBtn = document.getElementById('closeScratchpadBtn');
             const scratchTextarea = document.getElementById('scratchpadTextarea');
@@ -3198,7 +3159,6 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             const closePortalBtn = document.getElementById('closePortalModalBtn');
             const portalNewTabBtn = document.getElementById('portalOpenNewTabBtn');
             const portalTriggers = [
-                document.getElementById('topbarPortalBtn'),
                 document.getElementById('navItemPortal'),
                 document.getElementById('quickBtnPortal')
             ];
