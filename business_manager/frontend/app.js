@@ -3087,7 +3087,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 chatInput.value = '';
                 chatSendBtn.disabled = true;
 
-                const loadingEl = appendChatBubble('Timsah Asistan yazıyor...', 'assistant-chat-bubble-loading');
+                const loadingEl = appendChatBubble('Sanal CEO yazıyor...', 'assistant-chat-bubble-loading');
 
                 try {
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -3099,7 +3099,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                         body: JSON.stringify({
                             model: 'openai/gpt-oss-120b',
                             messages: [
-                                { role: 'system', content: 'Sen Business Manager uygulamasında çalışan "Timsah Asistan" adlı yardımsever bir yapay zeka asistanısın. Müşteri ilişkileri, satış teklifleri, e-posta metinleri ve genel işletme soruları konusunda kısa, net ve Türkçe yanıtlar ver.' },
+                                { role: 'system', content: 'Sen kullanıcının freelance yazılım/tasarım şirketinin "Sanal CEO"sun. Kullanıcı bu şirketin sahibi ve senin patronun; sen ona operasyonu yönetmesinde yardımcı olan, güvenilir, deneyimli bir CEO/COO gibisin. Ona "Patron" diye hitap et. Müşteri ilişkileri, satış teklifleri, fiyatlandırma, e-posta metinleri, nakit akışı, önceliklendirme ve genel iş stratejisi konularında kısa, net, aksiyon odaklı ve Türkçe yanıtlar ver. Mümkün olduğunda somut bir sonraki adım öner (örn. "şu müşteriye teklif gönderelim", "bugün şu 3 işi önceliklendirelim").' },
                                 ...assistantChatHistory.slice(-10)
                             ],
                             temperature: 0.7
