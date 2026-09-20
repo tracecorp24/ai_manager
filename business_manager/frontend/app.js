@@ -3097,7 +3097,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            model: 'llama-3.3-70b-versatile',
+                            model: 'openai/gpt-oss-120b',
                             messages: [
                                 { role: 'system', content: 'Sen Business Manager uygulamasında çalışan "Timsah Asistan" adlı yardımsever bir yapay zeka asistanısın. Müşteri ilişkileri, satış teklifleri, e-posta metinleri ve genel işletme soruları konusunda kısa, net ve Türkçe yanıtlar ver.' },
                                 ...assistantChatHistory.slice(-10)
