@@ -47,18 +47,23 @@
                 <span>📝</span> Notlar
             </button>
 
+            <!-- Müşteri Portalı Hızlı Erişim -->
+            <a href="portal.html" target="_blank" class="topbar-portal-btn" id="topbarPortalBtn" title="Canlı Müşteri Portalı & İş Takibi">
+                🔍 Müşteri Portalı
+            </a>
+
             <!-- Koyu Tema (Dark Mode) Toggle -->
             <button class="theme-toggle-btn" id="themeToggleBtn" title="Koyu / Açık Tema Değiştir">
                 <span id="themeIcon">🌙</span>
             </button>
 
             <div class="user-profile">
-                <div class="avatar">EM</div>
+                <div class="avatar" id="topbarAvatar">EM</div>
                 <div class="user-info">
-                    <div class="user-name">Emin A.</div>
-                    <div class="user-role">Freelance Studio Lead</div>
+                    <div class="user-name" id="topbarUserName">Emin A.</div>
+                    <div class="user-role" id="topbarUserRole">👑 Kurumsal Yönetici</div>
                 </div>
-                <button onclick="handleSignOut()" class="topbar-icon-btn" style="color:#f87171; margin-left:4px;" title="Güvenli Çıkış">⏻</button>
+                <button onclick="handleSignOut()" class="topbar-icon-btn" style="color:#f87171; margin-left:4px;" title="Güvenli Çıkış Yap">⏻</button>
             </div>
         </div>
     </header>
@@ -102,6 +107,13 @@
                 <span class="nav-icon">🎨</span>
                 <span class="nav-label">Sunum & Marketing</span>
             </button>
+
+            <div class="nav-section-title">Dış Paylaşım</div>
+            <a href="portal.html" target="_blank" class="nav-item" style="text-decoration:none; color:inherit;">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">Müşteri Portalı</span>
+                <span class="nav-badge" style="background:rgba(2,132,199,0.2); color:#38bdf8;">Canlı</span>
+            </a>
 
             <div class="sidebar-footer">
                 <div style="padding:10px 14px; font-size:11px; color:#94a3b8; line-height:1.4;">
@@ -1613,6 +1625,7 @@
                         <strong>Merhaba!</strong> Ben Timsah Asistan, Groq destekli yapay zeka ile konuşabilirsin. Müşteri, teklif, e-posta metni veya genel işletme sorularında yardımcı olabilirim.
                     </div>
                 </div>
+                <div class="assistant-chat-suggestions" id="assistantChatSuggestions"></div>
                 <div class="assistant-chat-input-row">
                     <input type="text" id="assistantChatInput" class="g-input" placeholder="Bir şey sor..." style="flex:1;">
                     <button class="btn-ai-sparkle" id="assistantChatSendBtn" style="padding:10px 14px;">➤</button>

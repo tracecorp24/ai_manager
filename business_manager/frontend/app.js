@@ -7,6 +7,29 @@
     // 1. Yetki ve Oturum Kontrolü (admin bypass destekli)
     if (!await guardProtectedPage()) return;
 
+    // Oturum Açan Kullanıcı Bilgilerini Topbar'a Yansıt
+    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    if (currentUser) {
+        const topbarAvatar = document.getElementById('topbarAvatar');
+        const topbarUserName = document.getElementById('topbarUserName');
+        const topbarUserRole = document.getElementById('topbarUserRole');
+
+        if (topbarAvatar) {
+            const initials = (currentUser.name || 'BM').trim().split(/\s+/).map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            topbarAvatar.textContent = initials || 'BM';
+        }
+        if (topbarUserName) {
+            topbarUserName.textContent = currentUser.name || 'Kullanıcı';
+        }
+        if (topbarUserRole) {
+            if (currentUser.role === 'admin') {
+                topbarUserRole.innerHTML = '<span class="role-badge-admin">👑 Kurumsal Yönetici</span>';
+            } else {
+                topbarUserRole.innerHTML = '<span class="role-badge-user">👤 Ekip Üyesi</span>';
+            }
+        }
+    }
+
     // 2. Global Durum
     let musteriler = [];
     let pdfDosyalari = [];
@@ -1642,12 +1665,20 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
         const elBekleyen = document.getElementById('bekleyenAlacak');
         const elKasa = document.getElementById('tahsilEdilmisKasa');
 
+        const isAdmin = !currentUser || currentUser.role === 'admin';
+
         if (elAylik) elAylik.textContent = `₺${toplamCiro.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elHaftalik) elHaftalik.textContent = `₺${haftalikCiro.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elYillik) elYillik.textContent = `₺${yillikCiro.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elVergi) elVergi.textContent = `₺${toplamVergi.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        if (elKar) elKar.textContent = `₺${netKar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-        if (elMarj) elMarj.textContent = `%${netKarMarjiVal}`;
+        if (elKar) {
+            elKar.textContent = isAdmin ? `₺${netKar.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}` : '🔒 Şirket İçi Gizli (Yetki Gerekir)';
+            if (!isAdmin) elKar.style.fontSize = '14px';
+        }
+        if (elMarj) {
+            elMarj.textContent = isAdmin ? `%${netKarMarjiVal}` : '🔒 Gizli';
+            if (!isAdmin) elMarj.style.fontSize = '14px';
+        }
         if (elBekleyen) elBekleyen.textContent = `₺${bekleyenAlacak.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
         if (elKasa) elKasa.textContent = `₺${tahsilKasa.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
 
@@ -2827,6 +2858,10 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     portfolio: 'Kurumsal Ajans Portfolyo Sunumu',
                     strategy: 'B2B Pazarlama Stratejisi'
                 };
+                const iframe = document.getElementById('marketingIframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({ action: 'loadTemplate', template: tpl }, '*');
+                }
                 showToast(`✨ ${names[tpl] || 'Hazır sunum'} şablonu yüklendi!`);
             });
         });
@@ -2992,6 +3027,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             const chatMessages = document.getElementById('assistantChatMessages');
             const chatInput = document.getElementById('assistantChatInput');
             const chatSendBtn = document.getElementById('assistantChatSendBtn');
+            const chatSuggestions = document.getElementById('assistantChatSuggestions');
             let assistantChatHistory = [];
 
             function appendChatBubble(text, cls) {
@@ -3001,6 +3037,37 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 chatMessages.appendChild(div);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 return div;
+            }
+
+            // Konuşma metnine göre ilgili sekmeye giden hızlı aksiyon butonları
+            const ASSISTANT_TOPIC_ACTIONS = [
+                { keywords: ['teklif', 'fiyat', 'bütçe', 'proje bedeli', 'proforma'], label: '📝 Teklif Oluştur', tab: 'tab-mail' },
+                { keywords: ['mail', 'e-posta', 'eposta', 'e posta'], label: '✉️ AI E-Posta', tab: 'tab-mail' },
+                { keywords: ['müşteri', 'firma', 'şirket', 'client'], label: '👥 Müşteri Veritabanı', tab: 'tab-customers' },
+                { keywords: ['kanban', 'süreç', 'aşama', 'pipeline'], label: '📋 Kanban Süreçleri', tab: 'tab-pipeline' },
+                { keywords: ['ciro', 'kâr', 'kar', 'finans', 'fatura', 'ödeme', 'gelir'], label: '💰 Ciro & Karlılık', tab: 'tab-finance' },
+                { keywords: ['link', 'portal', 'bağlantı'], label: '🔗 Müşteri Linkleri', tab: 'tab-links' },
+                { keywords: ['marketing', 'pazarlama', 'tasarım', 'sunum', 'reklam'], label: '🎨 Sunum & Marketing', tab: 'tab-marketing' },
+                { keywords: ['kpi', 'analitik', 'rapor', 'istatistik'], label: '📊 KPI & Analitik', tab: 'tab-kpi' }
+            ];
+
+            function updateAssistantChatSuggestions(text) {
+                if (!chatSuggestions) return;
+                const lower = (text || '').toLowerCase();
+                const matched = ASSISTANT_TOPIC_ACTIONS.filter(t => t.keywords.some(k => lower.includes(k)));
+                chatSuggestions.innerHTML = '';
+                matched.slice(0, 4).forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'assistant-chip-btn';
+                    btn.textContent = t.label;
+                    btn.addEventListener('click', () => {
+                        const navBtn = document.querySelector(`.sidebar-rail .nav-item[data-tab="${t.tab}"]`);
+                        navBtn?.click();
+                        toggleFlyout(false);
+                    });
+                    chatSuggestions.appendChild(btn);
+                });
             }
 
             async function sendAssistantChat() {
@@ -3016,6 +3083,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
 
                 appendChatBubble(text, 'assistant-chat-bubble-user');
                 assistantChatHistory.push({ role: 'user', content: text });
+                updateAssistantChatSuggestions(text);
                 chatInput.value = '';
                 chatSendBtn.disabled = true;
 
@@ -3051,6 +3119,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     const reply = data.choices?.[0]?.message?.content || 'Yanıt alınamadı.';
                     appendChatBubble(reply, 'assistant-chat-bubble-ai');
                     assistantChatHistory.push({ role: 'assistant', content: reply });
+                    updateAssistantChatSuggestions(text + ' ' + reply);
                 } catch (err) {
                     loadingEl.remove();
                     appendChatBubble('Bağlantı hatası: ' + (err?.message || 'bilinmeyen hata'), 'assistant-chat-bubble-error');
