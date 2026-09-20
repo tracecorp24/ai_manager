@@ -254,6 +254,7 @@
     // 6. RENDER TÜM BİLEŞENLER
     function renderAll() {
         renderKpiDashboard();
+        renderFreelanceFocusHub();
         renderMusteriTable();
         renderKanban();
         renderMailMusteriVePdf();
@@ -499,6 +500,141 @@
 
         const url = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
+    }
+
+    // ==========================================================================
+    // FREELANCER OS : GÜNÜN ODAK PANELİ (DAILY FOCUS HUB)
+    // ==========================================================================
+    function renderFreelanceFocusHub() {
+        const deadlinesEl = document.getElementById('focusDeadlinesContent');
+        const proposalsEl = document.getElementById('focusProposalsContent');
+        const financeEl = document.getElementById('focusFinanceContent');
+        const currentDateEl = document.getElementById('focusCurrentDate');
+
+        if (currentDateEl) {
+            const now = new Date();
+            const options = { day: 'numeric', month: 'long', weekday: 'long' };
+            currentDateEl.textContent = `📅 ${now.toLocaleDateString('tr-TR', options)}`;
+        }
+
+        const allJobs = getTumIsler();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // 1. Yaklaşan Teslimatlar (Aktif işler: devam ediyor, revizyonda veya onayda)
+        if (deadlinesEl) {
+            const activeJobs = allJobs.filter(j => j.durum >= 1 && j.durum <= 3);
+            activeJobs.sort((a, b) => {
+                const da = a.deadline ? new Date(a.deadline) : new Date(Date.now() + 86400000 * 5);
+                const db = b.deadline ? new Date(b.deadline) : new Date(Date.now() + 86400000 * 5);
+                return da - db;
+            });
+
+            const topJobs = activeJobs.slice(0, 3);
+            if (topJobs.length === 0) {
+                deadlinesEl.innerHTML = `
+                    <div style="text-align:center; padding:18px 10px; color:#64748b; font-size:13px;">
+                        🎉 Harika! Yaklaşan acil teslimatınız bulunmuyor.
+                    </div>`;
+            } else {
+                deadlinesEl.innerHTML = topJobs.map(j => {
+                    const m = musteriler.find(x => String(x.id) === String(j.musteriId)) || { ad: 'Müşteri' };
+                    let daysText = '3 gün kaldı';
+                    let badgeClass = 'badge-urgent';
+                    if (j.deadline) {
+                        const dl = new Date(j.deadline);
+                        const diff = Math.ceil((dl - today) / 86400000);
+                        if (diff < 0) {
+                            daysText = `${Math.abs(diff)} gün gecikti`;
+                            badgeClass = 'badge-urgent';
+                        } else if (diff === 0) {
+                            daysText = 'Bugün teslim!';
+                            badgeClass = 'badge-urgent';
+                        } else {
+                            daysText = `${diff} gün kaldı`;
+                            badgeClass = diff <= 2 ? 'badge-urgent' : 'badge-pending';
+                        }
+                    }
+                    return `
+                    <div class="focus-item-row" style="cursor:pointer;" onclick="switchHubView('tab-customers', 'subpane-kanban')">
+                        <div class="focus-item-title">
+                            <span>${esc(j.isAdi)}</span>
+                            <span class="focus-item-sub">${esc(m.ad)} · ₺${Number(j.tutar || 0).toLocaleString('tr-TR')}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="focus-item-badge ${badgeClass}">${daysText}</span>
+                            <button type="button" class="btn-portal-copy" title="Müşteri Portalı Linkini Kopyala" onclick="event.stopPropagation(); window.copyJobPortalLink('${j.musteriId}');">🔗</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // 2. Onay Bekleyen Teklifler (Durum 0: Teklif / Görüşme)
+        if (proposalsEl) {
+            const pendingProposals = allJobs.filter(j => j.durum === 0);
+            const topProposals = pendingProposals.slice(0, 3);
+            if (topProposals.length === 0) {
+                proposalsEl.innerHTML = `
+                    <div style="text-align:center; padding:18px 10px; color:#64748b; font-size:13px;">
+                        📋 Bekleyen teklif yok. Yeni bir teklif hazırlayabilirsiniz.
+                    </div>`;
+            } else {
+                proposalsEl.innerHTML = topProposals.map(j => {
+                    const m = musteriler.find(x => String(x.id) === String(j.musteriId)) || { ad: 'Müşteri', telefon: '' };
+                    const rawPhone = String(m.telefon || '').replace(/\D/g, '');
+                    let cleanPhone = rawPhone.startsWith('0') ? '90' + rawPhone.slice(1) : (rawPhone ? (rawPhone.startsWith('90') ? rawPhone : '90' + rawPhone) : '');
+                    const waMsg = encodeURIComponent(`Merhaba ${m.ad}, ilettiğimiz "${j.isAdi}" teklifini inceleme fırsatınız oldu mu? Geri bildiriminizi rica ederiz.`);
+                    const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : `https://api.whatsapp.com/send?text=${waMsg}`;
+
+                    return `
+                    <div class="focus-item-row">
+                        <div class="focus-item-title">
+                            <span>${esc(j.isAdi)}</span>
+                            <span class="focus-item-sub">${esc(m.ad)}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="focus-item-badge badge-pending">₺${Number(j.tutar || 0).toLocaleString('tr-TR')}</span>
+                            <a href="${waLink}" target="_blank" class="btn-wa-action" title="WhatsApp'tan Hatırlat">💬 Sor</a>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // 3. Kasa & Bekleyen Alacak
+        if (financeEl) {
+            const completedJobs = allJobs.filter(j => j.durum >= 4);
+            const activeJobs = allJobs.filter(j => j.durum >= 1 && j.durum < 4);
+
+            const tahsilEdilen = completedJobs.reduce((acc, curr) => acc + (Number(curr.tutar) || 0), 0);
+            const bekleyenAlacak = activeJobs.reduce((acc, curr) => acc + (Number(curr.tutar) || 0), 0);
+            const toplamGider = (masraflar || []).reduce((acc, curr) => acc + (Number(curr.tutar) || 0), 0);
+            const netKar = Math.max(0, tahsilEdilen - toplamGider);
+
+            financeEl.innerHTML = `
+            <div class="focus-item-row">
+                <div class="focus-item-title">
+                    <span>💰 Tahsil Edilmiş Kasa</span>
+                    <span class="focus-item-sub">Hesaba geçen net ödemeler</span>
+                </div>
+                <span class="focus-item-badge badge-cash">₺${tahsilEdilen.toLocaleString('tr-TR')}</span>
+            </div>
+            <div class="focus-item-row">
+                <div class="focus-item-title">
+                    <span>⏳ Bekleyen Açık Alacak</span>
+                    <span class="focus-item-sub">Devam eden işlerin toplam tutarı</span>
+                </div>
+                <span class="focus-item-badge badge-pending">₺${bekleyenAlacak.toLocaleString('tr-TR')}</span>
+            </div>
+            <div class="focus-item-row">
+                <div class="focus-item-title">
+                    <span>📈 Net Kazanç (Kâr)</span>
+                    <span class="focus-item-sub">Masraflar düşüldükten sonra</span>
+                </div>
+                <span class="focus-item-badge badge-cash" style="background:#e0f2fe; color:#0284c7;">₺${netKar.toLocaleString('tr-TR')}</span>
+            </div>`;
+        }
     }
 
     // ==========================================================================
@@ -821,14 +957,15 @@
                     }
                 }
 
-                // WhatsApp bağlantısı
+                // WhatsApp bağlantısı & Canlı Müşteri Portal Linki
                 const rawPhone = String(musteri.telefon || '').replace(/\D/g, '');
                 let cleanPhone = rawPhone;
                 if (cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.slice(1);
                 else if (cleanPhone && !cleanPhone.startsWith('90')) cleanPhone = '90' + cleanPhone;
 
-                const waMsg = encodeURIComponent(`Merhaba ${musteri.ad} yetkilisi, "${i.isAdi}" projemizin süreç durumu hakkında bilgi paylaşmak isteriz.`);
-                const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : '';
+                const portalShareUrl = `${window.location.origin}/portal.html?cid=${encodeURIComponent(musteri.sicil || musteri.id || i.musteriId || 'CUST-8')}`;
+                const waMsg = encodeURIComponent(`Merhaba ${musteri.ad}, "${i.isAdi}" projenizin canlı aşaması ve takip linkiniz: ${portalShareUrl}`);
+                const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : `https://api.whatsapp.com/send?text=${waMsg}`;
 
                 // Öncelik Rozeti
                 let priorityBadge = '';
@@ -850,8 +987,9 @@
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:6px; border-top:1px solid #f1f5f9;">
                         <span style="font-weight:800; font-size:13px; color:#16a34a;">₺${Number(i.tutar || 0).toLocaleString('tr-TR')}</span>
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn-kanban-wa" title="Müşteriyle WhatsApp Görüşmesi" onclick="event.stopPropagation();">💬</a>` : ''}
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <a href="${waUrl}" target="_blank" class="btn-kanban-wa" title="WhatsApp Paylaşımı" onclick="event.stopPropagation();">💬</a>
+                            <button type="button" class="btn-portal-copy" data-mid="${i.musteriId}" title="Müşteri Takip Portal Linkini Kopyala" onclick="event.stopPropagation(); window.copyJobPortalLink('${i.musteriId}');">🔗 Link</button>
                             <div class="kanban-card-step-actions">
                                 ${s.durum > 0 ? `<button class="btn-kanban-step btn-step-prev" data-id="${i.id}" data-mid="${i.musteriId}" title="Önceki Aşamaya Al">◀</button>` : ''}
                                 ${s.durum < 4 ? `<button class="btn-kanban-step btn-step-next" data-id="${i.id}" data-mid="${i.musteriId}" title="Sonraki Aşamaya İlerlet">▶</button>` : ''}
@@ -2298,19 +2436,21 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             });
         });
 
-        // Üst Hızlı Başlat Çubuğu Aksiyonları
-        document.getElementById('quickBtnNewDeal')?.addEventListener('click', () => {
-            switchHubView('tab-customers', 'subpane-kanban');
-            const isModal = document.getElementById('isModal');
-            if (isModal) isModal.style.display = 'flex';
-        });
-
+        // Freelance Hızlı Aksiyon Çubuğu & Odak Paneli Dinleyicileri
         document.getElementById('quickBtnCreateQuote')?.addEventListener('click', () => {
             switchHubView('tab-mail');
-            setTimeout(() => {
-                const el = document.getElementById('proposalItemsList');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+        });
+
+        document.getElementById('focusBtnViewKanban')?.addEventListener('click', () => {
+            switchHubView('tab-customers', 'subpane-kanban');
+        });
+
+        document.getElementById('focusBtnNewProposal')?.addEventListener('click', () => {
+            switchHubView('tab-mail');
+        });
+
+        document.getElementById('focusBtnViewFinance')?.addEventListener('click', () => {
+            switchHubView('tab-kpi', 'subpane-finance');
         });
 
         // Üst Evrensel Arama Çubuğu (Global Search)
@@ -3004,14 +3144,17 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                 return div;
             }
 
-            // Konuşma metnine göre ilgili sekmeye giden hızlı aksiyon butonları
+            // Konuşma metnine göre ilgili sekmeye/eyleme giden hızlı aksiyon butonları
+            // (üst çubuktaki "Yeni İş", "Teklif Hazırla", "Müşteri Portalı" butonlarının yerini alır)
             const ASSISTANT_TOPIC_ACTIONS = [
-                { keywords: ['teklif', 'fiyat', 'bütçe', 'proje bedeli', 'proforma'], label: '📝 Teklif Oluştur', tab: 'tab-mail' },
+                { keywords: ['yeni iş', 'yeni müşteri', 'fırsat ekle', 'yeni proje', 'iş ekle'], label: '➕ Yeni İş / Fırsat Ekle', action: () => { switchHubView('tab-customers', 'subpane-kanban'); const m = document.getElementById('isModal'); if (m) m.style.display = 'flex'; } },
+                { keywords: ['teklif', 'fiyat', 'bütçe', 'proje bedeli', 'proforma'], label: '📝 Teklif Hazırla', action: () => { switchHubView('tab-mail'); setTimeout(() => document.getElementById('proposalItemsList')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150); } },
                 { keywords: ['mail', 'e-posta', 'eposta', 'e posta'], label: '✉️ AI E-Posta', tab: 'tab-mail' },
+                { keywords: ['müşteri portal', 'portal'], label: '🌐 Müşteri Portalı', action: () => document.getElementById('navItemPortal')?.click() },
                 { keywords: ['müşteri', 'firma', 'şirket', 'client'], label: '👥 Müşteri Portföyü', tab: 'tab-customers', subpane: 'subpane-table' },
                 { keywords: ['kanban', 'süreç', 'aşama', 'pipeline'], label: '📋 Kanban Süreçleri', tab: 'tab-customers', subpane: 'subpane-kanban' },
                 { keywords: ['ciro', 'kâr', 'kar', 'finans', 'fatura', 'ödeme', 'gelir'], label: '💰 Ciro & Finans', tab: 'tab-kpi', subpane: 'subpane-finance' },
-                { keywords: ['link', 'portal', 'bağlantı'], label: '🔗 Müşteri Linkleri', tab: 'tab-customers', subpane: 'subpane-links' },
+                { keywords: ['link', 'bağlantı'], label: '🔗 Müşteri Linkleri', tab: 'tab-customers', subpane: 'subpane-links' },
                 { keywords: ['marketing', 'pazarlama', 'tasarım', 'sunum', 'reklam'], label: '🎨 Sunum Stüdyosu', tab: 'tab-marketing' },
                 { keywords: ['kpi', 'analitik', 'rapor', 'istatistik'], label: '📊 Genel Bakış & KPI', tab: 'tab-kpi', subpane: 'subpane-analytics' }
             ];
@@ -3027,7 +3170,8 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
                     btn.className = 'assistant-chip-btn';
                     btn.textContent = t.label;
                     btn.addEventListener('click', () => {
-                        switchHubView(t.tab, t.subpane);
+                        if (t.action) t.action();
+                        else switchHubView(t.tab, t.subpane);
                         toggleFlyout(false);
                     });
                     chatSuggestions.appendChild(btn);
@@ -3159,8 +3303,7 @@ Kusursuz, profesyonel, modern dijital ajans dilinde, güven veren ve ikna edici 
             const closePortalBtn = document.getElementById('closePortalModalBtn');
             const portalNewTabBtn = document.getElementById('portalOpenNewTabBtn');
             const portalTriggers = [
-                document.getElementById('navItemPortal'),
-                document.getElementById('quickBtnPortal')
+                document.getElementById('navItemPortal')
             ];
 
             function openPortalModal() {

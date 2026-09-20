@@ -100,31 +100,70 @@
 
         <!-- MERKEZİ GÖRÜNÜM ALANI -->
         <main class="main-viewport">
-            <!-- HIZLI BAŞLAT ÇUBUĞU (CRM Bilmeyen Kullanıcı İçin 1 Saniyede Eylem) -->
-            <div class="hub-quick-bar">
-                <div class="quick-bar-left">
-                    <span class="quick-bar-greeting" id="quickGreeting">İyi çalışmalar! 👋</span>
-                    <span class="quick-bar-desc">Bugün ne yapmak istiyorsunuz? Hızlıca işlem başlatın:</span>
-                </div>
-                <div class="quick-bar-actions">
-                    <button type="button" class="quick-btn btn-action-add" id="quickBtnNewDeal" title="Yeni müşteri veya iş fırsatı tanımla">
-                        <span class="btn-icon">➕</span> Yeni İş / Fırsat Ekle
-                    </button>
-                    <button type="button" class="quick-btn btn-action-quote" id="quickBtnCreateQuote" title="Müşteriye hızlı proforma teklif hazırla">
-                        <span class="btn-icon">📄</span> Teklif Hazırla
-                    </button>
-                    <button type="button" class="quick-btn btn-action-portal" id="quickBtnPortal" title="Müşteri takip portalını aç">
-                        <span class="btn-icon">🌐</span> Müşteri Portalı
-                    </button>
-                </div>
-            </div>
-
             <!-- 1. ANA HUB : GENEL BAKIŞ & FİNANSAL ZEKA -->
             <section id="tab-kpi" class="tab-pane active">
-                <div class="hub-header-wrapper">
+                <!-- FREELANCE GÜNÜN ODAK PANELİ -->
+                <section class="freelance-focus-section" id="freelanceFocusSection">
+                    <div class="focus-section-header">
+                        <div class="focus-title-group">
+                            <span class="focus-sparkle">⚡</span>
+                            <div>
+                                <h2 class="focus-heading">Günün Odak Paneli</h2>
+                                <p class="focus-sub">Serbest çalışan günlük iş teslimatı, onay bekleyen teklifler ve nakit durumu</p>
+                            </div>
+                        </div>
+                        <div class="focus-date-badge" id="focusCurrentDate">Bugünün Özeti</div>
+                    </div>
+
+                    <div class="focus-cards-grid">
+                        <!-- Kart 1: Yaklaşan Teslimatlar -->
+                        <div class="focus-card focus-card-urgent" id="focusCardDeadlines">
+                            <div class="focus-card-header">
+                                <div class="focus-badge-icon">🚨</div>
+                                <div class="focus-badge-text">Teslimatı Yaklaşan İşler</div>
+                            </div>
+                            <div class="focus-card-body" id="focusDeadlinesContent">
+                                <!-- JS ile dinamik doldurulur -->
+                            </div>
+                            <div class="focus-card-footer">
+                                <button type="button" class="focus-action-btn" id="focusBtnViewKanban">📋 İş Panosunu Aç</button>
+                            </div>
+                        </div>
+
+                        <!-- Kart 2: Cevap Bekleyen Teklifler -->
+                        <div class="focus-card focus-card-proposals" id="focusCardProposals">
+                            <div class="focus-card-header">
+                                <div class="focus-badge-icon">⏳</div>
+                                <div class="focus-badge-text">Onay Bekleyen Teklifler</div>
+                            </div>
+                            <div class="focus-card-body" id="focusProposalsContent">
+                                <!-- JS ile dinamik doldurulur -->
+                            </div>
+                            <div class="focus-card-footer">
+                                <button type="button" class="focus-action-btn" id="focusBtnNewProposal">📄 Yeni Teklif Hazırla</button>
+                            </div>
+                        </div>
+
+                        <!-- Kart 3: Kasa & Bekleyen Tahsilat -->
+                        <div class="focus-card focus-card-finance" id="focusCardFinance">
+                            <div class="focus-card-header">
+                                <div class="focus-badge-icon">💰</div>
+                                <div class="focus-badge-text">Nakit & Bekleyen Alacak</div>
+                            </div>
+                            <div class="focus-card-body" id="focusFinanceContent">
+                                <!-- JS ile dinamik doldurulur -->
+                            </div>
+                            <div class="focus-card-footer">
+                                <button type="button" class="focus-action-btn" id="focusBtnViewFinance">💳 Kasa & Finans Detayları</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="hub-header-wrapper enterprise-only">
                     <div class="hub-title-block">
-                        <h2>📊 Genel Bakış & Finansal Zeka</h2>
-                        <p>İşletme cirosu, net nakit akışı, masraflar ve müşteri analitik göstergeleri</p>
+                        <h2>📊 Kurumsal Analitik & Bilanço</h2>
+                        <p>Detaylı nakit akışı, masraflar ve müşteri analitik göstergeleri</p>
                     </div>
                     <div class="hub-segment-control" id="overviewSegmentControl">
                         <button type="button" class="hub-segment-btn active" data-subpane="subpane-finance">
@@ -137,7 +176,7 @@
                 </div>
 
                 <!-- 8'Lİ GÜNCEL FİNANS KPI KART GRİDİ -->
-                <div class="kpi-metrics-grid finance-metrics-grid" style="margin-bottom:20px;">
+                <div class="kpi-metrics-grid finance-metrics-grid enterprise-only" style="margin-bottom:20px;">
                     <div class="kpi-card">
                         <div class="kpi-card-label">Toplam Gerçekleşen Ciro</div>
                         <div class="kpi-card-value" id="aylikCiro">₺0</div>
@@ -966,6 +1005,57 @@
     </div>
 
     <!-- MODALLER -->
+    <!-- 0. HIZLI FREELANCE İŞİ & MÜŞTERİ BAŞLAT MODALI -->
+    <div id="modalQuickFreelanceJob" class="g-modal-overlay">
+        <div class="g-modal-box modal-freelance-card">
+            <div class="g-modal-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:22px;">⚡</span>
+                    <div>
+                        <h3 style="margin:0; font-size:1.15rem;">Hızlı Freelance İşi Başlat</h3>
+                        <p style="margin:0; font-size:12px; color:#64748b;">Müşteriyi ve projeyi 30 saniyede panoya ekleyin</p>
+                    </div>
+                </div>
+                <button class="topbar-icon-btn" id="quickJobModalClose" style="color:#64748b;">&times;</button>
+            </div>
+            <div class="g-modal-body">
+                <div class="freelance-input-grid">
+                    <div class="freelance-input-group">
+                        <label for="qf_musteri">👤 Müşteri / Kişi Adı *</label>
+                        <input type="text" id="qf_musteri" placeholder="Örn: Murat Bey (Kahve Dünyası) veya Nova Tasarım" required>
+                    </div>
+                    <div class="freelance-input-group">
+                        <label for="qf_isAdi">💼 Yapılacak İş / Hizmet *</label>
+                        <input type="text" id="qf_isAdi" placeholder="Örn: E-Ticaret Web Sitesi, Logo & Mobil Menü" required>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="freelance-input-group">
+                            <label for="qf_tutar">💰 Anlaşılan Ücret (₺) *</label>
+                            <input type="number" id="qf_tutar" placeholder="Örn: 35000" required>
+                        </div>
+                        <div class="freelance-input-group">
+                            <label for="qf_tarih">📅 Teslim Tarihi</label>
+                            <input type="date" id="qf_tarih">
+                        </div>
+                    </div>
+                    <div class="freelance-input-group">
+                        <label for="qf_durum">🚀 Başlangıç Durumu</label>
+                        <select id="qf_durum">
+                            <option value="teklif">📝 Teklif Aşamasında (Cevap Bekliyor)</option>
+                            <option value="devam" selected>⚙️ Aktif Üretimde (İş Başladı)</option>
+                            <option value="revizyon">🔄 Müşteri Revizyonunda</option>
+                            <option value="tamam">✅ Tamamlandı (Ödeme Bekleniyor)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="g-modal-footer" style="padding-top:10px;">
+                <button type="button" class="g-page-btn" id="quickJobModalCancel">İptal</button>
+                <button type="button" class="btn-freelance-submit" id="quickJobModalSubmit">🚀 İşi Başlat & Panoya Ekle</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 1. YENİ İŞ / TEKLİF EKLE -->
     <div id="isModal" class="g-modal-overlay">
         <div class="g-modal-box">
