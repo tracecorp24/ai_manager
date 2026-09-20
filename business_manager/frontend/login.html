@@ -230,12 +230,12 @@
     <!-- 1. GİRİŞ YAP SEKME -->
     <div id="pane-login" class="auth-pane active">
         <h1 style="font-size:1.3rem;">Hoş Geldiniz</h1>
-        <p class="sub">Yönetici veya ekip hesabı bilgilerinizle oturum açın</p>
+        <p class="sub">Hesap e-postanız ve şifrenizle oturum açın</p>
 
         <form id="loginForm">
             <div class="input-group">
-                <label for="loginIdentifier">E-Posta veya Kullanıcı Adı</label>
-                <input type="text" id="loginIdentifier" placeholder="admin@businessmanager.com veya admin" autocomplete="username" required autofocus />
+                <label for="loginIdentifier">E-Posta Adresi</label>
+                <input type="email" id="loginIdentifier" placeholder="ornek@sirketiniz.com" autocomplete="username" required autofocus />
             </div>
             <div class="input-group">
                 <label for="loginPassword">Şifre</label>
@@ -243,18 +243,12 @@
             </div>
             <button id="loginBtn" class="btn-primary" type="submit">Giriş Yap</button>
         </form>
-
-        <div class="btn-quick-row">
-            <button type="button" id="quickAdminBtn" class="btn-quick" title="Yönetici Direktör">👑 Hızlı Admin</button>
-            <button type="button" id="quickUserBtn" class="btn-quick" title="Ekip Üyesi">👤 Hızlı Ekip</button>
-            <button type="button" id="quickClientBtn" class="btn-quick" title="Müşteri Portalı">🏢 Müşteri</button>
-        </div>
     </div>
 
     <!-- 2. KAYIT OL SEKME -->
     <div id="pane-register" class="auth-pane">
         <h1 style="font-size:1.3rem;">Yeni Hesap Oluştur</h1>
-        <p class="sub">Herhangi bir e-posta adresi ile sisteme kaydolun</p>
+        <p class="sub">E-posta adresinizle güvenli hesap oluşturun</p>
 
         <form id="registerForm">
             <div class="input-group">
@@ -266,19 +260,12 @@
                 <input type="email" id="regEmail" placeholder="caner@sirketiniz.com" required />
             </div>
             <div class="input-group">
-                <label for="regPassword">Şifre (Min. 4 Karakter)</label>
-                <input type="password" id="regPassword" placeholder="••••••••" required />
+                <label for="regPassword">Şifre (Min. 8 Karakter)</label>
+                <input type="password" id="regPassword" placeholder="••••••••" minlength="8" required />
             </div>
-            <div class="input-group">
-                <label for="regRole">Hesap Yetki Düzeyi</label>
-                <select id="regRole">
-                    <option value="user">👤 Kullanıcı / Ekip Üyesi (Proje, Teklif & Sunum Yetkisi)</option>
-                    <option value="admin">👑 Kurumsal Yönetici / Admin (Tam Finansal & CRM Yetkisi)</option>
-                    <option value="client">🏢 Kurumsal Müşteri (Sadece Kendi Projelerini Takip Eder)</option>
-                </select>
-            </div>
-            <button id="registerBtn" class="btn-primary" type="submit" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);">Hesabı Kaydet & Giriş Yap</button>
+            <button id="registerBtn" class="btn-primary" type="submit" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);">Hesabı Oluştur</button>
         </form>
+        <p style="margin-top:12px; font-size:0.78rem; color:#64748b;">Hesabınız oluşturulduktan sonra yönetici tarafından ek yetki verilebilir.</p>
     </div>
 
     <!-- 3. MÜŞTERİ PORTAL SORGULAMA SEKME -->
@@ -306,8 +293,8 @@
     <div id="msg" class="msg"></div>
 
     <div class="hint">
-        🛡️ Supabase Hibrit Güvenlik & Rol Tabanlı Erişim Denetimi (RBAC).<br>
-        Varsayılan hesaplar: <b>admin@businessmanager.com</b> / <b>admin123</b>
+        🛡️ Supabase Auth — Şifreler hash'lenmiş, cihazdan bağımsız güvenli giriş.<br>
+        Hesap oluşturmak için Kayıt Ol sekmesini kullanın.
     </div>
 </div>
 
@@ -334,14 +321,31 @@ function clearMsg() {
     if (msgEl) { msgEl.textContent = ''; msgEl.className = 'msg'; }
 }
 
+// Oturum zaten açıksa yönlendir
+(async () => {
+    const user = await getCurrentUser();
+    if (user) {
+        if (user.role === 'client') {
+            window.location.href = 'portal.html' + (user.customerId ? `?cid=${encodeURIComponent(user.customerId)}` : '');
+        } else {
+            window.location.href = 'index.html';
+        }
+    }
+})();
+
 // 1. Giriş Formu
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearMsg();
-    const id = document.getElementById('loginIdentifier')?.value.trim();
+    const btn = document.getElementById('loginBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Giriş yapılıyor...'; }
+
+    const id   = document.getElementById('loginIdentifier')?.value.trim();
     const pass = document.getElementById('loginPassword')?.value.trim();
 
     const res = await authenticateUser(id, pass);
+    if (btn) { btn.disabled = false; btn.textContent = 'Giriş Yap'; }
+
     if (res.success) {
         showMsg('Giriş başarılı, yönlendiriliyorsunuz...', false);
         setTimeout(() => {
@@ -360,22 +364,23 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
 document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearMsg();
-    const name = document.getElementById('regName')?.value.trim();
-    const email = document.getElementById('regEmail')?.value.trim();
-    const password = document.getElementById('regPassword')?.value.trim();
-    const role = document.getElementById('regRole')?.value || 'user';
+    const btn = document.getElementById('registerBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Kaydediliyor...'; }
 
-    const res = await registerUser({ email, password, name, role });
+    const name     = document.getElementById('regName')?.value.trim();
+    const email    = document.getElementById('regEmail')?.value.trim();
+    const password = document.getElementById('regPassword')?.value.trim();
+
+    const res = await registerUser({ email, password, name });
+    if (btn) { btn.disabled = false; btn.textContent = 'Hesabı Oluştur'; }
+
     if (res.success) {
-        showMsg('Hesabınız başarıyla oluşturuldu! Oturum açılıyor...', false);
-        setCurrentSession(res.user);
-        setTimeout(() => {
-            if (role === 'client') {
-                window.location.href = 'portal.html';
-            } else {
-                window.location.href = 'index.html';
-            }
-        }, 800);
+        if (res.needsConfirmation) {
+            showMsg('Hesabınız oluşturuldu! E-posta adresinize onay linki gönderildi. Lütfen e-postanızı kontrol edin.', false);
+        } else {
+            showMsg('Hesabınız başarıyla oluşturuldu! Yönlendiriliyorsunuz...', false);
+            setTimeout(() => { window.location.href = 'index.html'; }, 900);
+        }
     } else {
         showMsg(res.error || 'Kayıt başarısız oldu.');
     }
@@ -397,22 +402,6 @@ document.querySelectorAll('.portal-sample-chip').forEach(chip => {
         const code = this.dataset.code;
         window.location.href = `portal.html?cid=${encodeURIComponent(code)}`;
     });
-});
-
-// Hızlı Giriş Butonları
-document.getElementById('quickAdminBtn')?.addEventListener('click', async () => {
-    const res = await authenticateUser('admin@businessmanager.com', 'admin123');
-    if (res.success) window.location.href = 'index.html';
-});
-
-document.getElementById('quickUserBtn')?.addEventListener('click', async () => {
-    const res = await authenticateUser('demo@businessmanager.com', 'demo123');
-    if (res.success) window.location.href = 'index.html';
-});
-
-document.getElementById('quickClientBtn')?.addEventListener('click', async () => {
-    const res = await authenticateUser('musteri@acme.com', 'musteri123');
-    if (res.success) window.location.href = 'portal.html?cid=CUST-8';
 });
 </script>
 </body>

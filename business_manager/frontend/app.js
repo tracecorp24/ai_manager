@@ -4,11 +4,11 @@
  */
 
 (async function () {
-    // 1. Yetki ve Oturum Kontrolü (admin bypass destekli)
+    // 1. Yetki ve Oturum Kontrolü
     if (!await guardProtectedPage()) return;
 
     // Oturum Açan Kullanıcı Bilgilerini Topbar'a Yansıt
-    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    const currentUser = await getCurrentUser();
     if (currentUser) {
         const topbarAvatar = document.getElementById('topbarAvatar');
         const topbarUserName = document.getElementById('topbarUserName');
@@ -216,6 +216,32 @@
             console.warn('[AI Manager] Sağlık kontrolü:', e);
         }
 
+        // Supabase'den ek modifikasyonları çek (online ise)
+        try {
+            const sb = (typeof getSupabaseClient === 'function') ? getSupabaseClient() : null;
+            if (sb) {
+                const { data: sbCompanies, error: sbErr } = await sb
+                    .from('companies')
+                    .select('registration_no, phone, email, sector, notes')
+                    .not('owner_id', 'is', null)
+                    .limit(500);
+                if (!sbErr && sbCompanies && sbCompanies.length > 0) {
+                    sbCompanies.forEach(sc => {
+                        const idx = musteriler.findIndex(m => String(m.id) === String(sc.registration_no));
+                        if (idx !== -1) {
+                            musteriler[idx] = { ...musteriler[idx], ...{
+                                telefon: sc.phone || musteriler[idx].telefon,
+                                email: sc.email || musteriler[idx].email,
+                                faaliyet: sc.sector || musteriler[idx].faaliyet
+                            }};
+                        }
+                    });
+                }
+            }
+        } catch (sbLoadErr) {
+            console.warn('[AI Manager] Supabase veri yükleme atlandı:', sbLoadErr);
+        }
+
         populateFilterDropdowns();
         renderAll();
         pushHistory();
@@ -238,6 +264,8 @@
 
     function saveAll(addToHistory = true) {
         if (addToHistory) pushHistory();
+
+        // LocalStorage (offline fallback + hız)
         try {
             localStorage.setItem('mekanikCRM_v2', JSON.stringify({ musteriler, pdfDosyalari }));
             localStorage.setItem('business_expenses_v1', JSON.stringify(masraflar));
@@ -248,6 +276,34 @@
                 localStorage.setItem('business_expenses_v1', JSON.stringify(masraflar));
             } catch (err) {}
         }
+
+        // Supabase (online ise arka planda yaz)
+        const sb = (typeof getSupabaseClient === 'function') ? getSupabaseClient() : null;
+        if (sb) {
+            const modifiedMusteriler = musteriler.filter(m =>
+                m.sonDurum || m.sonNot || (m.isler && m.isler.length > 0) || (m.linkler && m.linkler.length > 0)
+            );
+            if (modifiedMusteriler.length > 0) {
+                const upsertRows = modifiedMusteriler.map(m => ({
+                    registration_no: String(m.id),
+                    name: m.ad,
+                    address: m.adres || null,
+                    district: m.ilce || null,
+                    status: m.durum || 'Faal',
+                    phone: m.telefon || null,
+                    email: m.email || null,
+                    sector: m.faaliyet || null,
+                    notes: m.sonNot || null
+                }));
+                // Fire-and-forget — hata olsa da UI bloklanmaz
+                sb.from('companies')
+                    .upsert(upsertRows, { onConflict: 'registration_no', ignoreDuplicates: false })
+                    .then(({ error }) => {
+                        if (error) console.warn('[AI Manager] Supabase kayıt hatası:', error.message);
+                    });
+            }
+        }
+
         renderAll();
     }
 
