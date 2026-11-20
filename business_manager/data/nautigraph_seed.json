@@ -1,0 +1,1020 @@
+{
+  "companies": [
+    {
+      "id": "cmp-01",
+      "legal_name": "AEGEAN NAVAL ARCHITECTURE VE YAT TASARIM MÜHENDİSLİK A.Ş.",
+      "short_name": "Aegean Naval Architecture",
+      "vkn": "0081492831",
+      "mersis_no": "0008149283100001",
+      "domain": "aegeannaval.com.tr",
+      "nace_code": "71.12",
+      "nace_desc": "Deniz mühendisliği, naval mimari & süperyat tasarımı",
+      "province": "İstanbul",
+      "district": "Tuzla",
+      "employee_band": "11-50",
+      "employee_est": "34 Mühendis & Tasarımcı",
+      "trust_score": 96,
+      "icp_score": 94,
+      "score_breakdown": {
+        "icp": 96,
+        "freshness": 95,
+        "contact": 92,
+        "intent": 94,
+        "reachability": 90
+      },
+      "source_classes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Fuar",
+          "label": "Monaco Yacht Show '26 Katılımcısı",
+          "date": "18 gün önce",
+          "detail": "Designer Gallery standında 48m Explorer konsepti tanıttı"
+        },
+        {
+          "type": "Kariyer",
+          "label": "Kıdemli Naval Architect (Rhino 3D / Orca3D)",
+          "date": "9 gün önce",
+          "detail": "Kariyer sayfasında 2 yeni hidrodinamik uzman ilanı açıldı"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "info@aegeannaval.com.tr",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.98
+        },
+        {
+          "type": "email",
+          "value": "k.yilmaz@aegeannaval.com.tr",
+          "role": "Kurucu Baş Mimar",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "KVKK md.5/2-f",
+          "confidence": 0.94
+        },
+        {
+          "type": "phone",
+          "value": "+90 216 494 82 10",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "Kamuya Açık Sicil",
+          "confidence": 0.99
+        },
+        {
+          "type": "address",
+          "value": "Evliya Çelebi Mah. Tersaneler Cad. No:42 Tuzla / İstanbul",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 1
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi (Sayı: 11142)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb924",
+          "date": "2026-10-12",
+          "trust": 99
+        },
+        {
+          "source": "İMEAK Deniz Ticaret Odası Üye Kaydı",
+          "cls": "B",
+          "rule": "MERSİS + Unvan",
+          "hash": "8f434346648f6b96df89dda901c5176b",
+          "date": "2026-09-28",
+          "trust": 94
+        },
+        {
+          "source": "Monaco Yacht Show Resmi Katılımcı Listesi",
+          "cls": "B",
+          "rule": "Domain Kökü Eşleşmesi",
+          "hash": "2c26b46b68ffc68ff99b453c1d304134",
+          "date": "2026-10-27",
+          "trust": 92
+        },
+        {
+          "source": "aegeannaval.com.tr (JSON-LD Organization)",
+          "cls": "C",
+          "rule": "E.164 Telefon Hash",
+          "hash": "4b227777d4dd1fc61c6f884f48641d02",
+          "date": "2026-11-08",
+          "trust": 85
+        }
+      ],
+      "tech_stack": [
+        "Rhino 3D",
+        "Orca3D",
+        "ANSYS Fluent CFD",
+        "AutoCAD Marine",
+        "SolidWorks"
+      ],
+      "icp_reason": "71.12 NACE kodlu, 40m+ süperyat tasarımı yapan ve son 30 günde hem uluslararası fuar hem CAD mühendisi alımı sinyali veren birincil hedef."
+    },
+    {
+      "id": "cmp-02",
+      "legal_name": "TURQUOISE & BLUE HORIZON YAT İNŞA SANAYİ VE TİCARET A.Ş.",
+      "short_name": "Blue Horizon Yachts",
+      "vkn": "8710554920",
+      "mersis_no": "0871055492000019",
+      "domain": "bluehorizonyachts.com.tr",
+      "nace_code": "30.12",
+      "nace_desc": "Eğlence ve spor amaçlı teknelerin inşası (Süperyat Tersanesi)",
+      "province": "Antalya",
+      "district": "Antalya Serbest Bölge",
+      "employee_band": "200+",
+      "employee_est": "285 Personel (Tersane + Tasarım)",
+      "trust_score": 98,
+      "icp_score": 91,
+      "score_breakdown": {
+        "icp": 94,
+        "freshness": 90,
+        "contact": 95,
+        "intent": 86,
+        "reachability": 88
+      },
+      "source_classes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Sermaye",
+          "label": "Sermaye Artışı: 120M TL → 250M TL",
+          "date": "24 gün önce",
+          "detail": "Antalya Serbest Bölge 3. hangar yatırımı için sermaye tescili"
+        },
+        {
+          "type": "Fuar",
+          "label": "Bosphorus Boat Show '26",
+          "date": "41 gün önce",
+          "detail": "36m kompozit motoryat lansmanı"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "procurement@bluehorizonyachts.com.tr",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.96
+        },
+        {
+          "type": "email",
+          "value": "s.demir@bluehorizonyachts.com.tr",
+          "role": "Tersane Teknik Müdürü",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "KVKK md.5/2-f",
+          "confidence": 0.91
+        },
+        {
+          "type": "phone",
+          "value": "+90 242 259 14 00",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "ASBAŞ Rehber",
+          "confidence": 0.99
+        },
+        {
+          "type": "address",
+          "value": "Antalya Serbest Bölgesi 4. Cadde No:18 Konyaaltı / Antalya",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 1
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi (Sayı: 11138)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "9f86d081884c7d659a2feaa0c55ad015",
+          "date": "2026-10-21",
+          "trust": 99
+        },
+        {
+          "source": "Antalya İhracatçılar Birliği (Gemi & Yat)",
+          "cls": "A",
+          "rule": "VKN + İhracatçı Kaydı",
+          "hash": "1b4f0e9851971998e732078544c96b36",
+          "date": "2026-09-15",
+          "trust": 97
+        },
+        {
+          "source": "Google Places POI (ASBAŞ Tersane)",
+          "cls": "B",
+          "rule": "E.164 Telefon Hash",
+          "hash": "60303ae22b998861bce3b28f33eec1be",
+          "date": "2026-11-01",
+          "trust": 88
+        },
+        {
+          "source": "bluehorizonyachts.com.tr (/iletisim)",
+          "cls": "C",
+          "rule": "Domain Kökü Eşleşmesi",
+          "hash": "fd61a03af4f77d870fc21e05e7e80678",
+          "date": "2026-11-10",
+          "trust": 84
+        }
+      ],
+      "tech_stack": [
+        "CATIA V5",
+        "ShipConstructor",
+        "SAP ERP",
+        "Lloyd's Register Rules"
+      ],
+      "icp_reason": "İhracatçı süperyat üreticisi, yeni hangar yatırımı ve sermaye artışı nedeniyle yüksek tedarik ve tasarım yazılımı bütçesine sahip."
+    },
+    {
+      "id": "cmp-03",
+      "legal_name": "BODRUM KARYA YAT TASARIM VE AHŞAP/KOMPOZİT TEKNE SAN. LTD. ŞTİ.",
+      "short_name": "Karya Yacht Design & Gulet",
+      "vkn": "5240381945",
+      "mersis_no": "0524038194500012",
+      "domain": "karyayachtdesign.com",
+      "nace_code": "30.12",
+      "nace_desc": "Özel üretim lüks gulet, ketch ve katamaran inşası",
+      "province": "Muğla",
+      "district": "Bodrum (İçmeler)",
+      "employee_band": "51-200",
+      "employee_est": "78 Personel",
+      "trust_score": 91,
+      "icp_score": 88,
+      "score_breakdown": {
+        "icp": 90,
+        "freshness": 88,
+        "contact": 85,
+        "intent": 91,
+        "reachability": 84
+      },
+      "source_classes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Fuar",
+          "label": "Cannes Yachting Festival Katılımcısı",
+          "date": "32 gün önce",
+          "detail": "28m karbon-epoksi yelkenli katamaran dünya prömiyeri"
+        },
+        {
+          "type": "Kariyer",
+          "label": "Kompozit Vakum İnfüzyon Şefi İlanı",
+          "date": "12 gün önce",
+          "detail": "Bodrum İçmeler tersanesi için üretim ekibi genişlemesi"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "design@karyayachtdesign.com",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.95
+        },
+        {
+          "type": "phone",
+          "value": "+90 252 316 74 22",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "BODTO Kaydı",
+          "confidence": 0.97
+        },
+        {
+          "type": "address",
+          "value": "İçmeler Mah. Tersaneler Bölgesi Sok. No:14 Bodrum / Muğla",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.98
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi (Bodrum TSM)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "a4ayc44298fc1c149afbf4c8996fb112",
+          "date": "2026-08-19",
+          "trust": 98
+        },
+        {
+          "source": "Bodrum Ticaret Odası (BODTO) Denizcilik Komitesi",
+          "cls": "B",
+          "rule": "MERSİS Eşleşmesi",
+          "hash": "77f34346648f6b96df89dda901c5199a",
+          "date": "2026-10-05",
+          "trust": 92
+        },
+        {
+          "source": "karyayachtdesign.com (Sitemap & Footer)",
+          "cls": "C",
+          "rule": "Domain Kökü Eşleşmesi",
+          "hash": "91c26b46b68ffc68ff99b453c1d30488",
+          "date": "2026-11-11",
+          "trust": 82
+        }
+      ],
+      "tech_stack": [
+        "Rhino 3D",
+        "Maxsurf",
+        "Gurit Composite Engineering"
+      ],
+      "icp_reason": "Geleneksel Bodrum yatçılığından karbon-kompozit katamaran üretimine geçiş yapan yüksek marjlı ihracatçı tersane."
+    },
+    {
+      "id": "cmp-04",
+      "legal_name": "MARMARA HYDRO-TECH DENİZ MÜHENDİSLİĞİ VE KLAS DANIŞMANLIK LTD. ŞTİ.",
+      "short_name": "Marmara Hydro-Tech Marine",
+      "vkn": "6120894417",
+      "mersis_no": "0612089441700014",
+      "domain": "marmarahydrotech.com.tr",
+      "nace_code": "71.12",
+      "nace_desc": "Gemi ve yat stabilite hesapları, CFD analiz ve klas projelendirme",
+      "province": "Yalova",
+      "district": "Altınova",
+      "employee_band": "11-50",
+      "employee_est": "22 Gemi İnşaatı Mühendisi",
+      "trust_score": 94,
+      "icp_score": 86,
+      "score_breakdown": {
+        "icp": 89,
+        "freshness": 92,
+        "contact": 88,
+        "intent": 82,
+        "reachability": 80
+      },
+      "source_classes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "EKAP",
+          "label": "EKAP Kamu Hizmet Alımı (Kıyı Emniyeti)",
+          "date": "15 gün önce",
+          "detail": "Hızlı kurtarma botu stabilite ve form optimizasyonu ihalesi"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "proje@marmarahydrotech.com.tr",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.97
+        },
+        {
+          "type": "phone",
+          "value": "+90 226 461 39 80",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "YTSO Kaydı",
+          "confidence": 0.95
+        },
+        {
+          "type": "address",
+          "value": "Hersek Mah. Tersaneler Bulvarı No:88/4 Altınova / Yalova",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.99
+        }
+      ],
+      "evidences": [
+        {
+          "source": "EKAP İhale Sonuç İlanı (2026/104829)",
+          "cls": "A",
+          "rule": "VKN + İhale Yüklenici",
+          "hash": "55b0c44298fc1c149afbf4c8996fb331",
+          "date": "2026-10-30",
+          "trust": 99
+        },
+        {
+          "source": "GİB e-Arşiv VKN Doğrulama",
+          "cls": "A",
+          "rule": "VKN Checksum + Aktif Mükellef",
+          "hash": "33f34346648f6b96df89dda901c5171b",
+          "date": "2026-11-12",
+          "trust": 99
+        },
+        {
+          "source": "Yandex Maps POI (Altınova)",
+          "cls": "B",
+          "rule": "E.164 Telefon Hash",
+          "hash": "11c26b46b68ffc68ff99b453c1d30499",
+          "date": "2026-10-14",
+          "trust": 84
+        }
+      ],
+      "tech_stack": [
+        "NAPA",
+        "Maxsurf",
+        "Star-CCM+",
+        "Türk Loydu / RINA"
+      ],
+      "icp_reason": "Altınova tersaneler bölgesindeki 14 tersaneye dış kaynak mühendislik ve klas dosyası hazırlayan kilit karar verici."
+    },
+    {
+      "id": "cmp-05",
+      "legal_name": "BOSPHORUS CUSTOM YACHTS & REFIT DENİZCİLİK A.Ş.",
+      "short_name": "Bosphorus Custom Yachts",
+      "vkn": "1840729103",
+      "mersis_no": "0184072910300018",
+      "domain": "bosphoruscustom.com",
+      "nace_code": "33.15",
+      "nace_desc": "Süperyat refit, iç mimari yenileme ve teak güverte uygulamaları",
+      "province": "İstanbul",
+      "district": "Pendik (Marinturk)",
+      "employee_band": "51-200",
+      "employee_est": "64 Personel",
+      "trust_score": 89,
+      "icp_score": 83,
+      "score_breakdown": {
+        "icp": 85,
+        "freshness": 84,
+        "contact": 86,
+        "intent": 80,
+        "reachability": 78
+      },
+      "source_classes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Kariyer",
+          "label": "Yat İç Mimarı (3ds Max / Rhino)",
+          "date": "6 gün önce",
+          "detail": "42m İtalyan bayraklı motoryat refit projesi için alım"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "refit@bosphoruscustom.com",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.93
+        },
+        {
+          "type": "phone",
+          "value": "+90 216 390 55 12",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "İMEAK DTO",
+          "confidence": 0.94
+        },
+        {
+          "type": "address",
+          "value": "Batı Mah. Ankara Cad. Marina Yanı No:12 Pendik / İstanbul",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.97
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi (İstanbul TSM)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "71b0c44298fc1c149afbf4c8996fb884",
+          "date": "2026-07-11",
+          "trust": 98
+        },
+        {
+          "source": "Bosphorus Boat Show Katılımcı Listesi",
+          "cls": "B",
+          "rule": "Domain Kökü Eşleşmesi",
+          "hash": "92f34346648f6b96df89dda901c5122c",
+          "date": "2026-10-04",
+          "trust": 90
+        }
+      ],
+      "tech_stack": [
+        "Rhino 3D",
+        "3ds Max",
+        "V-Ray",
+        "AutoCAD"
+      ],
+      "icp_reason": "Kış sezonunda Akdeniz'den gelen süperyatların iç tasarım ve refit operasyonlarını yöneten yüksek alım sıklıklı ekip."
+    },
+    {
+      "id": "cmp-06",
+      "legal_name": "URLA COMPOSITE MARINE VE HIZLI TEKNE TASARIM SAN. TİC. A.Ş.",
+      "short_name": "Urla Composite Marine",
+      "vkn": "8920416632",
+      "mersis_no": "0892041663200011",
+      "domain": "urlacomposite.com.tr",
+      "nace_code": "30.12",
+      "nace_desc": "Karbon fiber tender, chase boat ve elektrikli gezi teknesi üretimi",
+      "province": "İzmir",
+      "district": "Urla / Çeşme",
+      "employee_band": "11-50",
+      "employee_est": "39 Personel",
+      "trust_score": 92,
+      "icp_score": 81,
+      "score_breakdown": {
+        "icp": 84,
+        "freshness": 87,
+        "contact": 79,
+        "intent": 78,
+        "reachability": 75
+      },
+      "source_classes": [
+        "A",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Sermaye",
+          "label": "TÜBİTAK TEYDEB 1501 Projesi Onayı",
+          "date": "29 gün önce",
+          "detail": "12m elektrikli hibrit katamaran gövde optimizasyonu Ar-Ge desteği"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "info@urlacomposite.com.tr",
+          "verified": true,
+          "smtp": "Catch-all Uyarısı",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.82
+        },
+        {
+          "type": "phone",
+          "value": "+90 232 754 18 90",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "İZTO Kaydı",
+          "confidence": 0.95
+        },
+        {
+          "type": "address",
+          "value": "Zeytinalanı Mah. Liman Yolu No:64 Urla / İzmir",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.96
+        }
+      ],
+      "evidences": [
+        {
+          "source": "TÜBİTAK Destekli Firma Listesi (A Sınıfı)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "44b0c44298fc1c149afbf4c8996fb512",
+          "date": "2026-10-16",
+          "trust": 98
+        },
+        {
+          "source": "WHOIS & CT Log Yeni Subdomain (ar-ge.urlacomposite.com.tr)",
+          "cls": "C",
+          "rule": "Domain Kökü",
+          "hash": "66f34346648f6b96df89dda901c5188d",
+          "date": "2026-11-02",
+          "trust": 78
+        }
+      ],
+      "tech_stack": [
+        "Siemens NX",
+        "SolidWorks Simulation",
+        "Torqeedo / Electric Propulsion"
+      ],
+      "icp_reason": "Ar-Ge hibesi almış, elektrikli tahrik ve hafif kompozit tekne tasarımı yapan yenilikçi üretici."
+    },
+    {
+      "id": "cmp-07",
+      "legal_name": "ALTINOVA ÇELİK VE ALÜMİNYUM YAT GÖVDE İNŞA SAN. A.Ş.",
+      "short_name": "Altınova Alloy Hulls",
+      "vkn": "0680912344",
+      "mersis_no": "0068091234400015",
+      "domain": "altinovaalloy.com.tr",
+      "nace_code": "30.11",
+      "nace_desc": "Alüminyum süperyat gövde (hull & superstructure) ve iş botu inşası",
+      "province": "Yalova",
+      "district": "Altınova",
+      "employee_band": "51-200",
+      "employee_est": "112 Personel",
+      "trust_score": 90,
+      "icp_score": 79,
+      "score_breakdown": {
+        "icp": 80,
+        "freshness": 82,
+        "contact": 81,
+        "intent": 76,
+        "reachability": 74
+      },
+      "source_classes": [
+        "A",
+        "B"
+      ],
+      "signals": [
+        {
+          "type": "EKAP",
+          "label": "EKAP Deniz Kuvvetleri / Sahil Güvenlik Alt Yüklenici",
+          "date": "38 gün önce",
+          "detail": "Alüminyum karakol botu blok imalatı"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "teklif@altinovaalloy.com.tr",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.94
+        },
+        {
+          "type": "phone",
+          "value": "+90 226 462 90 11",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.96
+        },
+        {
+          "type": "address",
+          "value": "Tavşanlı Beldesi Tersaneler Cad. No:19 Altınova / Yalova",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.98
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "12b0c44298fc1c149afbf4c8996fb741",
+          "date": "2026-09-02",
+          "trust": 98
+        },
+        {
+          "source": "Gemi İnşa Sanayicileri Birliği (GİSBİR) Üye Listesi",
+          "cls": "B",
+          "rule": "Domain + Unvan",
+          "hash": "39f34346648f6b96df89dda901c5145e",
+          "date": "2026-10-19",
+          "trust": 93
+        }
+      ],
+      "tech_stack": [
+        "Aveva Marine",
+        "AutoCAD",
+        "CNC Plasma Nesting"
+      ],
+      "icp_reason": "Avrupa tersanelerine yarı mamul alüminyum süperyat kabuğu ihraç eden yüksek tonajlı üretici."
+    },
+    {
+      "id": "cmp-08",
+      "legal_name": "STUDIO LYCIA YAT İÇ MİMARİ VE ENDÜSTRİYEL TASARIM LTD. ŞTİ.",
+      "short_name": "Studio Lycia Yacht Interiors",
+      "vkn": "7810349812",
+      "mersis_no": "0781034981200010",
+      "domain": "studiolycia.com",
+      "nace_code": "71.12",
+      "nace_desc": "Süperyat dış stil (exterior styling) ve lüks iç mekan tasarımı",
+      "province": "Muğla",
+      "district": "Göcek / Fethiye",
+      "employee_band": "1-10",
+      "employee_est": "9 Tasarımcı",
+      "trust_score": 85,
+      "icp_score": 76,
+      "score_breakdown": {
+        "icp": 82,
+        "freshness": 78,
+        "contact": 75,
+        "intent": 72,
+        "reachability": 70
+      },
+      "source_classes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Fuar",
+          "label": "Monaco Yacht Show Ziyaretçi/Katılımcı",
+          "date": "20 gün önce",
+          "detail": "45m Explorer yat iç mekan konsept sunumu"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "hello@studiolycia.com",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.91
+        },
+        {
+          "type": "phone",
+          "value": "+90 252 645 21 09",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "Google Places",
+          "confidence": 0.89
+        },
+        {
+          "type": "address",
+          "value": "Göcek Mah. Marina Cad. No:7/B Fethiye / Muğla",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.95
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi (Fethiye TSM)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "88b0c44298fc1c149afbf4c8996fb902",
+          "date": "2026-06-14",
+          "trust": 97
+        },
+        {
+          "source": "Google Places POI (Göcek Marina)",
+          "cls": "B",
+          "rule": "E.164 Telefon Hash",
+          "hash": "51f34346648f6b96df89dda901c5133a",
+          "date": "2026-10-25",
+          "trust": 85
+        }
+      ],
+      "tech_stack": [
+        "Rhino 3D",
+        "Unreal Engine 5 (VR Yat Sunumu)",
+        "KeyShot"
+      ],
+      "icp_reason": "Butik süperyat tasarım ofisi; görselleştirme, VR ve özel mobilya/aydınlatma tedarikçileri için doğrudan karar verici."
+    },
+    {
+      "id": "cmp-09",
+      "legal_name": "TUZLA MARİN ELEKTRİK OTOMASYON VE KÖPRÜÜSTÜ SİSTEMLERİ A.Ş.",
+      "short_name": "Tuzla Marin Otomasyon",
+      "vkn": "8690441209",
+      "mersis_no": "0869044120900017",
+      "domain": "tuzlamarinotomasyon.com.tr",
+      "nace_code": "33.15",
+      "nace_desc": "Yat elektrik projelendirme, PLC otomasyon ve navigasyon entegrasyonu",
+      "province": "İstanbul",
+      "district": "Tuzla",
+      "employee_band": "11-50",
+      "employee_est": "44 Mühendis & Tekniker",
+      "trust_score": 88,
+      "icp_score": 72,
+      "score_breakdown": {
+        "icp": 74,
+        "freshness": 79,
+        "contact": 76,
+        "intent": 65,
+        "reachability": 68
+      },
+      "source_classes": [
+        "A",
+        "B"
+      ],
+      "signals": [
+        {
+          "type": "Kariyer",
+          "label": "Marine Elektrik Proje Mühendisi (EPLAN)",
+          "date": "21 gün önce",
+          "detail": "EPLAN Electric P8 bilen mühendis arayışı"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "muhendislik@tuzlamarinotomasyon.com.tr",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.92
+        },
+        {
+          "type": "phone",
+          "value": "+90 216 395 40 77",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "İMEAK DTO",
+          "confidence": 0.94
+        },
+        {
+          "type": "address",
+          "value": "Aydıntepe Mah. Güzin Sok. No:11 Tuzla / İstanbul",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.96
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "77b0c44298fc1c149afbf4c8996fb229",
+          "date": "2026-08-03",
+          "trust": 98
+        },
+        {
+          "source": "İMEAK DTO Üye Listesi",
+          "cls": "B",
+          "rule": "MERSİS Eşleşmesi",
+          "hash": "19f34346648f6b96df89dda901c5166b",
+          "date": "2026-09-30",
+          "trust": 92
+        }
+      ],
+      "tech_stack": [
+        "EPLAN Electric P8",
+        "AutoCAD Electrical",
+        "Siemens Marine PLC"
+      ],
+      "icp_reason": "Tuzla tersanelerindeki yat projelerinin elektrik ve otomasyon tasarım paketlerini üstlenen kilit mühendislik firması."
+    },
+    {
+      "id": "cmp-10",
+      "legal_name": "EGE MAVİ KEEL VE ARMA DONANIM MÜHENDİSLİK LTD. ŞTİ.",
+      "short_name": "Ege Mavi Rigging & Keel",
+      "vkn": "3250618890",
+      "mersis_no": "0325061889000013",
+      "domain": "egemavirigging.com",
+      "nace_code": "30.12",
+      "nace_desc": "Yelkenli yat salma (keel) dökümü, karbon direk ve arma tasarımı",
+      "province": "İzmir",
+      "district": "Çeşme",
+      "employee_band": "1-10",
+      "employee_est": "10 Uzman",
+      "trust_score": 82,
+      "icp_score": 68,
+      "score_breakdown": {
+        "icp": 70,
+        "freshness": 72,
+        "contact": 68,
+        "intent": 64,
+        "reachability": 65
+      },
+      "source_classes": [
+        "A",
+        "C"
+      ],
+      "signals": [
+        {
+          "type": "Fuar",
+          "label": "İzmir Boat Show Katılımcısı",
+          "date": "48 gün önce",
+          "detail": "Performans yelkenli salma ve hidrolik arma çözümleri"
+        }
+      ],
+      "contacts": [
+        {
+          "type": "email",
+          "value": "info@egemavirigging.com",
+          "verified": true,
+          "smtp": "SMTP 250 OK",
+          "iys": "Tacir / Meşru Menfaat",
+          "confidence": 0.89
+        },
+        {
+          "type": "phone",
+          "value": "+90 232 712 63 40",
+          "verified": true,
+          "smtp": "E.164 Sabit Hat",
+          "iys": "Web JSON-LD",
+          "confidence": 0.87
+        },
+        {
+          "type": "address",
+          "value": "Dalyan Mah. Marina Yolu No:28 Çeşme / İzmir",
+          "verified": true,
+          "smtp": "Geocode Doğrulanmış",
+          "iys": "Ticaret Sicili",
+          "confidence": 0.94
+        }
+      ],
+      "evidences": [
+        {
+          "source": "Ticaret Sicili Gazetesi (Çeşme TSM)",
+          "cls": "A",
+          "rule": "VKN Kesin Eşleşme",
+          "hash": "63b0c44298fc1c149afbf4c8996fb418",
+          "date": "2026-05-22",
+          "trust": 96
+        },
+        {
+          "source": "egemavirigging.com (İletişim Sayfası)",
+          "cls": "C",
+          "rule": "Domain Kökü",
+          "hash": "22f34346648f6b96df89dda901c5111f",
+          "date": "2026-10-18",
+          "trust": 79
+        }
+      ],
+      "tech_stack": [
+        "SolidWorks",
+        "FEA Stress Analysis"
+      ],
+      "icp_reason": "Yelkenli yat üreticilerine özel salma ve arma mühendisliği sağlayan niş tedarikçi."
+    }
+  ],
+  "dedup_queue": [
+    {
+      "id": "dq-1",
+      "similarity": 0.95,
+      "reason": "Jaro-Winkler 0.95 + Aynı İlçe (Tuzla) + Aynı NACE (71.12)",
+      "left": {
+        "name": "AEGEAN NAVAL ARCHITECTURE VE YAT TASARIM MÜH. A.Ş.",
+        "source": "A Sınıfı • Ticaret Sicili (VKN: 0081492831)",
+        "address": "Evliya Çelebi Mah. Tersaneler Cad. No:42 Tuzla"
+      },
+      "right": {
+        "name": "AEGEAN NAVAL YAT TASARIM OFİSİ",
+        "source": "B Sınıfı • Google Places POI (VKN Eksik)",
+        "address": "Tersaneler Caddesi No:42/B Tuzla İstanbul"
+      }
+    },
+    {
+      "id": "dq-2",
+      "similarity": 0.93,
+      "reason": "Jaro-Winkler 0.93 + Aynı İlçe (Bodrum) + E.164 Telefon Benzerliği",
+      "left": {
+        "name": "BODRUM KARYA YAT TASARIM VE AHŞAP TEKNE SAN. LTD. ŞTİ.",
+        "source": "A Sınıfı • BODTO & Ticaret Sicili (VKN: 5240381945)",
+        "address": "İçmeler Mah. Tersaneler Bölgesi Sok. No:14 Bodrum"
+      },
+      "right": {
+        "name": "KARYA YACHT DESIGN BODRUM ŞUBESİ",
+        "source": "C Sınıfı • Fuar Kataloğu (Cannes '26)",
+        "address": "İçmeler Tersaneler Mevkii No:14 Bodrum/Muğla"
+      }
+    },
+    {
+      "id": "dq-3",
+      "similarity": 0.92,
+      "reason": "Jaro-Winkler 0.92 + Aynı İl (Antalya) + Domain Kökü Benzerliği",
+      "left": {
+        "name": "TURQUOISE & BLUE HORIZON YAT İNŞA SAN. A.Ş.",
+        "source": "A Sınıfı • Antalya Serbest Bölge Sicili",
+        "address": "Antalya Serbest Bölgesi 4. Cad. No:18"
+      },
+      "right": {
+        "name": "BLUE HORIZON MARINE DESIGN STUDIO",
+        "source": "C Sınıfı • LinkedIn Şirket Sayfası",
+        "address": "Konyaaltı / Antalya"
+      }
+    }
+  ],
+  "saved_lists": [
+    {
+      "id": "lst-1",
+      "name": "Tuzla & Yalova Süperyat Tasarım Ofisleri",
+      "type": "Dinamik Liste (ICP ≥ 80)",
+      "companyIds": [
+        "cmp-01",
+        "cmp-04",
+        "cmp-05",
+        "cmp-07"
+      ],
+      "updated": "12 dk önce"
+    },
+    {
+      "id": "lst-2",
+      "name": "Fuar Katılımcısı İhracatçı Tersaneler",
+      "type": "Statik Liste",
+      "companyIds": [
+        "cmp-02",
+        "cmp-03",
+        "cmp-08"
+      ],
+      "updated": "2 gün önce"
+    }
+  ]
+}
