@@ -2712,6 +2712,7 @@
       }
 
       if (tab === 'panel') loadPanelAnalytics();
+      if (tab === 'discovery') applyFilters();
       if (tab === 'crm') renderCRMDeals();
       if (tab === 'lists') { renderLists(); renderEmailLogs(); }
       if (tab === 'health') renderDedupQueue();
@@ -3989,7 +3990,16 @@
       }
     }
 
+    let prevCrawlerCount = 0;
     function updateCrawlerUI(status) {
+      if (!status) return;
+      const cur = status.current || {};
+      const newCount = cur.new_companies || 0;
+      if (newCount > prevCrawlerCount && prevCrawlerCount > 0) {
+        if (activeTab === 'panel') loadPanelAnalytics();
+        if (activeTab === 'discovery') { loadAllData().then(applyFilters); }
+      }
+      prevCrawlerCount = newCount;
       if (!status) return;
       const isRunning = status.is_running;
       const cur = status.current || {};

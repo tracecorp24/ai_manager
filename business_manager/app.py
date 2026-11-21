@@ -101,13 +101,25 @@ GEO_DATA = {
 
 def generate_crawled_company(country: str, industry: str, selected_sources: List[str]) -> Dict[str, Any]:
     geo = GEO_DATA.get(country, GEO_DATA["Türkiye"])
-    prefix = random.choice(geo["prefixes"])
-    suffix = random.choice(geo["suffixes"])
-    short_name = f"{prefix} {suffix.split()[0]}"
-    legal_name = f"{prefix.upper()} {suffix.upper()}"
-    city, district = random.choice(geo["cities"])
-    domain_clean = "".join(c for c in short_name.lower() if c.isalnum()) + geo["domain_sfx"]
-    tax_num = f"{random.randint(1000000000, 9999999999)}"
+    used_real_turkish = False
+    if country == "Türkiye" and MUSTERI_LISTESI:
+        m_item = random.choice(MUSTERI_LISTESI)
+        legal_name = m_item.get("Ünvan") or "MARMARA DENİZCİLİK VE YAT SANAYİ A.Ş."
+        short_name = legal_name.split()[0].title() + " " + (legal_name.split()[1].title() if len(legal_name.split()) > 1 else "Marine")
+        district = m_item.get("İlçe") or "Tuzla"
+        city = "İstanbul"
+        sicil_no = m_item.get("Sicil No") or str(random.randint(100000, 999999))
+        tax_num = f"0{sicil_no}" if len(sicil_no) == 9 else f"00{sicil_no[:8]}"
+        domain_clean = "".join(c for c in short_name.lower() if c.isalnum()) + ".com.tr"
+        used_real_turkish = True
+    else:
+        prefix = random.choice(geo["prefixes"])
+        suffix = random.choice(geo["suffixes"])
+        short_name = f"{prefix} {suffix.split()[0]}"
+        legal_name = f"{prefix.upper()} {suffix.upper()}"
+        city, district = random.choice(geo["cities"])
+        domain_clean = "".join(c for c in short_name.lower() if c.isalnum()) + geo["domain_sfx"]
+        tax_num = f"{random.randint(1000000000, 9999999999)}"
     cid = f"cmp-{country[:2].lower()}-{uuid.uuid4().hex[:6]}"
     
     nace = "30.12" if ("Tersane" in industry or "İnşa" in industry) else "71.12"
@@ -118,15 +130,27 @@ def generate_crawled_company(country: str, industry: str, selected_sources: List
     selected_cad = random.sample(cad_pool, random.randint(2, 4))
     
     evidences = []
+    SOURCE_MAP = {
+        "ticaret_sicili": ("Ticaret Sicili Gazetesi & MERSİS", "A", "VKN/Vergi No Kesin Eşleşme"),
+        "google_places": ("Google Places / Maps POI", "B", "E.164 Geocode Doğrulama"),
+        "ekap": ("EKAP Kamu İhale Katılım & Sonuç", "A", "MERSİS / Kamu İhale Tescili"),
+        "fuarlar": ("Fuar Katılımcı Listeleri (İFM/Cannes/TÜYAP)", "B", "Etkinlik Katılımı Doğrulama"),
+        "web_crawl": ("Firma Web Sitesi & İletişim (Crawl)", "C", "Alan Adı Kökü Eşleşmesi"),
+        "linkedin": ("LinkedIn / Kariyer İlan Verisi", "C", "Pozisyon & Şirket Sayfası Sinyali")
+    }
     for s in selected_sources:
-        s_cls = "A" if ("Sicil" in s or "Gazete" in s) else ("B" if ("Maps" in s or "Fuar" in s or "DTO" in s) else "C")
-        s_rule = "VKN/Vergi No Kesin Eşleşme" if s_cls == "A" else ("E.164 Geocode Doğrulama" if "Maps" in s else "Alan Adı Kökü Eşleşmesi")
+        if s in SOURCE_MAP:
+            s_name, s_cls, s_rule = SOURCE_MAP[s]
+        else:
+            s_name = s
+            s_cls = "A" if ("Sicil" in s or "Gazete" in s or "ekap" in s) else ("B" if ("Maps" in s or "Fuar" in s or "DTO" in s) else "C")
+            s_rule = "VKN/Vergi No Kesin Eşleşme" if s_cls == "A" else ("E.164 Geocode Doğrulama" if "Maps" in s else "Alan Adı Kökü Eşleşmesi")
         evidences.append({
-            "source_name": s,
+            "source_name": s_name,
             "source_class": s_cls,
             "rule": s_rule,
             "hash": uuid.uuid4().hex,
-            "trust": random.randint(85, 99)
+            "trust": random.randint(88, 99)
         })
 
     signal_types = ["Fuar", "Kariyer", "Sermaye", "Teknoloji"]
@@ -859,10 +883,10 @@ class NautiGraphHandler(SimpleHTTPRequestHandler):
         # 0. Toplayıcı Kuyruğunu Başlat
         if path == "/api/crawler/start":
             country = data.get("country", "Türkiye")
-            industry = data.get("industry", "Mega Yat Tersaneleri")
-            sources = data.get("sources", ["Resmi Ticaret Sicili", "Google Maps POI", "Fuar Katılımcıları"])
-            limit = int(data.get("limit", 20))
-            delay = float(data.get("delay", 1.5))
+            industry = data.get("industry_sector") or data.get("industry", "Lüks Yat & Mega Yat Tasarımı")
+            sources = data.get("sources", ["ticaret_sicili", "google_places", "ekap", "fuarlar", "web_crawl"])
+            limit = int(data.get("target_count") or data.get("limit", 50))
+            delay = float(data.get("delay_sec") or data.get("delay", 1.5))
             job_id = start_crawl_job(country, industry, sources, limit, delay)
             return self.send_json({"ok": True, "job_id": job_id, "status": "crawling", "message": f"{country} için tarama kuyruğu başlatıldı."})
 
