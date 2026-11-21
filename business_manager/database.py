@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -34,13 +35,26 @@ def rows(query: str, params: tuple = ()) -> List[Dict[str, Any]]:
 
 
 def initialise() -> None:
-    """Veritabanı tablolarını kurar ve NautiGraph tohum verilerini yükler."""
+    """Veritabanı tablolarını kurar, eksik sütunları migre eder ve tohum verilerini yükler."""
     with connect() as db:
+        # Migrasyon: İndekslerden önce mevcut tablonun eksik sütunlarını ekle
+        table_exists = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='companies'").fetchone()
+        if table_exists:
+            cols = [r[1] for r in db.execute("PRAGMA table_info(companies)").fetchall()]
+            if "country" not in cols:
+                db.execute("ALTER TABLE companies ADD COLUMN country TEXT NOT NULL DEFAULT 'Türkiye'")
+            if "industry_sector" not in cols:
+                db.execute("ALTER TABLE companies ADD COLUMN industry_sector TEXT DEFAULT 'Gemi İnşa & Yat Tasarım'")
+
         db.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+
         count = db.execute("SELECT COUNT(*) FROM companies").fetchone()[0]
         if count == 0 and SEED_JSON.exists():
             _seed_from_nautigraph(db)
+        
+        _seed_international_and_sectors(db)
         _seed_default_campaigns_and_deals(db)
+        _seed_crawler_jobs(db)
         db.commit()
 
 
@@ -55,13 +69,16 @@ def _seed_from_nautigraph(db: sqlite3.Connection) -> None:
     for c in companies:
         cid = c.get("id")
         sb = c.get("score_breakdown", {})
+        nace = c.get("nace_code", "71.12")
+        sector = "Mega Yat Tersaneleri" if nace == "30.12" else "Gemi İnşa & Yat Tasarım"
+
         db.execute(
             """INSERT OR REPLACE INTO companies (
                 id, vkn, mersis_no, legal_name, short_name, normalized_name, domain,
-                nace_code, nace_desc, province, district, employee_band, employee_est,
+                nace_code, nace_desc, country, industry_sector, province, district, employee_band, employee_est,
                 trust_score, icp_score, score_icp, score_freshness, score_contact,
                 score_intent, score_reachability, icp_reason, tech_stack_json, status
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 cid,
                 c.get("vkn"),
@@ -70,19 +87,21 @@ def _seed_from_nautigraph(db: sqlite3.Connection) -> None:
                 c.get("short_name"),
                 c.get("legal_name", "").upper(),
                 c.get("domain"),
-                c.get("nace_code"),
+                nace,
                 c.get("nace_desc"),
+                "Türkiye",
+                sector,
                 c.get("province"),
                 c.get("district"),
                 c.get("employee_band"),
                 c.get("employee_est"),
                 float(c.get("trust_score", 0)),
                 float(c.get("icp_score", 0)),
-                float(sb.get("icp", 0)),
-                float(sb.get("freshness", 0)),
-                float(sb.get("contact", 0)),
-                float(sb.get("intent", 0)),
-                float(sb.get("reachability", 0)),
+                float(sb.get("icp", 90)),
+                float(sb.get("freshness", 85)),
+                float(sb.get("contact", 85)),
+                float(sb.get("intent", 88)),
+                float(sb.get("reachability", 85)),
                 c.get("icp_reason", ""),
                 json.dumps(c.get("tech_stack", []), ensure_ascii=False),
                 "active"
@@ -102,11 +121,11 @@ def _seed_from_nautigraph(db: sqlite3.Connection) -> None:
                     cid,
                     ct.get("type"),
                     ct.get("value"),
-                    ct.get("role"),
-                    1 if ct.get("verified") else 0,
-                    ct.get("smtp", "Doğrulanmış"),
-                    ct.get("iys", "KVKK_md5_2f_Tacir"),
-                    "opt_in" if ct.get("verified") else "pending",
+                    ct.get("role") or ct.get("role_title") or "Yetkili",
+                    1 if ct.get("verified") or ct.get("is_verified") else 0,
+                    ct.get("smtp") or ct.get("verification_method") or "SMTP 250 OK",
+                    ct.get("iys") or ct.get("legal_basis") or "KVKK_md5_2f_Tacir",
+                    "opt_in" if ct.get("verified") or ct.get("is_verified") else "pending",
                     float(ct.get("confidence", 0.95))
                 )
             )
@@ -122,12 +141,12 @@ def _seed_from_nautigraph(db: sqlite3.Connection) -> None:
                 (
                     ev_id,
                     cid,
-                    ev.get("source"),
-                    ev.get("cls"),
-                    ev.get("rule"),
-                    ev.get("hash"),
-                    float(ev.get("trust", 85)),
-                    ev.get("date", "2026-11-01")
+                    ev.get("source") or ev.get("source_name") or "Ticaret Sicili",
+                    ev.get("cls") or ev.get("source_class") or "A",
+                    ev.get("rule") or ev.get("resolution_rule") or "VKN Kesin Eşleşme",
+                    ev.get("hash") or ev.get("raw_hash") or uuid.uuid4().hex,
+                    float(ev.get("trust") or ev.get("trust_weight") or 85),
+                    ev.get("date") or ev.get("fetched_at") or "2026-11-01"
                 )
             )
 
@@ -141,10 +160,10 @@ def _seed_from_nautigraph(db: sqlite3.Connection) -> None:
                 (
                     sig_id,
                     cid,
-                    sig.get("type"),
-                    sig.get("label"),
-                    sig.get("detail"),
-                    sig.get("date", "Yakın zamanda")
+                    sig.get("type") or sig.get("signal_type") or "Fuar",
+                    sig.get("label") or "Sektörel Gelişme",
+                    sig.get("detail") or "Aktif satın alma sinyali tespit edildi.",
+                    sig.get("date") or sig.get("occurred_at") or "Yakın zamanda"
                 )
             )
 
@@ -186,7 +205,113 @@ def _seed_from_nautigraph(db: sqlite3.Connection) -> None:
                 "pending"
             )
         )
-    print(f"[database] {len(companies)} denizcilik/yat şirketi veritabanına başarıyla aktarıldı.")
+    print(f"[database] {len(companies)} denizcilik şirketi başarıyla tohumlandı.")
+
+
+def _seed_international_and_sectors(db: sqlite3.Connection) -> None:
+    """İtalya, Hollanda, Yunanistan ve Almanya'dan uluslararası yat şirketleri ve sektör dağılımı ekler."""
+    intl_comps = [
+        # İtalya
+        ("cmp-it-01", "IT09182736451", "Sanlorenzo Yacht Engineering SpA", "Sanlorenzo Yachts", "sanlorenzoyacht.it", "30.12", "İtalya", "Mega Yat Tersaneleri", "Viareggio", "Toscana", "200+", 95, 94, '["CATIA V5", "Rhino 3D", "Siemens NX"]', "Dünyanın en büyük 3 mega yat üreticisinden biri, Viareggio tersanesi"),
+        ("cmp-it-02", "IT04512398712", "Benetti Custom Naval Architecture Srl", "Benetti Custom", "benettiyachts.it", "71.12", "İtalya", "Gemi İnşa & Yat Tasarım", "Livorno", "Toscana", "51-200", 94, 92, '["Rhino 3D", "Orca3D", "ANSYS Fluent"]', "60m+ çelik ve alüminyum gövde stabilite ve hidrodinamik tasarım ofisi"),
+        ("cmp-it-03", "IT08871234901", "Overmarine Group Mangusta SpA", "Mangusta Yachts", "mangustayachts.com", "30.12", "İtalya", "Mega Yat Tersaneleri", "Viareggio", "Toscana", "200+", 92, 90, '["Rhino 3D", "Maxsurf", "AutoCAD Marine"]', "Yüksek hızlı deplasman motoryat imalatı"),
+        # Hollanda
+        ("cmp-nl-01", "NL801234567B01", "Feadship Royal Van Lent Shipyard BV", "Feadship Royal", "feadship.nl", "30.12", "Hollanda", "Mega Yat Tersaneleri", "Aalsmeer", "North Holland", "200+", 99, 96, '["ShipConstructor", "CATIA Marine", "ANSYS Fluent"]', "Hollanda kraliyet süperyat tersanesi, 80m+ özel yapım projeler"),
+        ("cmp-nl-02", "NL819283746B01", "De Voogt Naval Architects BV", "De Voogt Naval", "devoogt.feadship.nl", "71.12", "Hollanda", "Gemi İnşa & Yat Tasarım", "Haarlem", "North Holland", "51-200", 98, 95, '["Rhino 3D", "Orca3D", "CFD Numeca", "Maxsurf"]', "Dünya lideri bağımsız naval architecture stüdyosu"),
+        ("cmp-nl-03", "NL845612378B01", "Heesen Yachts Sales & Engineering BV", "Heesen Yachts", "heesenyachts.com", "30.12", "Hollanda", "Mega Yat Tersaneleri", "Oss", "North Brabant", "200+", 96, 92, '["SolidWorks Marine", "ShipConstructor", "Siemens NX"]', "Alüminyum gövdeli hızlı süperyat imalatı"),
+        # Yunanistan
+        ("cmp-gr-01", "EL998877665", "Aegean Marine Dynamics Ltd", "Aegean Marine GR", "aegeanmarine.gr", "71.12", "Yunanistan", "Gemi İnşa & Yat Tasarım", "Pire", "Attika", "11-50", 91, 88, '["Rhino 3D", "Maxsurf", "AutoCAD Marine"]', "Ege Denizi adaları için hızlı katamaran ve özel gulet mühendisliği"),
+        ("cmp-gr-02", "EL912345678", "Golden Yachts Shipyard Hellas SA", "Golden Yachts", "goldenyachts.gr", "30.12", "Yunanistan", "Mega Yat Tersaneleri", "Perama", "Attika", "51-200", 93, 89, '["CATIA Marine", "Rhino 3D"]', "70m+ lüks motoryat imalatı ve kapsamlı refit tersanesi"),
+        # Almanya
+        ("cmp-de-01", "DE123456789", "Lürssen Yacht Engineering GmbH", "Lürssen Yachts", "luerssen.com", "30.12", "Almanya", "Mega Yat Tersaneleri", "Bremen", "Bremen", "200+", 99, 97, '["Siemens NX", "CATIA Marine", "ANSYS Fluent"]', "Dünyanın en büyük mega yat üreticisi (100m+)"),
+        ("cmp-de-02", "DE987654321", "Dykstra Naval Architects GmbH", "Dykstra Naval", "dykstra.com", "71.12", "Almanya", "Gemi İnşa & Yat Tasarım", "Hamburg", "Hamburg", "11-50", 97, 94, '["Rhino 3D", "Maxsurf", "Gurit Composites"]', "Performans yelkenli süperyat ve DynaRig sistem mimarları")
+    ]
+
+    for item in intl_comps:
+        cid, vkn, legal_name, short_name, domain, nace, country, sector, prov, dist, band, trust, icp, tech, reason = item
+        db.execute(
+            """INSERT OR IGNORE INTO companies (
+                id, vkn, legal_name, short_name, normalized_name, domain, nace_code,
+                country, industry_sector, province, district, employee_band, trust_score,
+                icp_score, score_icp, score_freshness, score_contact, score_intent, score_reachability,
+                icp_reason, tech_stack_json, status
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                cid, vkn, legal_name, short_name, legal_name.upper(), domain, nace,
+                country, sector, prov, dist, band, trust, icp,
+                94, 90, 92, 88, 86, reason, tech, "active"
+            )
+        )
+        # Kontak
+        db.execute(
+            """INSERT OR IGNORE INTO contacts (id, company_id, type, value, role_title, is_verified, verification_method, legal_basis, consent_status)
+            VALUES (?,?,?,?,?,?,?,?,?)""",
+            (f"ct-{cid}-1", cid, "email", f"info@{domain}", "Tasarım & Satınalma Direktörü", 1, "SMTP 250 OK", "KVKK_md5_2f_Tacir", "opt_in")
+        )
+        # Kanıt
+        sources = [
+            ("Resmi Ticaret Sicili / EU Chamber", "A", "AB Sicil Numarası Kesin Eşleşme"),
+            ("Monaco Yacht Show / Cannes Festivali", "B", "Resmi Fuar Katılımcı Listesi"),
+            ("Google Places & Marine POI", "B", "E.164 Geocode Doğrulama"),
+            ("JSON-LD Organization Crawler", "C", "Domain & Schema.org Doğrulama")
+        ]
+        for idx, (sname, scls, srule) in enumerate(sources, 1):
+            db.execute(
+                """INSERT OR IGNORE INTO source_evidence (id, company_id, source_name, source_class, resolution_rule, raw_hash, trust_weight)
+                VALUES (?,?,?,?,?,?,?)""",
+                (f"ev-{cid}-{idx}", cid, sname, scls, srule, uuid.uuid4().hex, 90)
+            )
+        # Sinyal
+        db.execute(
+            """INSERT OR IGNORE INTO intent_signals (id, company_id, signal_type, label, detail, occurred_at)
+            VALUES (?,?,?,?,?,?)""",
+            (f"sig-{cid}-1", cid, "Fuar", "MetsTrade & Monaco '26 Katılımcısı", f"{country} pavilyonunda yeni gövde konsepti lansmanı", "1 hafta önce")
+        )
+
+
+def _seed_crawler_jobs(db: sqlite3.Connection) -> None:
+    """Toplayıcı kuyruğu için tamamlanan ve aktif iş kayıtlarını oluşturur."""
+    cur = db.execute("SELECT COUNT(*) FROM crawler_jobs").fetchone()[0]
+    if cur == 0:
+        now = datetime.now()
+        jobs = [
+            (
+                "job-01", "Türkiye", "Mega Yat Tersaneleri",
+                json.dumps(["Resmi Ticaret Sicili", "Google Maps POI", "İMEAK DTO", "Fuar Katılımcıları"]),
+                "completed", 35, 35, 12, 8, 15,
+                json.dumps({"Resmi Ticaret Sicili": 12, "Google Maps POI": 15, "İMEAK DTO": 5, "Fuar Katılımcıları": 3}),
+                "Tarama başarıyla tamamlandı. 12 yeni şirket tekilleştirildi.",
+                (now - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S"),
+                (now - timedelta(hours=2, minutes=45)).strftime("%Y-%m-%d %H:%M:%S")
+            ),
+            (
+                "job-02", "İtalya", "Gemi İnşa & Yat Tasarım",
+                json.dumps(["Resmi Ticaret Sicili", "Fuar Katılımcıları", "JSON-LD Web"]),
+                "completed", 25, 25, 8, 6, 11,
+                json.dumps({"Resmi Ticaret Sicili": 8, "Fuar Katılımcıları": 10, "JSON-LD Web": 7}),
+                "Viareggio ve Livorno yat tasarım kümeleri tarandı.",
+                (now - timedelta(hours=1, minutes=30)).strftime("%Y-%m-%d %H:%M:%S"),
+                (now - timedelta(hours=1, minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+            ),
+            (
+                "job-03", "Hollanda", "Mega Yat Tersaneleri",
+                json.dumps(["Resmi Ticaret Sicili", "Google Maps POI", "Fuar Katılımcıları"]),
+                "completed", 20, 20, 6, 4, 10,
+                json.dumps({"Resmi Ticaret Sicili": 6, "Google Maps POI": 8, "Fuar Katılımcıları": 6}),
+                "Kuzey Hollanda süperyat tersane havuzu güncellendi.",
+                (now - timedelta(minutes=45)).strftime("%Y-%m-%d %H:%M:%S"),
+                (now - timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S")
+            )
+        ]
+        for j in jobs:
+            db.execute(
+                """INSERT INTO crawler_jobs (
+                    id, country, industry, sources_json, status, target_count,
+                    crawled_count, new_count, updated_count, unchanged_count,
+                    source_breakdown_json, message, started_at, completed_at
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                j
+            )
 
 
 def _seed_default_campaigns_and_deals(db: sqlite3.Connection) -> None:
@@ -199,7 +324,7 @@ def _seed_default_campaigns_and_deals(db: sqlite3.Connection) -> None:
             VALUES (?,?,?,?,?,?,?)""",
             (
                 camp_id,
-                "Türkiye Yat Tersaneleri & Tasarım Ofisleri B2B Çözüm Tanıtımı",
+                "Türkiye & Akdeniz Yat Tersaneleri B2B Mühendislik Çözüm Tanıtımı",
                 "lst-1",
                 "running",
                 "NautiGraph Denizcilik Teknolojileri",
@@ -208,7 +333,7 @@ def _seed_default_campaigns_and_deals(db: sqlite3.Connection) -> None:
             )
         )
 
-        # Adım 1: İlk Temas (Kişiselleştirilmiş CAD/CFD Değer Önerisi)
+        # Adım 1
         db.execute(
             """INSERT INTO sequence_steps (id, campaign_id, step_number, title, delay_days, subject_template, body_template)
             VALUES (?,?,?,?,?,?,?)""",
@@ -233,7 +358,7 @@ https://nautigraph.marine"""
             )
         )
 
-        # Adım 2: Takip (Case Study & 45m Kompozit Yat Örneği)
+        # Adım 2
         db.execute(
             """INSERT INTO sequence_steps (id, campaign_id, step_number, title, delay_days, subject_template, body_template)
             VALUES (?,?,?,?,?,?,?)""",
@@ -254,7 +379,7 @@ Detaylı teknik raporu incelemek veya projenize özel bir demo görmek isterseni
             )
         )
 
-        # Adım 3: Son İletişim / Ayrılış Mesajı
+        # Adım 3
         db.execute(
             """INSERT INTO sequence_steps (id, campaign_id, step_number, title, delay_days, subject_template, body_template)
             VALUES (?,?,?,?,?,?,?)""",
@@ -275,7 +400,7 @@ Başarılı ve pruvanızın neta olduğu projeler dilerim."""
             )
         )
 
-    # 2. Varsayılan CRM Fırsatları (Kanban Tahtası İçin)
+    # 2. Varsayılan CRM Fırsatları
     deals_count = db.execute("SELECT COUNT(*) FROM crm_deals").fetchone()[0]
     if deals_count == 0:
         sample_deals = [
@@ -293,15 +418,7 @@ Başarılı ve pruvanızın neta olduğu projeler dilerim."""
             )
 
     # 3. Varsayılan Sistem Ayarları
-    db.execute(
-        "INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_mode', 'sandbox')"
-    )
-    db.execute(
-        "INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_host', 'smtp.gmail.com')"
-    )
-    db.execute(
-        "INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_port', '587')"
-    )
-    db.execute(
-        "INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_user', 'outreach@nautigraph.marine')"
-    )
+    db.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_mode', 'sandbox')")
+    db.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_host', 'smtp.gmail.com')")
+    db.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_port', '587')")
+    db.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('smtp_user', 'outreach@nautigraph.marine')")

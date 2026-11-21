@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS companies (
     domain TEXT UNIQUE,                        -- Web Alan Adı Kökü (Deterministik #2)
     nace_code TEXT NOT NULL,                   -- '30.12' (Yat/Tekne İnşa) veya '71.12' (Tasarım/Mühendislik)
     nace_desc TEXT,                            -- NACE faaliyet metni
-    province TEXT NOT NULL,                    -- İl (İstanbul, Antalya, Muğla, Yalova, İzmir)
+    country TEXT NOT NULL DEFAULT 'Türkiye',   -- Ülke (Türkiye, İtalya, Hollanda, Almanya, Yunanistan vb.)
+    industry_sector TEXT DEFAULT 'Gemi İnşa & Yat Tasarım', -- Sektör / İş Kolu
+    province TEXT NOT NULL,                    -- İl / Bölge (İstanbul, Antalya, Muğla, Yalova, İzmir, Viareggio...)
     district TEXT,                             -- İlçe / Serbest Bölge / Tersaneler Bölgesi
     employee_band TEXT,                        -- '1-10', '11-50', '51-200', '200+'
     employee_est TEXT,                         -- Tahmin ve gerekçe (örn: '285 Personel')
@@ -190,17 +192,38 @@ CREATE TABLE IF NOT EXISTS interactions (
 );
 
 -- ============================================================================
--- 10. SİSTEM & SMTP AYARLARI (SMTP_SETTINGS)
+-- 10. SİSTEM & SMTP AYARLARI (SYSTEM_SETTINGS)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS system_settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
 
--- İndeksler (Sorgu performansı)
+-- ============================================================================
+-- 11. TOPLAYICI KUYRUK VE TARAMA İŞLERİ (CRAWLER_JOBS)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS crawler_jobs (
+    id TEXT PRIMARY KEY,
+    country TEXT NOT NULL,                     -- Hedef Ülke (Türkiye, İtalya, Hollanda...)
+    industry TEXT NOT NULL,                    -- Hedef İş Kolu (Mega Yat Tersaneleri, Yat Tasarım...)
+    sources_json TEXT NOT NULL,                -- '["Resmi Sicil", "Google Places", "Fuar Katılımcıları"]'
+    status TEXT DEFAULT 'completed',           -- 'running', 'completed', 'paused', 'failed'
+    target_count INTEGER DEFAULT 20,
+    crawled_count INTEGER DEFAULT 0,
+    new_count INTEGER DEFAULT 0,
+    updated_count INTEGER DEFAULT 0,
+    unchanged_count INTEGER DEFAULT 0,
+    source_breakdown_json TEXT DEFAULT '{}',
+    message TEXT,
+    started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    completed_at TEXT
+);
+
+-- İndeksler
 CREATE INDEX IF NOT EXISTS idx_comp_vkn ON companies(vkn);
 CREATE INDEX IF NOT EXISTS idx_comp_domain ON companies(domain);
 CREATE INDEX IF NOT EXISTS idx_comp_icp ON companies(icp_score);
+CREATE INDEX IF NOT EXISTS idx_comp_country ON companies(country);
 CREATE INDEX IF NOT EXISTS idx_comp_province ON companies(province);
 CREATE INDEX IF NOT EXISTS idx_comp_nace ON companies(nace_code);
 CREATE INDEX IF NOT EXISTS idx_contacts_comp ON contacts(company_id);
@@ -210,3 +233,4 @@ CREATE INDEX IF NOT EXISTS idx_deals_comp ON crm_deals(company_id);
 CREATE INDEX IF NOT EXISTS idx_deals_stage ON crm_deals(stage);
 CREATE INDEX IF NOT EXISTS idx_email_logs_status ON email_logs(status);
 CREATE INDEX IF NOT EXISTS idx_email_logs_comp ON email_logs(company_id);
+CREATE INDEX IF NOT EXISTS idx_crawler_status ON crawler_jobs(status);
