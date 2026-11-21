@@ -22,6 +22,8 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
 from database import DB_PATH, ROOT, connect, initialise, row_to_dict, rows
+from scrapling_engine import MaritimeScraplingEngine
+_scrapling_engine = MaritimeScraplingEngine(timeout=5)
 
 HOST = "127.0.0.1"
 PORT = 8765
@@ -256,6 +258,20 @@ def _crawler_worker(country: str, industry: str, sources: List[str], target_limi
         # Şirket üret ve veritabanına ekle
         c = generate_crawled_company(country, industry, sources)
         cid = c["id"]
+
+        # Scrapling Canlı Web Kazıma & Zenginleştirme
+        if _scrapling_engine.is_available and c.get("domain") and ("web_crawl" in sources or "Web" in " ".join(sources)):
+            try:
+                sc_data = _scrapling_engine.enrich_company_website(c["domain"])
+                if sc_data.get("success"):
+                    print(f"  [SCRAPLING ✓] {c['domain']} sitesi tarandı -> {len(sc_data['emails'])} e-posta, {len(sc_data['detected_cad'])} CAD aracı")
+                    for em in sc_data.get("emails", []):
+                        c["contacts"].append({"type": "email", "value": em, "role": "Resmi İletişim", "smtp": "Scrapling Web Doğrulandı", "iys": "Meşru Menfaat"})
+                    for cad in sc_data.get("detected_cad", []):
+                        if cad not in c["tech_stack"]:
+                            c["tech_stack"].append(cad)
+            except Exception as e:
+                pass
 
         with connect() as db:
             db.execute(
