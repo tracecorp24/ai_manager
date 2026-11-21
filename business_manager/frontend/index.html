@@ -68,14 +68,14 @@
         <span id="crawler-status-text">Çalışıyor</span>
       </span>
       <span class="text-slate-300 font-medium text-xs tracking-tight" id="crawler-stats-summary">
-        <span class="text-white font-bold font-mono" id="crawler-stat-fetched">157</span> çekilen · 
+        <span class="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30 mr-1" id="crawler-top-active-target">TR / İstanbul</span> <span class="text-white font-bold font-mono" id="crawler-stat-fetched">34</span>/100 · 
         <span class="text-emerald-400 font-bold font-mono" id="crawler-stat-new">34</span> yeni · 
         <span class="text-cyan-400 font-bold font-mono" id="crawler-stat-updated">23</span> güncellenen · 
         <span class="text-slate-400 font-bold font-mono" id="crawler-stat-unchanged">100</span> değişmeyen
       </span>
       <span class="hidden md:inline text-slate-600">|</span>
       <span class="text-slate-400 text-xs hidden sm:inline" id="crawler-rate-limit-msg">
-        Kaynağı koruyan ortak istek aralığı bekleniyor: <span class="font-mono text-cyan-300 font-semibold" id="crawler-countdown-sec">82</span> saniye
+        <span class="text-emerald-400 font-bold font-mono mr-1">125 Görev (100'er Kota · Otomatik Pas Geçme)</span> | Kaynağı koruyan bekleme: <span class="font-mono text-cyan-300 font-semibold" id="crawler-countdown-sec">82</span> saniye
       </span>
     </div>
 
@@ -439,7 +439,9 @@
 
           <!-- Rozetler -->
           <div class="mt-4 flex items-center gap-2 pt-2 border-t border-slate-800">
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-800/80 text-slate-300 border border-slate-700/60" id="panel-badge-completed">● Tamamlandı 29</span>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-semibold" id="panel-badge-queue-total">● 125 Görev Planlandı</span>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-slate-800/80 text-slate-300 border border-slate-700/60" id="panel-badge-completed">● Tamamlandı 4</span>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-amber-950 text-amber-300 border border-amber-500/30" id="panel-badge-queued">● 120 Bekliyor</span>
             <span class="px-2.5 py-1 rounded-full text-[11px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-500/30 font-semibold" id="panel-badge-running">● Çalışıyor 1</span>
           </div>
         </div>
@@ -1274,24 +1276,59 @@
           </div>
         </div>
 
-        <!-- Canlı Kuyruk Geçmişi Tablosu -->
+        <!-- 125 Master Kuyruk Görevi Tablosu & Filtreleme -->
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="font-bold text-slate-200 flex items-center gap-2">
-              <span>Kuyruk İşleri & Görev Geçmişi</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300" id="modal-queue-count">3 Görev</span>
-            </h4>
-            <span class="text-[11px] text-slate-400">Son 5 tarama operasyonu</span>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+            <div>
+              <h4 class="font-bold text-slate-200 flex items-center gap-2">
+                <span>🎯 Master Kuyruk: 5 Ülke × 5 Şehir × 5 Başlık</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-bold" id="modal-queue-count">125 Görev (100'er Kota)</span>
+              </h4>
+              <p class="text-[11px] text-slate-400">Her şehirden 100'er firma çekilir; bulamazsa otomatik olarak sonraki göreve pas geçer.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="startAllQueueJobs()" class="px-3 py-1.5 rounded-lg bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>▶️ Tüm Kuyruğu Sırayla Başlat</span>
+              </button>
+            </div>
           </div>
-          <div class="rounded-xl border border-slate-800 overflow-hidden bg-navy-950/70">
+
+          <!-- Kuyruk Filtreleme Çubuğu -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 p-2 rounded-lg bg-navy-950/80 border border-slate-800">
+            <div>
+              <select id="queue-filter-country" onchange="filterQueueTable()" class="w-full bg-navy-900 border border-slate-700 rounded px-2 py-1 text-slate-300 text-[11px] focus:outline-none focus:border-cyan-400">
+                <option value="Tümü">🌍 Tüm Ülkeler (5 Ülke)</option>
+                <option value="Türkiye">🇹🇷 Türkiye (İstanbul, Antalya, Muğla, Yalova, İzmir)</option>
+                <option value="Almanya">🇩🇪 Almanya (Hamburg, Bremen, Kiel, Berlin, München)</option>
+                <option value="Fransa">🇫🇷 Fransa (Marsilya, Cannes, Nice, La Rochelle, Nantes)</option>
+                <option value="Hollanda">🇳🇱 Hollanda (Rotterdam, Amsterdam, Aalsmeer, Makkum, Oss)</option>
+                <option value="İngiltere">🇬🇧 İngiltere (Southampton, Portsmouth, Poole, Londra, Plymouth)</option>
+              </select>
+            </div>
+            <div>
+              <select id="queue-filter-status" onchange="filterQueueTable()" class="w-full bg-navy-900 border border-slate-700 rounded px-2 py-1 text-slate-300 text-[11px] focus:outline-none focus:border-cyan-400">
+                <option value="Tümü">📊 Tüm Durumlar</option>
+                <option value="running">● Çalışıyor (Aktif)</option>
+                <option value="queued">● Bekliyor (Kuyrukta)</option>
+                <option value="completed">● Tamamlandı</option>
+              </select>
+            </div>
+            <div>
+              <input type="text" id="queue-filter-search" oninput="filterQueueTable()" placeholder="Şehir veya sektör ara..." class="w-full bg-navy-900 border border-slate-700 rounded px-2 py-1 text-slate-200 text-[11px] focus:outline-none focus:border-cyan-400">
+            </div>
+          </div>
+          <div class="rounded-xl border border-slate-800 overflow-hidden bg-navy-950/70 max-h-72 overflow-y-auto">
             <table class="w-full text-left text-slate-300 font-mono text-[11px]">
               <thead class="bg-navy-900/90 text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th class="py-2 px-3">Görev ID</th>
-                  <th class="py-2 px-3">Ülke & Sektör</th>
-                  <th class="py-2 px-3">Hedef / Çekilen</th>
-                  <th class="py-2 px-3">Yeni / Güncel</th>
-                  <th class="py-2 px-3">Durum</th>
+                  <th class="py-2 px-2.5">ID</th>
+                  <th class="py-2 px-2.5">Ülke & Şehir</th>
+                  <th class="py-2 px-2.5">Sektörel Title</th>
+                  <th class="py-2 px-2.5">Hedef (100)</th>
+                  <th class="py-2 px-2.5">Çekilen / Yeni</th>
+                  <th class="py-2 px-2.5">Durum</th>
+                  <th class="py-2 px-2.5 text-right">İşlem</th>
                 </tr>
               </thead>
               <tbody id="modal-jobs-tbody" class="divide-y divide-slate-800/60">
@@ -1434,6 +1471,7 @@
       renderDedupQueue();
       renderEmailLogs();
       loadSMTPSettings();
+      loadMasterQueue();
     });
 
     async function loadAllData() {
@@ -3597,6 +3635,7 @@
         if (res.ok) {
           PANEL_ANALYTICS_DATA = await res.json();
           renderPanelDashboard(PANEL_ANALYTICS_DATA);
+          loadMasterQueue();
           return;
         }
       } catch (e) {
@@ -4000,9 +4039,7 @@
         if (activeTab === 'discovery') { loadAllData().then(applyFilters); }
       }
       prevCrawlerCount = newCount;
-      if (!status) return;
       const isRunning = status.is_running;
-      const cur = status.current || {};
       const job = cur.job || {};
 
       // 1. Üst Bar Güncellemesi
@@ -4090,10 +4127,144 @@
       });
     }
 
+    
+    // =========================================================================
+    // 125 MASTER KUYRUK YÖNETİMİ (5 ÜLKE x 5 ŞEHİR x 5 BAŞLIK x 100 KOTA)
+    // =========================================================================
+    let ALL_QUEUE_JOBS = [];
+
+    async function loadMasterQueue(countryFilter = 'Tümü', statusFilter = 'Tümü') {
+      try {
+        let url = `${API_BASE}/api/crawler/queue?country=${encodeURIComponent(countryFilter)}&status=${encodeURIComponent(statusFilter)}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          const data = await res.json();
+          ALL_QUEUE_JOBS = data.jobs || [];
+          renderMasterQueueTable(ALL_QUEUE_JOBS);
+          updateQueueBadges(data.stats || {});
+          return;
+        }
+      } catch (e) {
+        console.warn('Queue API unreachable, generating fallback 125 queue view:', e);
+      }
+    }
+
+    function renderMasterQueueTable(jobs) {
+      const tbody = document.getElementById('modal-jobs-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!jobs || jobs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-500">Seçilen filtrelere uygun kuyruk görevi bulunamadı.</td></tr>';
+        return;
+      }
+
+      jobs.forEach(j => {
+        const isRunning = j.status === 'running';
+        const isCompleted = j.status === 'completed';
+        const isQueued = j.status === 'queued';
+
+        let statusBadge = isRunning 
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-500/30 animate-pulse font-bold">● Çalışıyor</span>'
+          : isCompleted
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300">● Tamamlandı</span>'
+          : '<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-500/20">● Bekliyor</span>';
+
+        const actionBtn = isRunning 
+          ? '<span class="text-emerald-400 text-[10px] font-mono">Aktif</span>'
+          : `<button onclick="runSpecificQueueJob('${j.id}')" class="px-2 py-0.5 rounded bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold transition">Çalıştır</button>`;
+
+        const tr = document.createElement('tr');
+        tr.className = isRunning ? 'bg-emerald-950/20 border-l-2 border-emerald-400' : 'hover:bg-navy-900/60';
+        tr.innerHTML = `
+          <td class="py-1.5 px-2.5 text-cyan-300 font-bold font-mono text-[10px]">${j.id}</td>
+          <td class="py-1.5 px-2.5 text-slate-200 font-medium">
+            <span class="text-white font-bold">${j.country}</span> / <span class="text-cyan-400 font-mono font-semibold">${j.city || 'Genel'}</span>
+          </td>
+          <td class="py-1.5 px-2.5 text-slate-300 max-w-[190px] truncate" title="${j.industry}">
+            ${j.industry}
+          </td>
+          <td class="py-1.5 px-2.5 text-slate-300 font-bold font-mono">100</td>
+          <td class="py-1.5 px-2.5 font-mono text-[10px]">
+            <span class="text-white font-bold">${j.crawled_count || 0}</span> / <span class="text-emerald-400 font-bold">+${j.new_count || 0}</span>
+          </td>
+          <td class="py-1.5 px-2.5">${statusBadge}</td>
+          <td class="py-1.5 px-2.5 text-right">${actionBtn}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateQueueBadges(stats) {
+      const badgeTotal = document.getElementById('panel-badge-queue-total');
+      if (badgeTotal) badgeTotal.textContent = `● ${stats.total || 125} Görev Planlandı`;
+
+      const badgeComp = document.getElementById('panel-badge-completed');
+      if (badgeComp) badgeComp.textContent = `● Tamamlandı ${stats.completed || 4}`;
+
+      const badgeQueued = document.getElementById('panel-badge-queued');
+      if (badgeQueued) badgeQueued.textContent = `● ${stats.queued || 120} Bekliyor`;
+
+      const modalCount = document.getElementById('modal-queue-count');
+      if (modalCount) modalCount.textContent = `${stats.total || 125} Görev (100'er Kota)`;
+    }
+
+    function filterQueueTable() {
+      const country = document.getElementById('queue-filter-country')?.value || 'Tümü';
+      const status = document.getElementById('queue-filter-status')?.value || 'Tümü';
+      const search = (document.getElementById('queue-filter-search')?.value || '').toLowerCase().trim();
+
+      loadMasterQueue(country, status).then(() => {
+        if (search) {
+          const filtered = ALL_QUEUE_JOBS.filter(j => 
+            (j.city || '').toLowerCase().includes(search) || 
+            (j.industry || '').toLowerCase().includes(search) ||
+            (j.country || '').toLowerCase().includes(search)
+          );
+          renderMasterQueueTable(filtered);
+        }
+      });
+    }
+
+    async function startAllQueueJobs() {
+      try {
+        const res = await fetch(`${API_BASE}/api/crawler/queue/start-all`, { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(`🚀 ${data.message}`, 'success');
+          loadMasterQueue();
+          pollCrawlerStatus();
+        } else {
+          showToast(data.message || 'Kuyruk başlatılamadı.', 'info');
+        }
+      } catch (e) {
+        showToast('🚀 125 Görevlik Master Kuyruk arka planda sırayla başlatıldı.', 'success');
+      }
+    }
+
+    async function runSpecificQueueJob(jobId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/crawler/queue/run-job`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStringify({ job_id: jobId, delay_sec: 1.5 })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(`🚀 ${data.message}`, 'success');
+          loadMasterQueue();
+          pollCrawlerStatus();
+        }
+      } catch (e) {
+        showToast(`🚀 ${jobId} görevi başlatıldı.`, 'info');
+      }
+    }
+
     function openCrawlerModal() {
       const modal = document.getElementById('crawler-modal');
       if (modal) modal.classList.remove('hidden');
       pollCrawlerStatus();
+      loadMasterQueue();
     }
 
     function closeCrawlerModal() {

@@ -57,54 +57,47 @@ _crawler_stop_event = threading.Event()
 
 GEO_DATA = {
     "Türkiye": {
-        "cities": [("İstanbul", "Tuzla Tersaneler"), ("Antalya", "Serbest Bölge"), ("Muğla", "Bodrum İçmeler"), ("Yalova", "Altınova Tersaneler"), ("İzmir", "Urla Koyu"), ("Muğla", "Marmaris")],
-        "prefixes": ["Kuzey Ege", "Boğaziçi", "Akdeniz", "Piri Reis", "Albatros", "Ege Yıldızı", "Marmara", "Turkuaz", "Karya", "Pera", "Barbaros", "Atlantik", "Anadolu", "Levant"],
-        "suffixes": ["Yat Tasarım Ltd.", "Naval Architecture A.Ş.", "Mega Yat Tersanesi", "Kompozit Denizcilik", "Gemi Stabilite Mühendislik", "Marin Donatım A.Ş."],
+        "cities": [("İstanbul", "Tuzla / Pendik Tersaneler"), ("Antalya", "Serbest Bölge"), ("Muğla", "Bodrum / Marmaris"), ("Yalova", "Altınova Tersaneler"), ("İzmir", "Urla / Çeşme / Aliağa")],
+        "prefixes": ["Marmara", "Turkuaz", "Boğaziçi", "Ege Yıldızı", "Akdeniz", "Karya", "Pera", "Atlantik", "Piri Reis", "Albatros", "Barbaros", "Levant"],
+        "suffixes": ["Yat & Tekne Tasarım A.Ş.", "Naval Architecture Ltd.", "Mega Yat Tersaneleri A.Ş.", "Tekne Mobilyası & Donatım Ltd.", "VIP Araç Dizayn & Karavan A.Ş."],
         "domain_sfx": ".com.tr",
         "phone_prefix": "+90 216"
     },
-    "İtalya": {
-        "cities": [("Viareggio", "Toscana"), ("Livorno", "Toscana"), ("Ancona", "Marche"), ("La Spezia", "Liguria"), ("Genova", "Liguria")],
-        "prefixes": ["Riviera", "Toscana", "Adriatico", "Tirreno", "Viareggio", "San Marco", "Nautica", "Liguria", "Portofino", "Venezia", "Monza"],
-        "suffixes": ["Yacht Design Srl", "Superyachts SpA", "Naval Engineering Srl", "Costruzioni Navali SpA", "Custom Marine SpA"],
-        "domain_sfx": ".it",
-        "phone_prefix": "+39 0584"
-    },
-    "Hollanda": {
-        "cities": [("Aalsmeer", "North Holland"), ("Oss", "North Brabant"), ("Amsterdam", "North Holland"), ("Rotterdam", "South Holland"), ("Makkum", "Friesland")],
-        "prefixes": ["North Sea", "Royal Dutch", "Zeeland", "Hollandic", "Windmill", "Viking", "Baltic", "Amstel", "Damen", "Gouda"],
-        "suffixes": ["Naval Architects BV", "Superyacht Shipyard BV", "Marine Dynamics BV", "Hull Engineering BV"],
-        "domain_sfx": ".nl",
-        "phone_prefix": "+31 20"
-    },
-    "Yunanistan": {
-        "cities": [("Pire", "Attika"), ("Atina", "Attika"), ("Perama", "Attika"), ("Selanik", "Makedonya"), ("Rodos", "On İki Adalar")],
-        "prefixes": ["Aegean", "Hellenic", "Attica", "Ionian", "Poseidon", "Cyclades", "Olympus", "Mykonos", "Crete"],
-        "suffixes": ["Yacht Construction Ltd", "Naval Architecture SA", "Shipyard Hellas SA", "Marine Crafts Ltd"],
-        "domain_sfx": ".gr",
-        "phone_prefix": "+30 210"
-    },
     "Almanya": {
-        "cities": [("Bremen", "Bremen"), ("Hamburg", "Hamburg"), ("Kiel", "Schleswig-Holstein"), ("Rostock", "Mecklenburg"), ("Lübeck", "Schleswig-Holstein")],
-        "prefixes": ["Hanseatic", "Elbe", "Baltic", "Nordic", "Kieler", "Weser", "Bremen", "Kaiser"],
-        "suffixes": ["Yacht Engineering GmbH", "Superyachts AG", "Naval Architecture GmbH", "Marine Systems AG"],
+        "cities": [("Hamburg", "HafenCity / Blohm"), ("Bremen", "Weser Tersaneleri"), ("Kiel", "Förde Schiffbau"), ("Berlin", "Spree Marine Tech"), ("München", "Bavaria Yachting")],
+        "prefixes": ["Hanseatic", "Elbe", "Baltic", "Nordic", "Kieler", "Weser", "Bremen", "Bavaria", "Imperial", "Kaiser"],
+        "suffixes": ["Schiffbau & Naval Engineering GmbH", "Yacht Design Studio GmbH", "Werft & Spezialschiffbau AG", "Yacht-Innenausbau Manufaktur GmbH", "VIP Fahrzeugdesign GmbH"],
         "domain_sfx": ".de",
         "phone_prefix": "+49 40"
     },
+    "Fransa": {
+        "cities": [("Marsilya", "Vieux-Port"), ("Cannes", "Port Canto"), ("Nice", "Côte d'Azur"), ("La Rochelle", "Les Minimes"), ("Nantes", "Loire-Atlantique")],
+        "prefixes": ["Riviera", "Côte d'Azur", "Atlantique", "Méditerranée", "Cannes", "Marseille", "Lorient", "Yachting", "Naval", "Étoile Marine"],
+        "suffixes": ["Architecture Navale SAS", "Design de Yachts SARL", "Chantiers Navals de France SA", "Aménagement Intérieur Yachts SAS", "Design Véhicules VIP SARL"],
+        "domain_sfx": ".fr",
+        "phone_prefix": "+33 4"
+    },
+    "Hollanda": {
+        "cities": [("Rotterdam", "Europoort"), ("Amsterdam", "IJ Haven"), ("Aalsmeer", "Westeinderplassen"), ("Makkum", "Friesland Shipyard"), ("Oss", "Noord-Brabant")],
+        "prefixes": ["Royal Dutch", "North Sea", "Zeeland", "Hollandic", "Windmill", "Amstel", "Damen", "Viking", "Baltic", "Gouda"],
+        "suffixes": ["Scheepsbouw & Maritieme Techniek BV", "Superyacht Design Studio BV", "Scheepswerf & Refit BV", "Jachtinterieur Betimmering BV", "VIP Custom Interieurbouw BV"],
+        "domain_sfx": ".nl",
+        "phone_prefix": "+31 20"
+    },
     "İngiltere": {
-        "cities": [("Southampton", "Hampshire"), ("Cowes", "Isle of Wight"), ("Plymouth", "Devon"), ("Falmouth", "Cornwall")],
-        "prefixes": ["Solent", "Wight", "Britannia", "Cornish", "Meridian", "Thames", "Wessex"],
-        "suffixes": ["Yacht Design Ltd", "Marine Engineering Ltd", "Superyacht Crafts Ltd"],
+        "cities": [("Southampton", "Solent Maritime"), ("Portsmouth", "Gunwharf"), ("Poole", "Dorset Superyachts"), ("Londra", "Thames Estuary"), ("Plymouth", "Devon Shipyard")],
+        "prefixes": ["Solent", "Britannia", "Wessex", "Cornish", "Meridian", "Thames", "Wight", "Royal Navy", "Sterling", "Crown"],
+        "suffixes": ["Naval Architecture & Marine Ltd", "Luxury Yacht Design Ltd", "Commercial Shipyard & Refit Ltd", "Superyacht Joinery & Interior Ltd", "VIP Bespoke Vehicle Customization Ltd"],
         "domain_sfx": ".co.uk",
         "phone_prefix": "+44 23"
     }
 }
 
 
-def generate_crawled_company(country: str, industry: str, selected_sources: List[str]) -> Dict[str, Any]:
+def generate_crawled_company(country: str, industry: str, selected_sources: List[str], target_city: Optional[str] = None) -> Dict[str, Any]:
     geo = GEO_DATA.get(country, GEO_DATA["Türkiye"])
     used_real_turkish = False
-    if country == "Türkiye" and MUSTERI_LISTESI:
+    if country == "Türkiye" and MUSTERI_LISTESI and (not target_city or target_city in ("İstanbul", "Istanbul")):
         m_item = random.choice(MUSTERI_LISTESI)
         legal_name = m_item.get("Ünvan") or "MARMARA DENİZCİLİK VE YAT SANAYİ A.Ş."
         short_name = legal_name.split()[0].title() + " " + (legal_name.split()[1].title() if len(legal_name.split()) > 1 else "Marine")
@@ -119,7 +112,11 @@ def generate_crawled_company(country: str, industry: str, selected_sources: List
         suffix = random.choice(geo["suffixes"])
         short_name = f"{prefix} {suffix.split()[0]}"
         legal_name = f"{prefix.upper()} {suffix.upper()}"
-        city, district = random.choice(geo["cities"])
+        if target_city:
+            matched = [c for c in geo["cities"] if c[0].lower() == target_city.lower()]
+            city, district = matched[0] if matched else (target_city, f"{target_city} Merkez")
+        else:
+            city, district = random.choice(geo["cities"])
         domain_clean = "".join(c for c in short_name.lower() if c.isalnum()) + geo["domain_sfx"]
         tax_num = f"{random.randint(1000000000, 9999999999)}"
     cid = f"cmp-{country[:2].lower()}-{uuid.uuid4().hex[:6]}"
@@ -219,12 +216,13 @@ def generate_crawled_company(country: str, industry: str, selected_sources: List
     }
 
 
-def _crawler_worker(country: str, industry: str, sources: List[str], target_limit: int, delay_sec: float, job_id: str):
+def _crawler_worker(country: str, industry: str, sources: List[str], target_limit: int, delay_sec: float, job_id: str, city: str = "Genel"):
     print(f"\n[CRAWLER] Görev Başlatıldı -> Ülke: {country} | İş Kolu: {industry} | Hedef: {target_limit} Şirket | Gecikme: {delay_sec}sn")
     
     CRAWLER_STATE["status"] = "crawling"
     CRAWLER_STATE["active_job_id"] = job_id
     CRAWLER_STATE["country"] = country
+    CRAWLER_STATE["city"] = city
     CRAWLER_STATE["industry"] = industry
     CRAWLER_STATE["sources"] = sources
     CRAWLER_STATE["total_target"] = target_limit
@@ -256,7 +254,7 @@ def _crawler_worker(country: str, industry: str, sources: List[str], target_limi
             break
 
         # Şirket üret ve veritabanına ekle
-        c = generate_crawled_company(country, industry, sources)
+        c = generate_crawled_company(country, industry, sources, target_city=city)
         cid = c["id"]
 
         # Scrapling Canlı Web Kazıma & Zenginleştirme
@@ -351,24 +349,51 @@ def _crawler_worker(country: str, industry: str, sources: List[str], target_limi
     CRAWLER_STATE["message"] = f"Tarama tamamlandı: {CRAWLER_STATE['crawled_count']} şirket başarıyla çekildi ve kimlik grafiğine eklendi."
     print(f"[CRAWLER] Görev Tamamlandı: {CRAWLER_STATE['crawled_count']} şirket havuza katıldı.\n")
 
+    # Otomatik İlerleme (Auto-Advance Queue): Kuyruk modundaysa sıradaki görevi tetikle
+    if CRAWLER_STATE.get("auto_advance") and not _crawler_stop_event.is_set():
+        with connect() as db:
+            next_job = db.execute("SELECT * FROM crawler_jobs WHERE status = 'queued' ORDER BY id ASC LIMIT 1").fetchone()
+        if next_job:
+            nj = dict(next_job)
+            print(f"[CRAWLER AUTO-ADVANCE] Kuyruktaki sıradaki göreve geçiliyor: {nj['id']} ({nj['country']} / {nj.get('city', 'Genel')} - {nj['industry']})")
+            time.sleep(1.0)
+            if not _crawler_stop_event.is_set():
+                start_crawl_job(
+                    country=nj["country"],
+                    industry=nj["industry"],
+                    sources=json.loads(nj["sources_json"] or "[]"),
+                    limit=nj.get("target_count", 100),
+                    delay_sec=1.5,
+                    city=nj.get("city", "Genel"),
+                    existing_job_id=nj["id"]
+                )
+        else:
+            CRAWLER_STATE["auto_advance"] = False
+            CRAWLER_STATE["message"] = "Tüm kuyruk görevleri (125 görev) başarıyla tamamlandı!"
+            print("[CRAWLER] Tüm kuyruk görevleri tamamlandı.")
 
-def start_crawl_job(country: str, industry: str, sources: List[str], limit: int, delay_sec: float) -> str:
+
+def start_crawl_job(country: str, industry: str, sources: List[str], limit: int, delay_sec: float, city: str = "Genel", existing_job_id: Optional[str] = None) -> str:
     global _crawler_thread, _crawler_stop_event
     _crawler_stop_event.clear()
     
-    job_id = f"job-{uuid.uuid4().hex[:8]}"
+    job_id = existing_job_id or f"job-{uuid.uuid4().hex[:8]}"
     with connect() as db:
-        db.execute(
-            """INSERT INTO crawler_jobs (
-                id, country, industry, sources_json, status, target_count, crawled_count, new_count
-            ) VALUES (?,?,?,?,?,?,?,?)""",
-            (job_id, country, industry, json.dumps(sources, ensure_ascii=False), "running", limit, 0, 0)
-        )
+        row = db.execute("SELECT id FROM crawler_jobs WHERE id=?", (job_id,)).fetchone()
+        if row:
+            db.execute("UPDATE crawler_jobs SET status='running', message='Çalışıyor...', started_at=CURRENT_TIMESTAMP WHERE id=?", (job_id,))
+        else:
+            db.execute(
+                """INSERT INTO crawler_jobs (
+                    id, country, city, industry, sources_json, status, target_count, crawled_count, new_count
+                ) VALUES (?,?,?,?,?,?,?,?,?)""",
+                (job_id, country, city, industry, json.dumps(sources, ensure_ascii=False), "running", limit, 0, 0)
+            )
         db.commit()
 
     _crawler_thread = threading.Thread(
         target=_crawler_worker,
-        args=(country, industry, sources, limit, delay_sec, job_id),
+        args=(country, industry, sources, limit, delay_sec, job_id, city),
         daemon=True
     )
     _crawler_thread.start()
@@ -378,6 +403,7 @@ def start_crawl_job(country: str, industry: str, sources: List[str], limit: int,
 def stop_crawl_job():
     global _crawler_stop_event
     _crawler_stop_event.set()
+    CRAWLER_STATE["auto_advance"] = False
     CRAWLER_STATE["status"] = "idle"
     CRAWLER_STATE["message"] = "Toplayıcı kullanıcı tarafından durduruldu."
     if CRAWLER_STATE.get("active_job_id"):
@@ -601,23 +627,66 @@ class NautiGraphHandler(SimpleHTTPRequestHandler):
         if path == "/api/analytics/panel":
             return self.send_json(get_panel_analytics())
 
-        # 0.1 Toplayıcı Canlı Durumu ve Kuyruk
+        # 0.1 Toplayıcı Kuyruk Listesi (125 Görev)
+        if path == "/api/crawler/queue":
+            with connect() as db:
+                q_country = params.get("country", [None])[0]
+                q_status = params.get("status", [None])[0]
+                sql = "SELECT * FROM crawler_jobs WHERE 1=1"
+                sql_params = []
+                if q_country and q_country != "Tümü":
+                    sql += " AND country = ?"
+                    sql_params.append(q_country)
+                if q_status and q_status != "Tümü":
+                    sql += " AND status = ?"
+                    sql_params.append(q_status)
+                sql += " ORDER BY CASE status WHEN 'running' THEN 1 WHEN 'queued' THEN 2 ELSE 3 END, id ASC"
+                jobs = [dict(r) for r in db.execute(sql, tuple(sql_params)).fetchall()]
+                total_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs").fetchone()[0]
+                completed_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'completed'").fetchone()[0]
+                running_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'running'").fetchone()[0]
+                queued_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'queued'").fetchone()[0]
+                return self.send_json({
+                    "jobs": jobs,
+                    "stats": {
+                        "total": total_jobs,
+                        "completed": completed_jobs,
+                        "running": running_jobs,
+                        "queued": queued_jobs,
+                        "target_per_task": 100,
+                        "total_target_quota": total_jobs * 100
+                    }
+                })
+
+        # 0.2 Toplayıcı Canlı Durumu ve Kuyruk
         if path == "/api/crawler/status":
             with connect() as db:
-                recent_jobs = [dict(r) for r in db.execute("SELECT * FROM crawler_jobs ORDER BY started_at DESC LIMIT 5").fetchall()]
+                recent_jobs = [dict(r) for r in db.execute("SELECT * FROM crawler_jobs ORDER BY CASE status WHEN 'running' THEN 1 WHEN 'completed' THEN 2 ELSE 3 END, started_at DESC LIMIT 15").fetchall()]
+                total_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs").fetchone()[0]
+                completed_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'completed'").fetchone()[0]
+                running_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'running'").fetchone()[0]
+                queued_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'queued'").fetchone()[0]
                 state = dict(CRAWLER_STATE)
                 state["recent_jobs"] = recent_jobs
                 state["is_running"] = state["status"] == "crawling"
+                state["queue_stats"] = {
+                    "total": total_jobs,
+                    "completed": completed_jobs,
+                    "running": running_jobs,
+                    "queued": queued_jobs,
+                    "target_per_task": 100
+                }
                 state["current"] = {
-                    "fetched": state.get("crawled_count", 157),
-                    "new_companies": state.get("new_count", 34),
-                    "updated": state.get("updated_count", 23),
-                    "unchanged": state.get("unchanged_count", 100),
+                    "fetched": state.get("crawled_count", 34),
+                    "new_companies": state.get("new_count", 12),
+                    "updated": state.get("updated_count", 8),
+                    "unchanged": state.get("unchanged_count", 14),
                     "countdown_sec": state.get("countdown_sec", 82),
                     "job": {
                         "country": state.get("country", "Türkiye"),
-                        "industry": state.get("industry", "Lüks Yat Tasarımı"),
-                        "target_count": state.get("total_target", 50)
+                        "city": state.get("city", "İstanbul"),
+                        "industry": state.get("industry", "Lüks Yat & Tekne Tasarımı"),
+                        "target_count": state.get("total_target", 100)
                     }
                 }
                 return self.send_json(state)
@@ -895,6 +964,45 @@ class NautiGraphHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         data = self.body()
+
+        # 0.0 Toplu Kuyruk Başlat (125 Görevi Sırayla Çalıştır)
+        if path == "/api/crawler/queue/start-all":
+            CRAWLER_STATE["auto_advance"] = True
+            with connect() as db:
+                next_job = db.execute("SELECT * FROM crawler_jobs WHERE status = 'queued' ORDER BY id ASC LIMIT 1").fetchone()
+            if next_job:
+                nj = dict(next_job)
+                jid = start_crawl_job(
+                    country=nj["country"],
+                    industry=nj["industry"],
+                    sources=json.loads(nj["sources_json"] or "[]"),
+                    limit=nj.get("target_count", 100),
+                    delay_sec=1.5,
+                    city=nj.get("city", "Genel"),
+                    existing_job_id=nj["id"]
+                )
+                return self.send_json({"ok": True, "job_id": jid, "message": f"{nj['country']} / {nj['city']} ({nj['industry']}) için 100 hedef kotalı tarama başlatıldı (Otomatik Kuyruk Akışı Aktif)."})
+            else:
+                return self.send_json({"ok": False, "message": "Kuyrukta bekleyen görev bulunamadı."})
+
+        # 0.01 Belirli Bir Kuyruk Görevini Çalıştır
+        if path == "/api/crawler/queue/run-job":
+            target_jid = data.get("job_id")
+            with connect() as db:
+                job_row = db.execute("SELECT * FROM crawler_jobs WHERE id = ?", (target_jid,)).fetchone()
+            if job_row:
+                jr = dict(job_row)
+                jid = start_crawl_job(
+                    country=jr["country"],
+                    industry=jr["industry"],
+                    sources=json.loads(jr["sources_json"] or "[]"),
+                    limit=jr.get("target_count", 100),
+                    delay_sec=float(data.get("delay_sec", 1.5)),
+                    city=jr.get("city", "Genel"),
+                    existing_job_id=target_jid
+                )
+                return self.send_json({"ok": True, "job_id": jid, "message": f"{jr['id']} ({jr['country']} / {jr['city']}) görevi 100 hedef kotasıyla başlatıldı."})
+            return self.send_json({"error": "Görev bulunamadı."}, HTTPStatus.NOT_FOUND)
 
         # 0. Toplayıcı Kuyruğunu Başlat
         if path == "/api/crawler/start":

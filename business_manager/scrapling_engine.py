@@ -21,11 +21,10 @@ except Exception as e:
 class MaritimeScraplingEngine:
     def __init__(self, timeout: int = 8):
         self.timeout = timeout
-        self.fetcher = Fetcher() if SCRAPLING_AVAILABLE else None
 
     @property
     def is_available(self) -> bool:
-        return SCRAPLING_AVAILABLE and self.fetcher is not None
+        return SCRAPLING_AVAILABLE and Fetcher is not None
 
     def enrich_company_website(self, domain_or_url: str) -> Dict[str, Any]:
         """
@@ -63,7 +62,7 @@ class MaritimeScraplingEngine:
         for path in target_paths:
             full_url = f"https://{domain}{path}"
             try:
-                resp = self.fetcher.get(full_url, timeout=self.timeout)
+                resp = Fetcher.get(full_url, timeout=self.timeout)
                 if resp.status == 200:
                     result["scraped_urls"].append(full_url)
                     text = resp.text

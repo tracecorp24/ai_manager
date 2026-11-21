@@ -204,7 +204,8 @@ CREATE TABLE IF NOT EXISTS system_settings (
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS crawler_jobs (
     id TEXT PRIMARY KEY,
-    country TEXT NOT NULL,                     -- Hedef Ülke (Türkiye, İtalya, Hollanda...)
+    country TEXT NOT NULL,
+    city TEXT DEFAULT 'Genel',                    -- Hedef Şehir (İstanbul, Hamburg, Marsilya...)
     industry TEXT NOT NULL,                    -- Hedef İş Kolu (Mega Yat Tersaneleri, Yat Tasarım...)
     sources_json TEXT NOT NULL,                -- '["Resmi Sicil", "Google Places", "Fuar Katılımcıları"]'
     status TEXT DEFAULT 'completed',           -- 'running', 'completed', 'paused', 'failed'

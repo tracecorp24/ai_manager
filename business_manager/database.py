@@ -46,6 +46,13 @@ def initialise() -> None:
             if "industry_sector" not in cols:
                 db.execute("ALTER TABLE companies ADD COLUMN industry_sector TEXT DEFAULT 'Gemi İnşa & Yat Tasarım'")
 
+        jobs_table = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='crawler_jobs'").fetchone()
+        if jobs_table:
+            jcols = [r[1] for r in db.execute("PRAGMA table_info(crawler_jobs)").fetchall()]
+            if "city" not in jcols:
+                db.execute("ALTER TABLE crawler_jobs ADD COLUMN city TEXT DEFAULT 'Genel'")
+
+
         db.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
 
         count = db.execute("SELECT COUNT(*) FROM companies").fetchone()[0]
@@ -270,48 +277,70 @@ def _seed_international_and_sectors(db: sqlite3.Connection) -> None:
 
 
 def _seed_crawler_jobs(db: sqlite3.Connection) -> None:
-    """Toplayıcı kuyruğu için tamamlanan ve aktif iş kayıtlarını oluşturur."""
-    cur = db.execute("SELECT COUNT(*) FROM crawler_jobs").fetchone()[0]
-    if cur == 0:
-        now = datetime.now()
-        jobs = [
-            (
-                "job-01", "Türkiye", "Mega Yat Tersaneleri",
-                json.dumps(["Resmi Ticaret Sicili", "Google Maps POI", "İMEAK DTO", "Fuar Katılımcıları"]),
-                "completed", 35, 35, 12, 8, 15,
-                json.dumps({"Resmi Ticaret Sicili": 12, "Google Maps POI": 15, "İMEAK DTO": 5, "Fuar Katılımcıları": 3}),
-                "Tarama başarıyla tamamlandı. 12 yeni şirket tekilleştirildi.",
-                (now - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S"),
-                (now - timedelta(hours=2, minutes=45)).strftime("%Y-%m-%d %H:%M:%S")
-            ),
-            (
-                "job-02", "İtalya", "Gemi İnşa & Yat Tasarım",
-                json.dumps(["Resmi Ticaret Sicili", "Fuar Katılımcıları", "JSON-LD Web"]),
-                "completed", 25, 25, 8, 6, 11,
-                json.dumps({"Resmi Ticaret Sicili": 8, "Fuar Katılımcıları": 10, "JSON-LD Web": 7}),
-                "Viareggio ve Livorno yat tasarım kümeleri tarandı.",
-                (now - timedelta(hours=1, minutes=30)).strftime("%Y-%m-%d %H:%M:%S"),
-                (now - timedelta(hours=1, minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
-            ),
-            (
-                "job-03", "Hollanda", "Mega Yat Tersaneleri",
-                json.dumps(["Resmi Ticaret Sicili", "Google Maps POI", "Fuar Katılımcıları"]),
-                "completed", 20, 20, 6, 4, 10,
-                json.dumps({"Resmi Ticaret Sicili": 6, "Google Maps POI": 8, "Fuar Katılımcıları": 6}),
-                "Kuzey Hollanda süperyat tersane havuzu güncellendi.",
-                (now - timedelta(minutes=45)).strftime("%Y-%m-%d %H:%M:%S"),
-                (now - timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S")
-            )
-        ]
-        for j in jobs:
-            db.execute(
-                """INSERT INTO crawler_jobs (
-                    id, country, industry, sources_json, status, target_count,
+    """5 Ülke x 5 Büyük Şehir x 5 Sektörel Title = 125 Master Kuyruk Görevini (100'er Hedef Kota) Tohumlar."""
+    from test_queue_config import MASTER_QUEUE
+    
+    cur_count = db.execute("SELECT COUNT(*) FROM crawler_jobs").fetchone()[0]
+    if cur_count >= 125:
+        return
+
+    now = datetime.now()
+    task_idx = 1
+    
+    for c_group in MASTER_QUEUE:
+        country = c_group["country"]
+        city = c_group["city"]
+        sources_json = json.dumps(c_group["sources"], ensure_ascii=False)
+        
+        for title in c_group["titles"]:
+            job_id = f"job-{task_idx:03d}"
+            target_count = 100
+            
+            # İlk 1 görev çalışıyor (running), sonraki 4 görev tamamlandı (completed), kalanı bekliyor (queued)
+            if task_idx == 1:
+                status = "running"
+                crawled = 34
+                new_c = 12
+                upd = 8
+                unch = 14
+                msg = f"Çalışıyor - {crawled}/100 çekildi. {city} bölgesinde tarama devam ediyor."
+                st_time = (now - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+                cp_time = None
+            elif task_idx in (2, 3, 4, 5):
+                status = "completed"
+                crawled = 100 if task_idx % 2 == 0 else 88
+                new_c = int(crawled * 0.4)
+                upd = int(crawled * 0.25)
+                unch = crawled - new_c - upd
+                msg = f"100 hedef kotasından {crawled} adet çekildi; tamamlanarak sonraki göreve aktarıldı."
+                st_time = (now - timedelta(hours=task_idx)).strftime("%Y-%m-%d %H:%M:%S")
+                cp_time = (now - timedelta(hours=task_idx - 1, minutes=45)).strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                status = "queued"
+                crawled = 0
+                new_c = 0
+                upd = 0
+                unch = 0
+                msg = "Kuyrukta bekliyor (Hedef: 100 İlan / Şirket - Bulamazsa otomatik pas geçme aktif)"
+                st_time = (now + timedelta(minutes=task_idx * 5)).strftime("%Y-%m-%d %H:%M:%S")
+                cp_time = None
+                
+            sb_json = json.dumps({s: int(crawled / max(len(c_group["sources"]), 1)) for s in c_group["sources"]}, ensure_ascii=False)
+            
+            db.execute("""
+                INSERT OR REPLACE INTO crawler_jobs (
+                    id, country, city, industry, sources_json, status, target_count,
                     crawled_count, new_count, updated_count, unchanged_count,
                     source_breakdown_json, message, started_at, completed_at
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                j
-            )
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                job_id, country, city, title, sources_json, status, target_count,
+                crawled, new_c, upd, unch, sb_json, msg, st_time, cp_time
+            ))
+            task_idx += 1
+    
+    db.commit()
+    print(f"[database] 125 Master Kuyruk Görevi başarıyla veritabanına işlendi.")
 
 
 def _seed_default_campaigns_and_deals(db: sqlite3.Connection) -> None:
