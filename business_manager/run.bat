@@ -2,7 +2,7 @@
 title NautiGraph TR - B2B Denizcilik Kimlik Grafigi, Toplayici Kuyruk ve CRM
 cls
 echo =====================================================================
-echo   NAUTIGRAPH TR -- B2B DENIZCILIK, TEKNE & YAT TASARIMI PLATFORMU
+echo   NAUTIGRAPH TR -- B2B DENIZCILIK, TEKNE ^& YAT TASARIMI PLATFORMU
 echo   Toplayici Kuyrugu (Crawler Engine) + Kimlik Grafigi + CRM
 echo =====================================================================
 echo.
