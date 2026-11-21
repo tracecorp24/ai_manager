@@ -399,14 +399,39 @@ async def extract_legal_page_contacts(domain: str) -> Dict[str, Any]:
 
 ---
 
-## 9. NautiGraph TR Sistem Entegrasyonu
+## 9. NautiGraph TR Canlı Sistem Entegrasyonu ve Aktif Scrapling Motoru
 
-NautiGraph platformunda bu strateji şu dosya ve modüllerle tam uyumlu çalışır:
-1. **`business_manager/run.bat`:** Python HTTP sunucusunu görünür CMD ekranında başlatır, tarayıcıyı `http://127.0.0.1:8765/` adresinde açar ve CMD kapatıldığında süreci sonlandırır.
-2. **`business_manager/app.py`:** Toplayıcı kuyruk motoru (`CRAWLER_STATE`), arka plan iş parçacığı (`_crawler_worker`), analitik paneli (`/api/analytics/panel`) ve toplayıcı denetimi (`/api/crawler/start`, `/api/crawler/stop`).
-3. **`business_manager/database.py` & `schema.sql`:** `companies`, `contacts`, `source_evidence`, `crawler_jobs` tabloları ve `country`, `industry_sector` endeksleri.
-4. **`musteri_listesi.json`:** 1.629 adet resmi Tuzla / İstanbul ticaret sicil kaydı ile yerel veri tohumlama.
-5. **Arayüz (`index.html`):** Canlı üst toplayıcı durumu (ticker & countdown bar), 30 günlük çift çubuklu akış histogramı, ülke donut grafiği, sektör barları ve kaynak dağılım kartları.
+NautiGraph platformunda bu strateji, arka planda çalışan canlı Scrapling motoru ve tam entegre toplayıcı kuyruk mimarisiyle hayata geçirilmiştir:
+
+### 9.1. Canlı Scrapling Motoru (`business_manager/scrapling_engine.py`)
+Sistemde aktif olarak çalışan `MaritimeScraplingEngine` sınıfı, Scrapling'in `Fetcher` motorunu kullanarak hedef şirketlerin web sitelerini tarar:
+- **Taranan Sayfalar:** Ana sayfa, `/impressum`, `/iletisim`, `/contact`, `/mentions-legales`, `/hakkimizda`, `/about`.
+- **Otomatik İletişim Çıkarımı:** Sayfa DOM'u ve metin gövdesi taranarak `mailto:` etiketleri, resmi kurumsal e-postalar ve E.164 santral/mobil telefon numaraları ayıklanır.
+- **CAD & Mühendislik Araç Tespiti:** Yat ve gemi inşa sektörüne özel CAD/CAE araçları (*Rhino 3D, AutoCAD, Maxsurf, Siemens NX, CATIA, SolidWorks, Orca3D, ANSYS*) web sitesi içeriklerinden taranarak şirketin teknoloji yığınına (`tech_stack_json`) otomatik eklenir.
+
+### 9.2. Toplayıcı Boru Hattı (`business_manager/app.py`)
+- **`_crawler_worker` İş Parçacığı:** Kuyruğa eklenen her şirket için Scrapling motorunu devreye sokar.
+- **Canlı Konsol Çıktısı:**
+  ```text
+  [CRAWLER] Görev Başlatıldı -> Ülke: İtalya | İş Kolu: Lüks Yat & Mega Yat Tasarımı | Hedef: 50 Şirket | Gecikme: 80sn
+  [SCRAPLING ✓] nauticasuperyachts.it sitesi tarandı -> 2 e-posta, 2 CAD aracı tespit edildi
+  [CRAWLER +1] Nautica Superyachts -> İtalya / La Spezia [Doğrulandı %98]
+  ```
+- **Doğrulanmış Kayıt:** Scrapling ile teyit edilen iletişim kanalları veritabanına `is_verified=1` ve `verification_method='Scrapling Web Doğrulandı'` olarak işlenir.
+
+### 9.3. Veritabanı ve Tohumlama Katmanı
+- **`business_manager/database.py` & `schema.sql`:** `companies`, `contacts`, `source_evidence`, `crawler_jobs` tabloları, `country` ve `industry_sector` endeksleri.
+- **`musteri_listesi.json`:** 1.629 adet resmi Tuzla / İstanbul ticaret sicil kaydı (resmi unvan, adres ve sicil numarası) toplayıcıya entegre edilmiştir.
+
+### 9.4. Tek Tıkla Çalıştırma (`run.bat`)
+- **Görünür CMD Penceresi:** Sunucu arka planda gizlenmez; tüm toplayıcı logları, rate limit sayaçları ve Scrapling bildirimleri ekranda canlı akar.
+- **Otomatik Tarayıcı:** `http://127.0.0.1:8765/` adresini varsayılan tarayıcıda otomatik başlatır.
+- **Temiz Kapanış:** CMD penceresi kapatıldığında sunucu ve kuyruk iş parçacıkları tamamen sonlandırılır.
+
+### 9.5. Doğrulanmış CI/CD Dağıtım Durumu
+GitHub Actions üzerinden sürekli entegrasyon boru hatları test edilmiş ve aktiftir:
+- **Cloudflare Pages:** [Canlı Dağıtım URL](https://ae41d656.ai-manager-7c4.pages.dev) (Durum: `SUCCESS`)
+- **GitHub Pages:** [Canlı Dağıtım URL](https://tracecorp24.github.io/ai_manager/) (Durum: `SUCCESS`)
 
 ---
 
