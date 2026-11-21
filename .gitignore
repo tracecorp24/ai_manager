@@ -1,8 +1,13 @@
 business_manager/data/business_manager.db
+business_manager/data/business_manager.db-shm
+business_manager/data/business_manager.db-wal
+business_manager/data/*.db*
 business_manager/data/uploads/*
 business_manager/data/backups/*
 business_manager/__pycache__/
+__pycache__/
 business_manager/**/*.pyc
+*.pyc
 .DS_Store
 Thumbs.db
 scralilng/

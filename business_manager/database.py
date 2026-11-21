@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
+import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -13,12 +14,17 @@ DB_PATH = DATA_DIR / "business_manager.db"
 SCHEMA_PATH = ROOT / "schema.sql"
 SEED_JSON = DATA_DIR / "nautigraph_seed.json"
 
+DB_WRITE_LOCK = threading.Lock()
+
 
 def connect() -> sqlite3.Connection:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    db = sqlite3.connect(DB_PATH)
+    db = sqlite3.connect(DB_PATH, timeout=30.0)
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA foreign_keys = ON")
+    db.execute("PRAGMA journal_mode = WAL")
+    db.execute("PRAGMA busy_timeout = 30000")
+    db.execute("PRAGMA synchronous = NORMAL")
     return db
 
 
@@ -276,10 +282,72 @@ def _seed_international_and_sectors(db: sqlite3.Connection) -> None:
         )
 
 
+COUNTRIES_CONFIG = [
+    {
+        "country": "Türkiye",
+        "cities": ["İstanbul", "Antalya", "Muğla", "Yalova", "İzmir"],
+        "sources": ["ticaret_sicili", "google_places", "ekap", "fuarlar", "web_crawl"],
+        "titles": [
+            "Gemi İnşaat & Naval Architecture Mühendisliği",
+            "Lüks Yat & Tekne Tasarımı",
+            "Tersane & Gemicilik İmalatı",
+            "Tekne Mobilyası & İç Donatım Manüfaktürü",
+            "VIP Araç Dizayn & Özel Karavan Dönüşümü"
+        ]
+    },
+    {
+        "country": "Almanya",
+        "cities": ["Hamburg", "Bremen", "Kiel", "Berlin", "München"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "titles": [
+            "Schiffbau & Naval Engineering (Gemi & Yat Mühendisliği)",
+            "Yacht Design Studio (Lüks Yat & Tekne Tasarımı)",
+            "Werft & Spezialschiffbau (Tersane & Gemi İnşa)",
+            "Yacht-Innenausbau & Manufaktur (Tekne Mobilyası & Donatım)",
+            "VIP Fahrzeugdesign & Sonderausbau (VIP Araç & Lüks Dizayn)"
+        ]
+    },
+    {
+        "country": "Fransa",
+        "cities": ["Marsilya", "Cannes", "Nice", "La Rochelle", "Nantes"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "titles": [
+            "Architecture Navale & Ingénierie Marine (Deniz Mühendisliği)",
+            "Design de Yachts & Bateaux de Luxe (Lüks Yat Tasarımı)",
+            "Chantiers Navals & Construction Navale (Tersane & Gemicilik)",
+            "Aménagement Intérieur de Yachts & Ébénisterie (Tekne Mobilyası)",
+            "Design Véhicules VIP & Aménagement Spécial (VIP Araç Dizayn)"
+        ]
+    },
+    {
+        "country": "Hollanda",
+        "cities": ["Rotterdam", "Amsterdam", "Aalsmeer", "Makkum", "Oss"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "titles": [
+            "Scheepsbouw & Maritieme Techniek (Naval Architecture & Marine)",
+            "Superyacht & Luxe Jacht Design (Süperyat & Tekne Tasarımı)",
+            "Scheepswerf & Jachtbouw (Tersane & Özel Gemi İmalatı)",
+            "Jachtinterieur & Luxe Betimmering (Yat Mobilyası & İç Donatım)",
+            "VIP Interieurbouw & Custom Automotive (VIP Araç & İç Dizayn)"
+        ]
+    },
+    {
+        "country": "İngiltere",
+        "cities": ["Southampton", "Portsmouth", "Poole", "Londra", "Plymouth"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "titles": [
+            "Naval Architecture & Marine Engineering (Gemi & Yat Mühendisliği)",
+            "Luxury Yacht & Custom Boat Design (Lüks Yat & Tekne Tasarımı)",
+            "Shipyard & Commercial Shipbuilder (Tersane & Gemicilik)",
+            "Superyacht Interior & Joinery Fit-out (Tekne Mobilyası & Donatım)",
+            "Bespoke VIP Vehicle Interior & Customization (VIP Araç Dizayn)"
+        ]
+    }
+]
+
+
 def _seed_crawler_jobs(db: sqlite3.Connection) -> None:
     """5 Ülke x 5 Büyük Şehir x 5 Sektörel Title = 125 Master Kuyruk Görevini (100'er Hedef Kota) Tohumlar."""
-    from test_queue_config import MASTER_QUEUE
-    
     cur_count = db.execute("SELECT COUNT(*) FROM crawler_jobs").fetchone()[0]
     if cur_count >= 125:
         return
@@ -287,31 +355,31 @@ def _seed_crawler_jobs(db: sqlite3.Connection) -> None:
     now = datetime.now()
     task_idx = 1
     
-    for c_group in MASTER_QUEUE:
+    for c_group in COUNTRIES_CONFIG:
         country = c_group["country"]
-        city = c_group["city"]
         sources_json = json.dumps(c_group["sources"], ensure_ascii=False)
         
-        for title in c_group["titles"]:
-            job_id = f"job-{task_idx:03d}"
-            target_count = 100
-            
-            # İlk 1 görev çalışıyor (running), sonraki 4 görev tamamlandı (completed), kalanı bekliyor (queued)
-            if task_idx == 1:
-                status = "running"
-                crawled = 34
-                new_c = 12
-                upd = 8
-                unch = 14
-                msg = f"Çalışıyor - {crawled}/100 çekildi. {city} bölgesinde tarama devam ediyor."
-                st_time = (now - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
-                cp_time = None
-            elif task_idx in (2, 3, 4, 5):
-                status = "completed"
-                crawled = 100 if task_idx % 2 == 0 else 88
-                new_c = int(crawled * 0.4)
-                upd = int(crawled * 0.25)
-                unch = crawled - new_c - upd
+        for city in c_group["cities"]:
+            for title in c_group["titles"]:
+                job_id = f"job-{task_idx:03d}"
+                target_count = 100
+                
+                # İlk 1 görev çalışıyor (running), sonraki 4 görev tamamlandı (completed), kalanı bekliyor (queued)
+                if task_idx == 1:
+                    status = "running"
+                    crawled = 34
+                    new_c = 12
+                    upd = 8
+                    unch = 14
+                    msg = f"Çalışıyor - {crawled}/100 çekildi. {city} bölgesinde tarama devam ediyor."
+                    st_time = (now - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+                    cp_time = None
+                elif task_idx in (2, 3, 4, 5):
+                    status = "completed"
+                    crawled = 100 if task_idx % 2 == 0 else 88
+                    new_c = int(crawled * 0.4)
+                    upd = int(crawled * 0.25)
+                    unch = crawled - new_c - upd
                 msg = f"100 hedef kotasından {crawled} adet çekildi; tamamlanarak sonraki göreve aktarıldı."
                 st_time = (now - timedelta(hours=task_idx)).strftime("%Y-%m-%d %H:%M:%S")
                 cp_time = (now - timedelta(hours=task_idx - 1, minutes=45)).strftime("%Y-%m-%d %H:%M:%S")

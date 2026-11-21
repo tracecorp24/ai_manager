@@ -21,13 +21,21 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
-from database import DB_PATH, ROOT, connect, initialise, row_to_dict, rows
+from database import DB_PATH, ROOT, connect, initialise, row_to_dict, rows, DB_WRITE_LOCK
 from scrapling_engine import MaritimeScraplingEngine
 _scrapling_engine = MaritimeScraplingEngine(timeout=5)
 
 HOST = "127.0.0.1"
 PORT = 8765
 FRONTEND = ROOT / "frontend"
+
+MUSTERI_LISTESI: List[Dict[str, Any]] = []
+_musteri_file = FRONTEND / "musteri_listesi.json"
+if _musteri_file.exists():
+    try:
+        MUSTERI_LISTESI = json.loads(_musteri_file.read_text(encoding="utf-8"))
+    except Exception:
+        MUSTERI_LISTESI = []
 
 
 # =============================================================================
@@ -54,6 +62,23 @@ CRAWLER_STATE: Dict[str, Any] = {
 
 _crawler_thread: Optional[threading.Thread] = None
 _crawler_stop_event = threading.Event()
+PARALLEL_COUNTRIES = ["Türkiye", "Almanya", "Fransa", "Hollanda", "İngiltere"]
+_parallel_threads: Dict[str, threading.Thread] = {}
+ACTIVE_WORKERS_STATE: Dict[str, Dict[str, Any]] = {
+    c: {
+        "worker_id": idx,
+        "country": c,
+        "city": "Beklemede",
+        "industry": "-",
+        "job_id": None,
+        "status": "idle",
+        "crawled": 0,
+        "target": 100,
+        "progress_pct": 0,
+        "message": "Hazır"
+    } for idx, c in enumerate(PARALLEL_COUNTRIES, 1)
+}
+
 
 GEO_DATA = {
     "Türkiye": {
@@ -373,6 +398,195 @@ def _crawler_worker(country: str, industry: str, sources: List[str], target_limi
             print("[CRAWLER] Tüm kuyruk görevleri tamamlandı.")
 
 
+
+def save_crawled_record(c: Dict[str, Any], country: str, industry: str, job_id: str, i: int, target_limit: int, source_counts: Dict[str, int]) -> None:
+    cid = c["id"]
+    with DB_WRITE_LOCK:
+        with connect() as db:
+            db.execute(
+                """INSERT OR REPLACE INTO companies (
+                    id, vkn, mersis_no, legal_name, short_name, normalized_name, domain,
+                    nace_code, nace_desc, country, industry_sector, province, district, employee_band, employee_est,
+                    trust_score, icp_score, score_icp, score_freshness, score_contact,
+                    score_intent, score_reachability, icp_reason, tech_stack_json, status
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    cid, c["vkn"], c["mersis_no"], c["legal_name"], c["short_name"],
+                    c["legal_name"].upper(), c["domain"], c["nace_code"], c["nace_desc"],
+                    country, industry, c["province"], c["district"], c["employee_band"], c["employee_est"],
+                    float(c["trust_score"]), float(c["icp_score"]), 92, 88, 90, 85, 88,
+                    c["icp_reason"], json.dumps(c["tech_stack"], ensure_ascii=False), "active"
+                )
+            )
+            for ct in c["contacts"]:
+                db.execute(
+                    """INSERT OR REPLACE INTO contacts (
+                        id, company_id, type, value, role_title, is_verified,
+                        verification_method, legal_basis, consent_status, confidence
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (f"ct-{cid}-{uuid.uuid4().hex[:4]}", cid, ct["type"], ct["value"], ct["role"], 1, ct["smtp"], ct["iys"], "opt_in", 0.96)
+                )
+            for ev in c["evidences"]:
+                sname = ev["source_name"]
+                db.execute(
+                    """INSERT OR REPLACE INTO source_evidence (
+                        id, company_id, source_name, source_class, resolution_rule, raw_hash, trust_weight
+                    ) VALUES (?,?,?,?,?,?,?)""",
+                    (f"ev-{cid}-{uuid.uuid4().hex[:4]}", cid, sname, ev["source_class"], ev["rule"], ev["hash"], ev["trust"])
+                )
+            for sig in c["signals"]:
+                db.execute(
+                    """INSERT OR REPLACE INTO intent_signals (
+                        id, company_id, signal_type, label, detail, occurred_at
+                    ) VALUES (?,?,?,?,?,?)""",
+                    (f"sig-{cid}-{uuid.uuid4().hex[:4]}", cid, sig["type"], sig["label"], sig["detail"], sig["date"])
+                )
+            db.execute(
+                """UPDATE crawler_jobs SET
+                    crawled_count = ?, new_count = ?, source_breakdown_json = ?, message = ?
+                WHERE id = ?""",
+                (i, i, json.dumps(source_counts, ensure_ascii=False), f"{i}/{target_limit} şirket çekildi.", job_id)
+            )
+            db.commit()
+
+
+def _country_worker_loop(country: str, delay_sec: float, worker_id: int):
+    print(f"[PARALLEL WORKER {worker_id}] 🚀 {country} hattı devrede.")
+    w_info = ACTIVE_WORKERS_STATE[country]
+
+    while not _crawler_stop_event.is_set():
+        with DB_WRITE_LOCK:
+            with connect() as db:
+                row = db.execute(
+                    "SELECT * FROM crawler_jobs WHERE country = ? AND status = 'queued' ORDER BY id ASC LIMIT 1",
+                    (country,)
+                ).fetchone()
+                if row:
+                    job = dict(row)
+                    db.execute("UPDATE crawler_jobs SET status = 'running', started_at = CURRENT_TIMESTAMP, message = 'Eşzamanlı taranıyor...' WHERE id = ?", (job["id"],))
+                    db.commit()
+                else:
+                    job = None
+
+        if not job:
+            w_info["status"] = "completed"
+            w_info["progress_pct"] = 100
+            w_info["message"] = f"{country} kuyruğu tamamlandı."
+            print(f"[PARALLEL WORKER {worker_id}] {country} için tüm görevler tamamlandı.")
+            break
+
+        job_id = job["id"]
+        city = job.get("city", "Genel")
+        industry = job["industry"]
+        target_limit = job.get("target_count", 100)
+        sources = json.loads(job.get("sources_json") or "[]")
+
+        w_info["status"] = "crawling"
+        w_info["city"] = city
+        w_info["industry"] = industry
+        w_info["job_id"] = job_id
+        w_info["target"] = target_limit
+        w_info["crawled"] = 0
+        w_info["progress_pct"] = 0
+        w_info["message"] = f"{city} taranıyor..."
+
+        source_counts = {s: 0 for s in sources}
+
+        for i in range(1, target_limit + 1):
+            if _crawler_stop_event.is_set():
+                break
+
+            time.sleep(delay_sec)
+
+            if _crawler_stop_event.is_set():
+                break
+
+            c = generate_crawled_company(country, industry, sources, target_city=city)
+            cid = c["id"]
+
+            if _scrapling_engine.is_available and c.get("domain") and ("web_crawl" in sources or "Web" in " ".join(sources)):
+                try:
+                    sc_data = _scrapling_engine.enrich_company_website(c["domain"])
+                    if sc_data.get("success"):
+                        for em in sc_data.get("emails", []):
+                            c["contacts"].append({"type": "email", "value": em, "role": "Resmi İletişim", "smtp": "Scrapling Web Doğrulandı", "iys": "Meşru Menfaat"})
+                        for cad in sc_data.get("detected_cad", []):
+                            if cad not in c["tech_stack"]:
+                                c["tech_stack"].append(cad)
+                except Exception:
+                    pass
+
+            used_source = random.choice(sources) if sources else "web_crawl"
+            source_counts[used_source] = source_counts.get(used_source, 0) + 1
+
+            save_crawled_record(c, country, industry, job_id, i, target_limit, source_counts)
+
+            w_info["crawled"] = i
+            w_info["progress_pct"] = int((i / target_limit) * 100)
+            w_info["message"] = f"{city} ({i}/{target_limit}) · {c['short_name']}"
+
+            CRAWLER_STATE["last_added_company"] = c["short_name"]
+            CRAWLER_STATE["last_crawled_at"] = "Az önce"
+
+        if _crawler_stop_event.is_set():
+            with DB_WRITE_LOCK:
+                with connect() as db:
+                    db.execute("UPDATE crawler_jobs SET status = 'paused', message = 'Durduruldu' WHERE id = ?", (job_id,))
+                    db.commit()
+            w_info["status"] = "paused"
+            break
+        else:
+            with DB_WRITE_LOCK:
+                with connect() as db:
+                    db.execute(
+                        "UPDATE crawler_jobs SET status = 'completed', completed_at = CURRENT_TIMESTAMP, message = 'Tamamlandı' WHERE id = ?",
+                        (job_id,)
+                    )
+                    db.commit()
+            w_info["status"] = "completed"
+            w_info["progress_pct"] = 100
+            w_info["message"] = f"{city} ({industry}) tamamlandı."
+            print(f"[PARALLEL WORKER {worker_id} ✓] {country} / {city} ({industry}) tamamlandı.")
+
+    active_running = [w for w in ACTIVE_WORKERS_STATE.values() if w["status"] == "crawling"]
+    if not active_running:
+        CRAWLER_STATE["status"] = "idle"
+        CRAWLER_STATE["is_parallel"] = False
+        CRAWLER_STATE["message"] = "5x Paralel tarama tamamlandı: Tüm ülkelerdeki görevler başarıyla işlendi."
+
+
+def start_parallel_crawler(countries: Optional[List[str]] = None, delay_sec: float = 1.2) -> Dict[str, Any]:
+    global _parallel_threads, _crawler_stop_event
+    _crawler_stop_event.clear()
+    target_countries = countries or PARALLEL_COUNTRIES
+
+    CRAWLER_STATE["status"] = "crawling"
+    CRAWLER_STATE["is_parallel"] = True
+    CRAWLER_STATE["concurrency"] = len(target_countries)
+    CRAWLER_STATE["auto_advance"] = True
+    CRAWLER_STATE["delay_sec"] = delay_sec
+    CRAWLER_STATE["message"] = f"5x Eşzamanlı Tarama Aktif — {len(target_countries)} ülke hattı paralel çalışıyor."
+
+    _parallel_threads = {}
+    for idx, c_name in enumerate(target_countries, 1):
+        ACTIVE_WORKERS_STATE[c_name]["status"] = "crawling"
+        ACTIVE_WORKERS_STATE[c_name]["message"] = "Kuyruktan görev bekleniyor..."
+        t = threading.Thread(
+            target=_country_worker_loop,
+            args=(c_name, delay_sec, idx),
+            name=f"Worker-{c_name}",
+            daemon=True
+        )
+        _parallel_threads[c_name] = t
+        t.start()
+
+    return {
+        "ok": True,
+        "workers_started": len(target_countries),
+        "countries": target_countries,
+        "message": f"5x Hızlandırılmış Paralel Tarama {len(target_countries)} ülke hattında eşzamanlı olarak başlatıldı."
+    }
+
 def start_crawl_job(country: str, industry: str, sources: List[str], limit: int, delay_sec: float, city: str = "Genel", existing_job_id: Optional[str] = None) -> str:
     global _crawler_thread, _crawler_stop_event
     _crawler_stop_event.clear()
@@ -404,8 +618,13 @@ def stop_crawl_job():
     global _crawler_stop_event
     _crawler_stop_event.set()
     CRAWLER_STATE["auto_advance"] = False
+    CRAWLER_STATE["is_parallel"] = False
     CRAWLER_STATE["status"] = "idle"
-    CRAWLER_STATE["message"] = "Toplayıcı kullanıcı tarafından durduruldu."
+    CRAWLER_STATE["message"] = "Toplayıcı iş parçacıkları kullanıcı tarafından durduruldu."
+    for w in ACTIVE_WORKERS_STATE.values():
+        if w["status"] == "crawling":
+            w["status"] = "paused"
+            w["message"] = "Durduruldu"
     if CRAWLER_STATE.get("active_job_id"):
         with connect() as db:
             db.execute("UPDATE crawler_jobs SET status = 'paused' WHERE id = ?", (CRAWLER_STATE["active_job_id"],))
@@ -524,6 +743,9 @@ def get_panel_analytics() -> Dict[str, Any]:
         collector_info = {
             "status_text": "Kaynak erişime hazır - Hız sınırı ve bekleme kuralları otomatik uygulanır.",
             "is_running": CRAWLER_STATE["status"] == "crawling",
+                "is_parallel": CRAWLER_STATE.get("is_parallel", False),
+                "concurrency": CRAWLER_STATE.get("concurrency", 5),
+                "active_workers": list(ACTIVE_WORKERS_STATE.values()),
             "is_crawling": CRAWLER_STATE["status"] == "crawling",
             "message": CRAWLER_STATE.get("message", "Hazır"),
             "current_countdown_sec": CRAWLER_STATE.get("countdown_sec", 82),
@@ -666,9 +888,14 @@ class NautiGraphHandler(SimpleHTTPRequestHandler):
                 completed_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'completed'").fetchone()[0]
                 running_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'running'").fetchone()[0]
                 queued_jobs = db.execute("SELECT COUNT(*) FROM crawler_jobs WHERE status = 'queued'").fetchone()[0]
+                total_crawled = db.execute("SELECT COALESCE(SUM(crawled_count), 0) FROM crawler_jobs").fetchone()[0]
+                total_new = db.execute("SELECT COALESCE(SUM(new_count), 0) FROM crawler_jobs").fetchone()[0]
                 state = dict(CRAWLER_STATE)
                 state["recent_jobs"] = recent_jobs
-                state["is_running"] = state["status"] == "crawling"
+                state["is_running"] = state["status"] == "crawling" or running_jobs > 0
+                state["is_parallel"] = state.get("is_parallel", False)
+                state["concurrency"] = state.get("concurrency", 5)
+                state["active_workers"] = list(ACTIVE_WORKERS_STATE.values())
                 state["queue_stats"] = {
                     "total": total_jobs,
                     "completed": completed_jobs,
@@ -677,10 +904,10 @@ class NautiGraphHandler(SimpleHTTPRequestHandler):
                     "target_per_task": 100
                 }
                 state["current"] = {
-                    "fetched": state.get("crawled_count", 34),
-                    "new_companies": state.get("new_count", 12),
-                    "updated": state.get("updated_count", 8),
-                    "unchanged": state.get("unchanged_count", 14),
+                    "fetched": total_crawled,
+                    "new_companies": total_new,
+                    "updated": int(total_crawled * 0.2),
+                    "unchanged": max(0, total_crawled - total_new - int(total_crawled * 0.2)),
                     "countdown_sec": state.get("countdown_sec", 82),
                     "job": {
                         "country": state.get("country", "Türkiye"),
@@ -964,6 +1191,12 @@ class NautiGraphHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         data = self.body()
+
+        # 0.00 5x Hızlandırılmış Paralel Kuyruk Başlat (5 Ülke Eşzamanlı)
+        if path == "/api/crawler/queue/start-parallel":
+            delay = float(data.get("delay_sec", 1.2))
+            res = start_parallel_crawler(delay_sec=delay)
+            return self.send_json(res)
 
         # 0.0 Toplu Kuyruk Başlat (125 Görevi Sırayla Çalıştır)
         if path == "/api/crawler/queue/start-all":
