@@ -21,6 +21,7 @@
 7. [Scrapling Üretim Hazır Kod İskeleti](#7-scrapling-üretim-hazır-kod-iskeleti)
 8. [Hukuki Çerçeve ve Uyumluluk (KVKK, GDPR, İYS)](#8-hukuki-çerçeve-ve-uyumluluk-kvkk-gdpr-iys)
 9. [NautiGraph TR Sistem Entegrasyonu](#9-nautigraph-tr-sistem-entegrasyonu)
+10. [Doğrulanmış Kaynaklar, Resmi Portallar ve Canlı API Bağlantıları Dizini](#10-doğrulanmış-kaynaklar-resmi-portallar-ve-canlı-api-bağlantıları-dizini)
 
 ---
 
@@ -406,3 +407,133 @@ NautiGraph platformunda bu strateji şu dosya ve modüllerle tam uyumlu çalış
 3. **`business_manager/database.py` & `schema.sql`:** `companies`, `contacts`, `source_evidence`, `crawler_jobs` tabloları ve `country`, `industry_sector` endeksleri.
 4. **`musteri_listesi.json`:** 1.629 adet resmi Tuzla / İstanbul ticaret sicil kaydı ile yerel veri tohumlama.
 5. **Arayüz (`index.html`):** Canlı üst toplayıcı durumu (ticker & countdown bar), 30 günlük çift çubuklu akış histogramı, ülke donut grafiği, sektör barları ve kaynak dağılım kartları.
+
+---
+
+## 10. Doğrulanmış Kaynaklar, Resmi Portallar ve Canlı API Bağlantıları Dizini
+
+Aşağıdaki dizin; planın tüm aşamalarında başvurulacak resmi devlet sicilleri, açık veri portalları, küresel POI katalogları, belediye veri setleri ve teknik kütüphane dokümantasyonlarını içermektedir:
+
+### 10.1. Resmi Ticaret Sicilleri ve Açık Veri Portalları (Ülke Bazlı)
+
+#### 🇬🇧 İngiltere (United Kingdom)
+- [Companies House Bulk Data İndirme Portalı](https://download.companieshouse.gov.uk/) — Aylık tam şirket snapshot paketleri (Free Company Data Product).
+- [Companies House Ücretsiz Bilanço İndirme (Accounts Data)](https://download.companieshouse.gov.uk/en_accountsdata.html) — Günlük/aylık XBRL mali tabloları.
+- [Companies House Data Products Rehberi (GOV.UK)](https://www.gov.uk/guidance/companies-house-data-products) — Resmi veri ürünleri ve API tanımları.
+- [CH Guide: Companies House Bulk Data Guide](https://chguide.co.uk/bulk-data/companies) — Topluluk rehberi ve CSV alan ayrıntıları.
+- [GetDunlin: How to Export Companies House Data](https://getdunlin.com/companies-house-data-export) — Toplu dışa aktarım stratejileri.
+- [FSA Food Hygiene Ratings API (api.gov.uk)](https://www.api.gov.uk/fsa/) — Tabela adları ve işletme hijyen sicilleri API'si.
+- [Yug Solutions: Using Food Hygiene Ratings API](https://www.yugsolutions.co.uk/insights/food-hygiene-ratings-api) — Entegrasyon analitiği.
+- [UK National NNDR Business Rates (data.gov.uk)](https://www.data.gov.uk/dataset/33e9d8e9-14e5-4f5b-9382-12d76ae05afa/nndr-business-rates) — Ulusal ticari mülk ve vergi sicili.
+- [London Datastore Food Hygiene Ratings](https://data.london.gov.uk/dataset/food-hygiene-ratings-scheme-2oggd) — Londra gıda ve işletme sicili.
+- [Data Mill North (Leeds & Yorkshire Open Data)](https://datamillnorth.org/dataset/food-hygiene-ratings-for-food-establishments-in-leeds-api-2nqxx) — Leeds ve bölge işletmeleri API'si.
+- [Brent Council NNDR Business Rates](https://data.brent.gov.uk/dataset/national-non-domestic-rates-nndr-e59zx) — Londra Brent ilçesi ticari mülk kayıtları.
+- [Barnet Council Business Rates](https://open.barnet.gov.uk/dataset/business-rates-nndr-accounts-in-credit-e18p2) — Londra Barnet işletme kayıtları.
+- [Hounslow Council Business Rates](https://data.hounslow.gov.uk/@london-borough-of-hounslow/business-rates) — Hounslow ticari mülk tabloları.
+- [Adur & Worthing Business Rates Open Data](https://www.adur-worthing.gov.uk/business-rates/business-rates-open-data/) — Bölgesel NNDR verisi.
+- [Herefordshire Business Rates Datasets](https://www.herefordshire.gov.uk/your-council/our-open-data/business-rates-datasets/) — Herefordshire işletme verisi.
+- [York Open Data NNDR](https://data.yorkopendata.org/dataset/groups/nndr-business-rates) — York kenti ticari işletme kayıtları.
+- [Open Innovations UK Open Data Directory](https://open-innovations.org/data/list) — Açık inovasyon veri listeleri.
+
+#### 🇫🇷 Fransa (France)
+- [Base Sirene des entreprises et de leurs établissements (data.gouv.fr)](https://www.data.gouv.fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret) — Aylık tam SIREN/SIRET Parquet ve CSV veri seti.
+- [API Recherche d’Entreprises (data.gouv.fr)](https://www.data.gouv.fr/dataservices/api-recherche-dentreprises) — Tokensız açık şirket ve yönetici sorgu servisi.
+- [INSEE Base Sirene Bilgilendirme Portalı](https://www.insee.fr/fr/information/3591226) — Resmi metodoloji ve NAF kod kılavuzu.
+- [ContactsEntreprises: Sirene Database Guide](https://contactsentreprises.fr/en/blog/sirene-database-siren-siret-public-data.html) — SIREN, SIRET ve kamu verileri kullanım rehberi.
+- [Base de Contacts: SIREN, SIRET et données publiques](https://basedecontacts.fr/blog/base-sirene-siren-siret-donnees-publiques.html) — Fransız ticari sicil mimarisi.
+- [Pharow: Base SIRENE erişim rehberi](https://www.pharow.com/blog/comment-acceder-a-la-base-sirene-des-entreprises) — Ücretsiz ve toplu erişim yöntemleri.
+- [data.gouv.fr: SIREN/SIRET Arama Uygulaması](https://www.data.gouv.fr/reuses/rechercher-un-siret-en-ligne-par-nom-siren-ou-siret-dans-la-base-sirene) — Çevrimiçi unvan ve tescil aracı.
+- [data.gouv.fr: Komün Bazlı İşletme ve Dernekler](https://www.data.gouv.fr/reuses/entreprises-et-associations-commune-par-commune-base-sirene) — Yerel belediye kırılımları.
+
+#### 🇩🇪 Almanya (Germany)
+- [OffeneRegister.de Portalı](https://offeneregister.de/) — Handelsregister verilerinin CC BY 4.0 lisanslı SQLite ve JSON indirme aynası.
+- [Registerportal der Länder (handelsregister.de Normal Arama)](https://www.handelsregister.de/rp_web/normalesuche/welcome.xhtml) — Resmi federal eyaletler sicil arama sayfası.
+- [Registerbekanntmachungen (handelsregister.de İlanlar)](https://www.handelsregister.de/rp_web/bekanntmachungen/welcome.xhtml) — Resmi tescil ve tasfiye ilanları.
+- [IHK Berlin Open Data Gewerbedaten](https://www.ihk.de/berlin/service-und-beratung/digitalisierung/open-data-5691102) — Berlin Ticaret ve Sanayi Odası açık ticari işletme CSV veri seti.
+- [GovData Kataloğu (data.europa.eu)](https://data.europa.eu/data/catalogues/govdata?locale=en) — Almanya federal ve yerel açık veri arşivi.
+- [Open Data Germany Harita Portalı](https://open-data-germany.org/en/dataset/) — Eyalet bazlı açık veri setleri.
+- [Destatis Open Data (Federal İstatistik Ofisi)](https://www.destatis.de/EN/Service/OpenData/_node.html) — Almanya makroekonomik ve sektörel istatistikler.
+- [Urban Data Platform Hamburg](https://www.en.urbandataplatform.hamburg/) — Hamburg kentsel veri altyapısı ve 3B bina verileri.
+- [Open Data München](https://opendata.muenchen.de/pages/links) — Münih Belediyesi açık veri portalları.
+- [Fraunhofer MobilityDataMap](https://mobilitydatamap.iis.fraunhofer.de/) — RheinMain ve Frankfurt akıllı ulaşım/işyeri verileri.
+- [OpenStreetMap Deutschland](https://openstreetmap.de/karte/) — Almanya yerel harita ve POI altyapısı.
+
+#### 🇳🇱 Hollanda (Netherlands)
+- [KVK Developer Portal Pricing](https://developers.kvk.nl/pricing) — Zoeken API (€0) ve Profil API (€0,02) fiyatlandırma koşulları.
+- [KVK Handelsregister Open Dataset Jaarrekeningen](https://www.kvk.nl/producten-bestellen/kvk-jaarrekeningen-open-data-set/) — XBRL yıllık bilanço açık veri paketi.
+- [European Open Data: KVK Jaarrekeningen Metadata](https://data.europa.eu/data/datasets/kvk-handelsregister-open-dataset-jaarrekeningen?locale=en) — AB veri portalı KVK metaveri kaydı.
+- [CBS Open Data (Hollanda İstatistik Ofisi)](https://www.cbs.nl/en-gb/our-services/open-data) — CBS StatLine B2B sektör istatistikleri.
+- [RDW Open Data Portal](https://opendata.rdw.nl/en/d/qane-5xqj/visualization) — Araç ve tescil açık verisi.
+- [Amsterdam Open Data](https://dataportals.org/catalog/amsterdam_open_data) — Amsterdam kentsel açık veri kataloğu.
+- [Stadsarchief Rotterdam Open Datasets](https://stadsarchief.rotterdam.nl/en/open-datasets) — Rotterdam kurumsal ve tarihsel açık veri arşivi.
+- [Den Haag en Open Data](https://www.denhaag.nl/nl/digitaal-den-haag/den-haag-en-open-data/) — Lahey kenti açık veri arşivi.
+- [Eindhoven Open Data](https://data.eindhoven.nl/pages/home/) — Eindhoven açık veri portalı.
+- [OVapi Real-Time Transit](https://trains.fyi/networks/ovapi/) — Hollanda yerel ve bölgesel ulaşım/lokasyon API'si.
+- [CompanyData NL](https://companydata.com/nl/zakelijke-adressen-kopen/) — Hollanda ve Belçika B2B ticari liste piyasa kıyaslaması.
+
+#### 🇹🇷 Türkiye
+- [Türkiye Ticaret Sicili Gazetesi İlan Görüntüleme](https://www.ticaretsicil.gov.tr/view/hizlierisim/ilangoruntuleme.php) — Tescil, unvan ve sermaye ilanları arayüzü.
+- [Türkiye Ticaret Sicili Gazetesi Unvan Sorgulama](https://www.ticaretsicil.gov.tr/view/hizlierisim/unvansorgulama.php) — Hızlı şirket unvanı sorgulama sayfası.
+- [Ticaret Bakanlığı & TOBB MERSİS Protokolü](https://ticaret.gov.tr/haberler/tobb-ile-mersi%CC%87s-i%CC%87sbirligi-protokolu-i%CC%87mzalandi) — MERSİS veri paylaşım esasları.
+- [MERSİS Kullanıcı Girişi (mersis.tobb.org.tr)](http://mersis.tobb.org.tr/_layouts/CustomFbaPage/Login6fdb.html) — Merkezi sicil giriş portalı.
+- [TOBB Sanayi Veritabanı (sanayi.org.tr)](https://sanayi.org.tr/) — 70.000+ sanayi ve üretim tesisi kapasite raporları portalı.
+- [İTO Bilgi Bankası Firma Bilgileri Sorgulama](https://bilgibankasi.ito.org.tr/tr/bilgi-bankasi/firma-bilgileri?onlyApp=true) — İstanbul Ticaret Odası sicil sorgu portalı.
+- [İTO Bilgi Güncelleme Portalı](https://guncelle.ito.org.tr/) — İstanbul firma güncelleme formu.
+- [İTO Online İşlemler Portalı](https://eportal.ito.org.tr/) — İstanbul oda online işlem arayüzü.
+- [İZTO Üye Firma Sorgulama (eportal.izto.org.tr)](https://eportal.izto.org.tr/web/Uye_Firmalar_Yeni.aspx) — İzmir Ticaret Odası ASP.NET sorgu sayfası.
+- [ATSO Üye Sorgulama (atso.org.tr/tr/company)](https://www.atso.org.tr/tr/company/) — Antalya Ticaret ve Sanayi Odası 5 alanlı sorgulama portali.
+- [BTSO Kayıtlı Üyeler Portalı](https://www.btso.org.tr/hizmetler/online-islemler/kayitli-uyeler) — Bursa Ticaret ve Sanayi Odası üye sorgulama.
+- [ULASAV Ekonomi Açık Veri Portalı (ÇŞB)](https://ulasav.csb.gov.tr/group/28d23837-9051-4f97-b5c2-12d27499db45?groups=ekonomi&_groups_limit=0&tags=ekonomi) — Ulusal Akıllı Şehir ekonomi açık veri setleri.
+- [İBB Açık Veri Portalı](https://data.ibb.gov.tr) — İstanbul Büyükşehir Belediyesi açık veri kataloğu.
+- [İzmir BB Açık Veri Portalı](https://acikveri.bizizmir.com/) — İzmir kentsel açık veri portalı.
+- [İzmir Açık Veri CC BY 4.0 Lisansı](https://acikveri.bizizmir.com/tr/license) — Ticari yeniden kullanım koşulları.
+- [Türkiye'deki Açık Veri Portalları Dizini (GitHub)](https://github.com/ozancanozdemir/Turkiye-deki-Acik-Veri-Portallari-Open-Data-Portals-in-Turkey-) — İl ve belediye açık veri dizini derlemesi.
+- [URBASED Açık Veri Portalları Analizi](https://www.urbased.com/acik-veri-portallari/) — Türkiye açık veri olgunluk analizi.
+
+---
+
+### 10.2. Küresel POI, Açık Harita ve Mekânsal Veri Setleri
+- [Overture Maps Places Guide & Dokümantasyonu](https://docs.overturemaps.org/guides/places/) — Overture 88.4M küresel POI veri şeması ve erişim rehberi.
+- [OvertureMapsAPI: What Is Overture Maps?](https://www.overturemapsapi.com/docs/what-is-overture-maps) — Temalar, veri mimarisi ve sorgulama rehberi.
+- [Google Earth Engine Overture Maps Places Kataloğu](https://developers.google.com/earth-engine/datasets/catalog/overture-maps_places_place) — Cloud ortamında mekânsal analiz.
+- [Foursquare OS Places Resmi Açık Kaynak Portalı](https://opensource.foursquare.com/os-places/) — 100M+ Apache-2.0 lisanslı POI veri indirme sayfası.
+- [OpenStreetMap Topluluğu: Foursquare 100M+ POI Duyurusu](https://community.openstreetmap.org/t/foursquare-releases-100m-poi-dataset-under-apache-2-0/121883) — Veri yapısı ve lisans tartışması.
+- [Placekey: Foursquare ve Overture Places Birleştirme](https://www.placekey.io/blog/joining-foursquare-places-with-overture-places-using-placekey) — Mekânsal ID eşleştirme ve 7.8M kayıt çakışma analizi.
+- [Reprompt AI: Foursquare OS Places vs. Overture Maps](https://repromptai.com/blog/foursquare-vs-overture) — Kapsam, tazelik ve doluluk kıyaslaması.
+
+---
+
+### 10.3. Google Places API ve Ticari Harita Maliyet Karşılaştırmaları
+- [Google Maps Platform Fiyatlandırma Listesi (Resmi)](https://developers.google.com/maps/billing-and-pricing/pricing) — Temel servisler ve 1 Mart 2025 fiyat modelleri.
+- [Google Places API Usage & Billing Rehberi](https://developers.google.com/maps/documentation/places/web-service/usage-and-billing) — SKU bazlı faturalandırma ve kota esasları.
+- [SafeGraph: Google Places API Pricing Guide (2026)](https://www.safegraph.com/guides/google-places-api-pricing/) — Gerçek maliyetler ve alternatif analizi.
+- [MapAtlas: Google Maps API Pricing and Licensing (2026)](https://mapatlas.eu/blog/google-maps-api-pricing-2026) — 1.000 çağrı başına net birim maliyet hesapları.
+- [APISerpent: How Much Does Google Maps API Cost in 2026?](https://apiserpent.com/blog/google-maps-api-pricing-comparison) — SERP kazıyıcılar ile resmi API maliyet tablosu.
+- [APIs.io Google Places Plans](https://apis.io/plans/google-places/google-places-plans-pricing/) — Kota ve kademe modelleri.
+
+---
+
+### 10.4. Çok Ülkeli Sicil Dizinleri ve Fiyatlandırma
+- [OpenCorporates Resmi Fiyatlandırma](https://opencorporates.com/pricing/) — Ticari planlar (£225 - £1.200/ay) ve açık veri şartları.
+- [Find My Moat: OpenCorporates İncelemesi](https://www.findmymoat.com/tools/opencorporates) — Özellikler ve kurumsal maliyet değerlendirmesi.
+- [PublicAPIs: OpenCorporates API Kurulum Rehberi](https://publicapis.io/opencorporates-api) — Ücretsiz kamu katmanı kullanım kılavuzu.
+
+---
+
+### 10.5. Scrapling Kütüphanesi ve Anti-Bot Teknolojisi Dokümantasyonu
+- [Scrapling Resmi Dokümantasyonu (Read the Docs)](https://scrapling.readthedocs.io/en/latest/) — StealthySession, DynamicSession, Adaptive Seçiciler kılavuzu.
+- [Scrapling GitHub Deposu (D4Vinci/Scrapling)](https://github.com/d4vinci/Scrapling) — Kaynak kod, issues ve sürüm notları.
+- [Scrapling Agent Skill Belgesi (GitHub)](https://github.com/D4Vinci/Scrapling/blob/main/agent-skill/Scrapling-Skill/SKILL.md) — Otonom AI ajanları için Scrapling kullanım becerisi.
+- [ScrapingBee: Adaptive Python Web Scraping with Scrapling](https://www.scrapingbee.com/blog/scrapling-adaptive-python-web-scraping/) — Adaptif seçiciler ve DOM kırılması analizi.
+- [Scrapeless: Scrapling Agent Browser Entegrasyonu](https://docs.scrapeless.com/en/integrations/scrapling/) — Uzak tarayıcı ve proxy rotasyonu.
+- [The Web Scraping Wiki: Scrapling Hands-on Guide (Obsidian)](https://publish.obsidian.md/twsc-public/Web+Scraping/Articles/scrapling-hands-on-guide) — Pratik uygulama notları.
+- [Global AI Force: Scrapling Installation & Setup (2026 Guide)](https://globalaiforce.com/scrapling-how-to-install-and-set-up-2026-guide/) — Kurulum ve bağımlılık yönetimi.
+- [Medium: Unlocking Adaptive Web Scraping Power with Scrapling](https://medium.com/@gemQueenx/unlocking-adaptive-web-scraping-power-with-scrapling-in-python-efa9404c9a74) — Python ile adaptif kazıma mimarisi.
+- [YouTube: Adaptive Web Scraping Framework (Scrapling Video Guide)](https://www.youtube.com/watch?v=HQCCTC5kih0) — Canlı kodlama ve demo anlatımı.
+
+---
+
+### 10.6. AB Yüksek Değerli Veri Setleri (HVD) ve Mevzuat Kaynakları
+- [Avrupa Komisyonu: High-Value Datasets SSS](https://digital-strategy.ec.europa.eu/en/faqs/high-value-datasets-questions-and-answers) — (AB) 2023/138 Yönetmeliği şirket sahipliği ve sicil açma zorunlulukları.
+- [data.europa.eu: High Value Datasets Durum Raporu](https://data.europa.eu/en/news-events/news/high-value-datasets-what-has-changed-and-what-will-come-next) — 9 Haziran 2024 sonrası üye ülke uygulamaları.
+- [GitLab Data Provider Manual: HVD Teknik Rehberi](https://dataeuropa.gitlab.io/data-provider-manual/hvd/) — Makine okunabilir format ve API teslim standartları.
