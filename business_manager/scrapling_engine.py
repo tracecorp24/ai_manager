@@ -52,6 +52,12 @@ class MaritimeScraplingEngine:
         parsed = urllib.parse.urlparse(base_url)
         domain = parsed.netloc or parsed.path
 
+        # Anti-Ban Filtresi: LinkedIn ve sosyal ağlara ASLA istek atılmaz
+        BAN_RISK_DOMAINS = ["linkedin.com", "licdn.com", "facebook.com", "instagram.com", "twitter.com", "x.com", "tiktok.com"]
+        if any(b in domain.lower() for b in BAN_RISK_DOMAINS):
+            print(f"  [ANTI-BAN ENGELİ] {domain} güvenlik ve ban koruması nedeniyle kesinlikle taranmadı.")
+            return result
+
         # Taranacak kritik sayfalar (Impressum & İletişim odaklı)
         target_paths = ["", "/impressum", "/iletisim", "/contact", "/mentions-legales", "/hakkimizda", "/about"]
         

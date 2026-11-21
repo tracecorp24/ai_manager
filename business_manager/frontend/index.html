@@ -1251,8 +1251,8 @@
               <span>Web Crawl & İletişim <b class="text-[10px] text-purple-400 font-mono">(C Sınıfı)</b></span>
             </label>
             <label class="flex items-center gap-2 p-2 rounded bg-navy-900/80 border border-slate-800 cursor-pointer hover:border-cyan-500/40">
-              <input type="checkbox" id="src-linkedin" checked class="accent-cyan-500">
-              <span>LinkedIn / Kariyer Verisi <b class="text-[10px] text-purple-400 font-mono">(C Sınıfı)</b></span>
+              <input type="checkbox" id="src-dizin" checked class="accent-cyan-500">
+              <span>Sektörel Dizin & Odalar <b class="text-[10px] text-cyan-400 font-mono">(B Sınıfı)</b></span>
             </label>
           </div>
         </div>
@@ -2741,7 +2741,7 @@
                 },
                 "right": {
                         "name": "BLUE HORIZON MARINE DESIGN STUDIO",
-                        "source": "C Sınıfı • LinkedIn Şirket Sayfası",
+                        "source": "B Sınıfı • Sektörel Dizin & Oda Portalları",
                         "address": "Konyaaltı / Antalya"
                 }
         }
@@ -3764,7 +3764,7 @@
           { source: 'EKAP Kamu İhale Katılım & Sonuç (A Sınıfı)', count: 5400, percent: 9.9, grade: 'A' },
           { source: 'Fuar Katılımcı Listeleri (İFM, TÜYAP, Cannes) (B Sınıfı)', count: 4120, percent: 7.5, grade: 'B' },
           { source: 'Firma Web Siteleri (Sitemap/Hakkımızda) (C Sınıfı)', count: 2850, percent: 5.2, grade: 'C' },
-          { source: 'LinkedIn & Kariyer Sayfaları (C Sınıfı)', count: 1298, percent: 2.4, grade: 'C' }
+          { source: 'Sektörel Dizin & Odalar (B Sınıfı)', count: 2150, percent: 3.9, grade: 'B' }
         ],
         cad_distribution: [
           { name: 'Rhino 3D', count: 18450, percent: 72 },
@@ -4388,7 +4388,7 @@
       if (document.getElementById('src-ekap')?.checked) sources.push('ekap');
       if (document.getElementById('src-fuarlar')?.checked) sources.push('fuarlar');
       if (document.getElementById('src-web')?.checked) sources.push('web_crawl');
-      if (document.getElementById('src-linkedin')?.checked) sources.push('linkedin');
+      if (document.getElementById('src-dizin')?.checked) sources.push('sektorel_dizin');
 
       const payload = {
         country: country,

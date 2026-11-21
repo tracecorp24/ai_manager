@@ -160,7 +160,7 @@ def generate_crawled_company(country: str, industry: str, selected_sources: List
         "ekap": ("EKAP Kamu İhale Katılım & Sonuç", "A", "MERSİS / Kamu İhale Tescili"),
         "fuarlar": ("Fuar Katılımcı Listeleri (İFM/Cannes/TÜYAP)", "B", "Etkinlik Katılımı Doğrulama"),
         "web_crawl": ("Firma Web Sitesi & İletişim (Crawl)", "C", "Alan Adı Kökü Eşleşmesi"),
-        "linkedin": ("LinkedIn / Kariyer İlan Verisi", "C", "Pozisyon & Şirket Sayfası Sinyali")
+        "sektorel_dizin": ("Sektörel Dizin & Oda Portalları", "B", "Kayıtlı Üye & Sicil Doğrulama")
     }
     for s in selected_sources:
         if s in SOURCE_MAP:

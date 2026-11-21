@@ -298,7 +298,7 @@ COUNTRIES_CONFIG = [
     {
         "country": "Almanya",
         "cities": ["Hamburg", "Bremen", "Kiel", "Berlin", "München"],
-        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "sektorel_dizin"],
         "titles": [
             "Schiffbau & Naval Engineering (Gemi & Yat Mühendisliği)",
             "Yacht Design Studio (Lüks Yat & Tekne Tasarımı)",
@@ -310,7 +310,7 @@ COUNTRIES_CONFIG = [
     {
         "country": "Fransa",
         "cities": ["Marsilya", "Cannes", "Nice", "La Rochelle", "Nantes"],
-        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "sektorel_dizin"],
         "titles": [
             "Architecture Navale & Ingénierie Marine (Deniz Mühendisliği)",
             "Design de Yachts & Bateaux de Luxe (Lüks Yat Tasarımı)",
@@ -322,7 +322,7 @@ COUNTRIES_CONFIG = [
     {
         "country": "Hollanda",
         "cities": ["Rotterdam", "Amsterdam", "Aalsmeer", "Makkum", "Oss"],
-        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "sektorel_dizin"],
         "titles": [
             "Scheepsbouw & Maritieme Techniek (Naval Architecture & Marine)",
             "Superyacht & Luxe Jacht Design (Süperyat & Tekne Tasarımı)",
@@ -334,7 +334,7 @@ COUNTRIES_CONFIG = [
     {
         "country": "İngiltere",
         "cities": ["Southampton", "Portsmouth", "Poole", "Londra", "Plymouth"],
-        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "linkedin"],
+        "sources": ["ticaret_sicili", "google_places", "fuarlar", "web_crawl", "sektorel_dizin"],
         "titles": [
             "Naval Architecture & Marine Engineering (Gemi & Yat Mühendisliği)",
             "Luxury Yacht & Custom Boat Design (Lüks Yat & Tekne Tasarımı)",

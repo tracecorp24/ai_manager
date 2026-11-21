@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "nautigraph": {
+      "command": "python",
+      "args": [
+        "c:\\Users\\eminf\\Desktop\\marketing_manager\\business_manager\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}
