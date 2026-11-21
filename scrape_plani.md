@@ -1,448 +1,408 @@
-# B2B Veri Kazıma & Şirket Kimlik Grafiği Strateji Planı
-> **Kapsam:** Global ve Türkiye B2B Denizcilik, Tekne & Yat Tasarımı, Tersane ve Mühendislik Veri Boru Hattı
+# 🌐 Küresel ve Türkiye B2B Şirket Kimlik Grafiği & Veri Toplama Ana Planı (Master Architecture Plan)
+
+> **Sistem:** NautiGraph B2B Denizcilik, Tekne & Yat Tasarımı, Tersane & Mühendislik Kimlik Grafiği  
+> **Temel İlke:** "Kazımasız Mimari Öncelikli" (Zero-Scrape First) + Resmi Açık Veri Yığınları + Açık POI Katmanı + Hibrit Scrapling Otomasyonu  
+> **Hedef Coğrafya:** Türkiye 🇹🇷, Almanya 🇩🇪, Hollanda 🇳🇱, İngiltere 🇬🇧, Fransa 🇫🇷 ve Akdeniz Havzası
 
 ---
 
-## 0. Scrapling Nerede İşe Yarar, Nerede Yaramaz?
-
-Scrapling'in gücü **anti-bot korumalarını aşma** ve **kırılan seçicileri (selector) kendi kendine onarma** tarafındadır:
-- **`StealthyFetcher` / `StealthySession`:** Cloudflare Turnstile, Cloudflare Interstitial ve WAF engellerini bypass eder.
-- **`DynamicFetcher`:** Headless browser ile dinamik JavaScript render eden portalları çözer.
-- **`Adaptive Selectors`:** Hedef sitenin HTML DOM yapısı değiştiğinde akıllı eşleştirme ile doğru elementi otomatik olarak yeniden bulur.
-- **`Spider` Altyapısı:** `robots_txt_obey` ve `crawldir` üzerinden oturum saklama ve artımlı (incremental) crawl imkânı sunar.
-
-> [!IMPORTANT]
-> **Doğru Aracı Seçmek:** Her veri kaynağı için Scrapling kullanmak gereksiz kaynak ve bant genişliği tüketir. Hedef tipine göre doğru araç seçilmelidir.
-
-### Hedef Tipi ve Doğru Araç Matrisi
-
-| Hedef Tipi | Örnek Kaynaklar | Doğru Araç | Neden? |
-| :--- | :--- | :--- | :--- |
-| **REST API** | Companies House, SIRENE, KVK, OpenRegister | `requests` / `httpx` | Doğrudan JSON döner, Scrapling overhead'ine gerek yoktur. |
-| **Bulk CSV/XML/ZIP** | Companies House Snapshot, Sirene Bulk | `curl` / `wget` + `duckdb` / `pandas` | Milyonlarca satırı diskte streaming olarak işlemek en hızlısıdır. |
-| **Klasik HTML Dizin & Sayfalama** | Stadtbranchenbuch, sektörel dizinler | `Fetcher` + `adaptive selector` | Hızlı HTML parse ve DOM değişikliklerine direnç. |
-| **JS Render Eden Portallar** | MERSİS, İTO Bilgi Bankası, belediye portalları | `DynamicFetcher` / `DynamicSession` | Form submit ve AJAX render işlemlerini tarayıcı motoruyla çözer. |
-| **Cloudflare / WAF Korumalı Siteler** | Ağır korumalı yabancı dizinler, tedarikçi listeleri | `StealthyFetcher` / `StealthySession` | Parmak izi gizleme, Turnstile ve JS challenge atlatma. |
-| **Google Maps / Yandex Harita** | POI, koordinat, çalışma saatleri | Places API veya hazır scraper | Harita iç API'leri kırılgan olduğu için zenginleştirmede kullanılır. |
+## İçindekiler
+1. [Yönetici Özeti ve Temel Felsefe](#1-yönetici-özeti-ve-temel-felsefe)
+2. [Scrapling Mimarisi, Yetenekleri ve Karar Matrisi](#2-scrapling-mimarisi-yetenekleri-ve-karar-matrisi)
+3. [Fiziksel İşletme ve POI Katmanı: Google Maps Alternatifleri](#3-fiziksel-işletme-ve-poi-katmanı-google-maps-alternatifleri)
+4. [Beş Hedef Ülkenin Resmi Kayıt ve Açık Veri Envanteri](#4-beş-hedef-ülkenin-resmi-kayıt-ve-açık-veri-envanteri)
+   - [Türkiye 🇹🇷](#türkiye--en-zor-ülke-merkezi-açık-veri-yok)
+   - [Almanya 🇩🇪](#almanya--zengin-açık-veri-ekosistemi)
+   - [Hollanda 🇳🇱](#hollanda--kvk-merkezli-hibrit-model)
+   - [İngiltere 🇬🇧](#ingiltere--en-açık-ve-erişilebilir-ülke)
+   - [Fransa 🇫🇷](#fransa--base-sirene-ve-merkezi-api-ekosistemi)
+5. [Ülke-Üstü ve Sınır Ötesi Doğrulama Kaynakları](#5-ülke-üstü-ve-sınır-ötesi-doğrulama-kaynakları)
+6. [Uçtan Uca B2B Veri Boru Hattı ve Entity Resolution](#6-uçtan-uca-b2b-veri-boru-hattı-ve-entity-resolution)
+7. [Scrapling Üretim Hazır Kod İskeleti](#7-scrapling-üretim-hazır-kod-iskeleti)
+8. [Hukuki Çerçeve ve Uyumluluk (KVKK, GDPR, İYS)](#8-hukuki-çerçeve-ve-uyumluluk-kvkk-gdpr-iys)
+9. [NautiGraph TR Sistem Entegrasyonu](#9-nautigraph-tr-sistem-entegrasyonu)
 
 ---
 
-## 1. Ülke Bazlı Resmi Kayıtlar ve Açık Veri Envanteri
+## 1. Yönetici Özeti ve Temel Felsefe
 
-### 🇹🇷 Türkiye — En Zor Ülke (Ulusal Açık Veri Portalı Yok)
-Türkiye'de merkezi ve toplu indirilebilir bir şirket açık veri seti bulunmamaktadır. Veriler dağınık, oturum korumalı veya form arkasındadır.
+B2B şirket ve müşteri istihbaratı oluştururken yapılan en büyük hata, **"her kaynaktan her veriyi web scraping ile kazımaya çalışmaktır."** Bu yaklaşım; IP banları, Cloudflare engelleri, kırılan DOM seçicileri ve yüksek proxy/sunucu maliyetleriyle hızla çöker.
 
-| Kaynak | Kapsam & İçerik | Erişim Biçimi | Not & Strateji |
-| :--- | :--- | :--- | :--- |
-| **MERSİS** | Tüm şirket/ticari işletme sicil kayıtları | Web Portal (Oturum zorunlu) | Resmi sicil kaynağı, API yok. `DynamicFetcher` ile form doldurma ve oturum yönetimi gerektirir. |
-| **Türkiye Ticaret Sicili Gazetesi** | Tescil, unvan değişikliği, temsilci, terkin ilanları | Ücretli Veri Aboneliği (Düzey 1-2-3) | Toplu resmi veri için en gerçekçi yol; TOBB ile veri paylaşım protokolü. |
-| **Oda Kayıtları (İTO, İZTO, ATO, BTSO)** | Üye firma listesi, NACE kodu, adres, durum | Web Form (Çoğu Captcha'lı) | Örneğin `eoda.izto.org.tr` veya İTO Bilgi Bankası unvan sorgusu. |
-| **TOBB Sanayi Veritabanı** | ~70.000 üretici, kapasite raporu, ürün, çalışan bandı | Ücretsiz Abonelik + Oturum | Üretim, tersane ve ihracatçı hedeflemede altın değerindedir. |
-| **TÜİK Veri Portalı** | Sektörel makro istatistikler | Açık Web / Portal | Firma bazlı değildir; ICP pazar büyüklüğü kıyaslaması için kullanılır. |
-| **İBB Açık Veri Portalı** | İşyeri ruhsatları, istihdam, lojistik | Açık API | Şehir bazlı Türkiye'deki en olgun açık veri kaynağıdır. |
-| **Diğer Belediyeler** | Ankara, Bursa, İzmir, Kocaeli açık veri dizinleri | Açık Portallar | `kaymal/acik-veri` dizini üzerinden takip edilir. |
+En verimli ve ölçeklenebilir yaklaşım **üç katmanlı hibrit modeldir**:
+1. **Omurga (Resmi Siciller):** Devletlerin ücretsiz sunduğu toplu açık veri dosyaları (CSV, Parquet, SQLite) ve açık REST API'ler doğrudan indirilerek temel şirket kimlikleri (Unvan, VKN/KDV/KVK/SIREN no, NACE/SIC kodu, resmi adres) kazımasız oluşturulur.
+2. **Fiziksel Varlık & POI (Açık Haritalar):** Google Places API faturalarından kaçınmak için Overture Maps (88,4M yer) ve Foursquare OS Places (100M+ POI) katmanları coğrafi ve isim bazlı eşleştirilir.
+3. **Tamamlayıcı Kazıma (Hedefli Scrapling):** Scrapling yalnızca açık API/toplu indirme sunmayan ticaret odaları (İTO, İZTO, ATSO, BTSO) ile firmaların web sitelerindeki yasal sayfalar (*Impressum*, *mentions légales*, iletişim) için devreye alınır.
 
-> [!NOTE]
-> **Türkiye Gerçeklik Notu:** Türkiye'de "tüm firmalar" havuzu kurmak için en sürdürülebilir yöntem Ticaret Sicili Gazetesi aboneliği almak ya da oda sitelerini hedefli olarak taramaktır. Oda sitelerini toplu kazımak oturum, captcha ve rate limit maliyetleri nedeniyle yavaş çalışır.
-
----
-
-### 🇩🇪 Almanya — En Zengin Resmi + Açık Veri Ekosistemi
-
-| Kaynak | Kapsam & İçerik | Erişim Biçimi | Not & Strateji |
-| :--- | :--- | :--- | :--- |
-| **handelsregister.de** | Resmi ticaret sicili, HRB/HRA, yöneticiler, ortaklar | Web (DiRUG sonrası ücretsiz) | Resmi API yoktur; `Scrapling / StealthyFetcher` tam buraya uygundur. |
-| **OffeneRegister.de / OpenRegister** | Handelsregister'in CC BY 4.0 açık aynası | Açık REST API | Ücretsiz, yasal riski sıfır ve toplu alım için en rahat yol. |
-| **Unternehmensregister / Bundesanzeiger** | Yıllık mali tablolar, bilanço bildirimleri | Web, kısmen açık | Finansal büyüklük ve ciro doğrulaması için. |
-| **IHK Berlin Gewerbedaten** | ~350.000 işletme, sektör, hukuki form | Açık Veri (Aylık, WFS/GitHub) | Model veri seti; Hamburg, Köln, Münih IHK'leri için de geçerli. |
-| **GovData** | Ulusal açık veri kataloğu | Açık Portal | Eyalet ve şehir veri portallarına tek noktadan erişim. |
-| **Stadtbranchenbuch** | 5.6M+ işletme, telefon, web sitesi, adres | Klasik Web Dizini | İletişim zenginleştirmesi için mükemmel scraping hedefi. |
-
----
-
-### 🇳🇱 Hollanda — KVK Merkezli, Açık Veri Kısıtlı
-
-| Kaynak | Kapsam & İçerik | Erişim Biçimi | Not & Strateji |
-| :--- | :--- | :--- | :--- |
-| **KVK API** | Resmi Handelsregister sorguları, tam şirket kaydı | API Key (Ücretsiz katman var) | Ülkenin tek ve nihai resmi veri otoritesi. |
-| **KVK Open Dataset (Basis Bedrijfsgegevens)** | Anonim temel veri, BV/NV tüzel kişilikler | Açık API + Toplu İndirme | İsim ve tam adres maskelenmiştir; kimlik grafiğinde tek başına yetersizdir. |
-| **KVK Jaarrekeningen** | Yıllık mali tablolar (XML formatında) | Açık Bulk Veri | Bilanço ve finansal niyet sinyali çıkarımı. |
-| **data.overheid.nl** | Ulusal açık veri portalı | Açık Web/API | Belediye ve bölgesel ticaret verileri. |
-| **Telefoonboek.nl / Gouden Gids** | İşletme profili, telefon, e-posta, yetkili | Web Dizini | KVK kayıtlarını doğrudan iletişim verisiyle eşleştirmek için. |
-
----
-
-### 🇬🇧 İngiltere — Açık Ara En Kolay ve Erişilebilir Ülke
-
-| Kaynak | Kapsam & İçerik | Erişim Biçimi | Not & Strateji |
-| :--- | :--- | :--- | :--- |
-| **Companies House API** | Canlı şirket kayıtları, müdürler, tescil belgeleri | Ücretsiz API Key | 600 istek / 5 dakika sınırı; resmi ve anlık. |
-| **Free Company Data Product** | Canlı tüm İngiliz şirketlerinin tam snapshot'ı | Açık CSV / ZIP İndirme | Tek dosyada ülkedeki tüm firmalar (~5 milyon satır). |
-| **PSC Dosyası (Persons with Significant Control)** | Gerçek fayda sahipleri ve ortaklık payları | Açık JSON Bulk | B2B karar verici ve hissedar eşleştirmesi. |
-| **FCA Register & Charity Commission** | Finans ve dernek sicilleri | Açık API | Finansal ve sektörel doğrulama. |
-| **Yell.com** | İngiltere yerel işletme dizini, iletişim, web | Web Scraping | SMB/KOBİ seviyesinde güncel telefon ve web adresi. |
-
-> [!TIP]
-> **Lisans Güvencesi:** Companies House verisi **OGL (Open Government Licence)** altındadır; ticari ürünlerde kaynak belirtilerek tamamen ücretsiz kullanılabilir.
-
----
-
-### 🇫🇷 Fransa — SIRENE ile Zengin ve Yapısal Kaynaklar
-
-| Kaynak | Kapsam & İçerik | Erişim Biçimi | Not & Strateji |
-| :--- | :--- | :--- | :--- |
-| **API Sirene (INSEE)** | 1973'ten beri tüm işletme ve şube kayıtları | Ücretsiz API Key | Saniyede 7 istek limitli resmi API. |
-| **Base Sirene Bulk** | Aylık tam şirket veritabanı snapshot'ı | Açık İndirme (CSV) | Milyonlarca Fransız işletmesini yerel veritabanına aktarmak için. |
-| **API Recherche d'Entreprises** | İsim, NAF kodu, adres ve Siren/Siret sorgusu | Tokensız Açık API | Maksimum 10.000 sonuç tavanı; anlık zenginleştirme için ideal. |
-| **INPI RNE / Data INPI** | Ulusal işletmeler sicili, tüzükler, bilançolar | Ücretsiz SFTP + API | Hissedar, imza yetkilisi ve mali tablolar için. |
-| **BODACC** | İflas, konkordato, unvan devri, sermaye artışı | Açık Veri | Satın alma niyeti veya risk erken uyarı sinyali. |
-| **PagesJaunes** | Fransız işletme rehberi, yerel iletişim verileri | Web Dizin Scraping | Doğrulanmış telefon ve web sitesi adresleri. |
-
----
-
-## 2. Ülke-Üstü ve Sınır Ötesi Açık Veri Kaynakları
-
-1. **GLEIF LEI (`api.gleif.org`):**
-   - **Lisans:** CC0 (Tamamen kamu malı).
-   - **İçerik:** Uluslararası tüzel kişi kimliği (LEI), ana şirket - bağlı ortaklık ilişkileri grafiği.
-2. **OpenCorporates (`api.opencorporates.com`):**
-   - **İçerik:** 200 milyondan fazla şirket, 100'den fazla yetki alanı; tüzel kişi tekilleştirmede global referans.
-3. **Overture Maps & OpenStreetMap Overpass (`overpass-turbo.eu`):**
-   - **İçerik:** Global POI (Point of Interest) katmanı, tersane koordinatları, limanlar. Google Maps'e göre ücretsiz ancak kapsama oranı %60–70 seviyesindedir.
-4. **AB VIES (`ec.europa.eu/taxation_customs/vies`):**
-   - **İçerik:** Avrupa Birliği KDV (VAT) numarası doğrulama servisi; sahte/inaktif şirketleri elemek için kritik.
-5. **e-Justice BRIS (`e-justice.europa.eu`):**
-   - **İçerik:** AB üye devletlerinin ticaret sicillerini birbirine bağlayan resmi tek kapı platformu.
-
----
-
-## 3. Google Maps Yolu, Maliyetleri ve Hukuki Durum
-
-| Yöntem | Yaklaşık Maliyet | Avantajları | Dezavantajları & Riskler |
-| :--- | :--- | :--- | :--- |
-| **Google Places API** *(Resmi Yol)* | Text Search ~$32 / 1.000 çağrı<br>Yorum Detay ~$40 / 1.000 çağrı<br>*(5.000 kayıt ≈ $245)* | Google Hizmet Şartlarına (ToS) %100 uyumlu, stabil, sıfır IP engelleme. | E-posta adresi vermez. Yorum saklama sınırı 30 gündür, en fazla 5 yorum döner. Pahalıdır. |
-| **Hazır Scraper API'leri** *(Outscraper, SerpApi, Bright Data)* | $0,006 – $18,60 / 1.000 kayıt *(Ortalama ~$1,50 / 1.000)* | Web sitesi, e-posta, sosyal medya ve tüm yorumları zenginleştirilmiş verir. | Fiyatlar arasında 3.000 kata varan fark vardır. Hukuki risk sağlayıcıya aittir ancak gri alandadır. |
-| **Kendi Scrapling Botun** *(StealthyFetcher)* | Sadece Proxy & Sunucu Maliyeti | Minimum maliyet, tam veri kontrolü. | Google'ın anti-bot güncellemelerine karşı kırılgandır, sık bakım gerektirir. |
-
-> [!WARNING]
-> **Altın Kural:** Google Maps asla birincil kayıt kaynağı yapılmamalıdır. Önce resmi sicillerden şirket listesi (tüzel kişi varlığı) çekilmeli, ardından Google Maps / Overpass sadece **iletişim zenginleştirme (telefon, çalışma saati, koordinat, puan)** için kullanılmalıdır.
-
----
-
-## 4. Somut Uçtan Uca B2B Veri Boru Hattı
-
-```mermaid
-flowchart TD
-    A["1. Ülke Resmi Sicili (NACE / SIC / NAF)"] -->|Toplu CSV / API / Dizin| B["2. Adres & Vergi No Normalizasyonu"]
-    B --> C["3. POI & Coğrafi Doğrulama (Overpass / Maps)"]
-    C --> D["4. İletişim Zenginleştirme (Impressum / Mentions Légales)"]
-    D --> E["5. Kimlik Grafiği & Tekilleştirme Motoru (Entity Resolution)"]
-    E --> F[("6. Postgres + PostGIS Kalıcı Depo")]
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ KATMAN 1: RESMİ SİCİL OMURGASI (KAZIMASIZ / ZERO-SCRAPE)                    │
+│ UK Companies House (CSV/API) │ FR Base Sirene (Parquet)                    │
+│ DE OffeneRegister (SQLite)   │ NL KVK Zoeken API (€0)                       │
+│ TR musteri_listesi.json / TSG Düzey Protokolü                               │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ KATMAN 2: AÇIK KAYNAK POI ZENGİNLEŞTİRMESİ                                  │
+│ Overture Maps Places (88.4M) + Foursquare OS Places (100M)                  │
+│ -> Konum koordinatları, tabela adı, çalışma saatleri, mevcut web/telefon    │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ KATMAN 3: HEDEFLİ SCRAPLING OTOMASYONU                                       │
+│ 1. Yerel Odalar: İTO Bilgi Bankası, İZTO ASP.NET, ATSO, BTSO                │
+│ 2. Yasal Sayfalar: Impressum & Mentions Légales sayfalarından e-posta/tel   │
+│ 3. Niyet Sinyalleri: EKAP ihale ilanları, fuar katılımcı listeleri, kariyer │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Aşama Detayları:
-1. **Resmi Sicilden Çıkarma:**
-   - Birleşik Krallık: Companies House Bulk CSV → SIC `30.11` & `30.12` filtresi.
-   - Fransa: Base Sirene Bulk → NAF `30.12Z` (Yat ve tekne yapımı).
-   - Almanya: OpenRegister API → WZ Kodu `30.12`.
-   - Hollanda: KVK API / Açık Veri.
-   - Türkiye: MERSİS / Ticaret Sicili Gazetesi / Oda sorguları.
-2. **Adres Normalizasyonu:** Cadde, ilçe, posta kodu ayrıştırma ve koordinat tespiti (Geocoding).
-3. **POI Zenginleştirme:** OSM Overpass üzerinden tersane sahası kontrolü, gerektiğinde Maps API.
-4. **Hukuki Sayfa Taraması (En Yüksek Verim):**
-   - Almanya'da **`Impressum`**, Fransa'da **`mentions légales`** sayfaları kanunen zorunludur.
-   - Tüm web sitesini taramak yerine sadece bu sayfaları `Scrapling` ile çekmek, şirket yöneticisi, doğrulanmış e-posta ve santral telefonunu doğrudan verir.
-5. **Deterministik Tekilleştirme:** VKN / KVK / SIREN / VAT / LEI numaraları ile tekil `company_id` oluşturma.
+---
+
+## 2. Scrapling Mimarisi, Yetenekleri ve Karar Matrisi
+
+Scrapling, Python 3.10+ (`pip install "scrapling[all]"`) ortamında çalışan, hafif HTTP istemcisinden tam donanımlı anti-bot tarayıcısına kadar kademeli ölçeklenen modern bir kazıma kütüphanesidir.
+
+### 2.1. Çekirdek Motorlar ve Yetenekler
+- **`Fetcher` / `AsyncFetcher`:** Tarayıcı TLS parmak izi taklidi, HTTP/3 desteği ve `FetcherSession` oturum yönetimi sunar. En düşük RAM/CPU tüketimiyle statik sayfalarda saniyede yüzlerce istek işler.
+- **`DynamicFetcher` / `DynamicSession`:** Optimize edilmiş `patchright` tabanlı Chromium motorudur. JavaScript ile yüklenen tabloları, `wait_selector` ile AJAX içeriklerini ve ASP.NET WebForms durumlarını yönetir.
+- **`StealthyFetcher` / `StealthySession`:** Modifiye edilmiş Camoufox motorudur. Gerçek tarayıcı parmak izi enjeksiyonu, `solve_cloudflare=True` ile Cloudflare Turnstile ve Interstitial aşımı, ~3.500 reklam/izleyici filtresi ve DoH ile DNS sızıntı koruması sağlar.
+- **Arka Plan Ağ Yakalama (`record_requests=True`):** Tarayıcı oturumunda arka planda gerçekleşen tüm XHR/Fetch ağ çağrılarını belleğe alır. `session.network.search()` ile API yanıtları DOM parse edilmeden doğrudan JSON olarak okunur.
+- **Uyarlanabilir Ayrıştırma (`adaptive=True`):** `auto_save=True` ile ilk çalıştırmada element parmak izini kaydeder. Hedef sitenin HTML DOM tasarımı değişse bile elementi benzerlik skoru üzerinden otomatik olarak bulur.
+
+### 2.2. Hedef Tipine Göre Karar Matrisi
+
+| Hedef Tipi | Örnek Kaynak | Doğru Araç | Tercih Nedeni |
+| :--- | :--- | :--- | :--- |
+| **REST API** | Companies House, Sirene API, KVK API | `requests` / `httpx` | Doğrudan JSON döner, kazıma ek yükü gereksizdir. |
+| **Bulk CSV/Parquet/SQLite** | Sirene Bulk, OffeneRegister, Companies House | `curl` + `duckdb` / `pandas` | Milyonlarca satırı diskten doğrudan işler; en hızlı ve ucuz yoldur. |
+| **Klasik HTML Dizin & Sayfalar** | Stadtbranchenbuch, NNDR bağlantı listeleri | `Fetcher` + `adaptive=True` | Minimum kaynak tüketimi, DOM değişikliklerine direnç. |
+| **JS / WebForms Portalları** | İZTO, İTO Bilgi Bankası, MERSİS | `DynamicFetcher` / `DynamicSession` | Form POST, sessionstate ve istemci tarafı render çözümü. |
+| **Cloudflare / WAF Korumalı Dizin** | Özel tedarikçi katalogları, korumalı dizinler | `StealthyFetcher` (`solve_cloudflare=True`) | Turnstile ve bot challenge bariyerlerini bypass eder. |
+| **Arka Plan JSON Çağrısı Yapan Portal**| Oda sorgu arayüzleri, canlı arama formları | `record_requests=True` | DOM seçicisi yazmadan doğrudan arka plan JSON verisini yakalar. |
+
+> [!CAUTION]
+> **Anti-Bot ve Ölçek Sınırları:** Akamai, DataDome, Kasada ve Incapsula gibi kurumsal koruma katmanlarında harici antibot token çözücüleri gerekir. Resim/metin tabanlı CAPTCHA soran formlarda Turnstile otomasyonu tek başına yeterli olmaz.
 
 ---
 
-## 5. Scrapling Temel Kod İskeleti
+## 3. Fiziksel İşletme ve POI Katmanı: Google Maps Alternatifleri
 
-Aşağıdaki şablon, adaptive seçiciler ve oturum desteği ile dayanıklı bir sicil/dizin tarayıcısı sağlar:
+Fiziksel işletmelerin konum, kategori, çalışma saatleri ve marka verileri için Google Places API'ye bağımlı kalmak bütçeyi tüketir.
+
+### 3.1. Google Places API Maliyet Riski (1 Mart 2025 Sonrası)
+- Sabit aylık 200 USD kredi kaldırılmış, SKU bazlı ücretsiz kotalara geçilmiştir (Essentials 10.000, Pro 5.000 olay).
+- Text Search Pro: **$32 / 1.000 çağrı** | Nearby Search Enterprise: **$35 / 1.000 çağrı**.
+- Arama başına en fazla 20 sonuç döner. 1.000 işletmenin tespiti ve detaylarının alınması ~$6,60 ile $18,60 aralığındadır. E-posta adresi sunmaz.
+
+### 3.2. Açık Kaynak Küresel POI Alternatifleri
+
+| Kaynak | Hacim & Kapsam | Lisans & Dağıtım | Maliyet | Notlar & Kalite Durumu |
+| :--- | :--- | :--- | :--- | :--- |
+| **Overture Maps Places** *(AWS, Meta, Microsoft, TomTom)* | **88.418.121 yer**, 2,53B bina, 475M adres. Meta (61,2M), BrightQuery (16,7M), Microsoft (5,8M), FSQ (3,6M). | **CDLA-Permissive-2.0, Apache-2.0, CC0-1.0**. AWS S3, Azure Blob, BigQuery (`bigquery-public-data.overture_maps.place`). | **Ücretsiz** *(Ticari kullanım serbest).* | `confidence` skoru ile filtrelenmelidir. Tekrar eden kayıtlar ayıklanmalıdır. |
+| **Foursquare OS Places** | **100M+ POI**, 200+ ülke, 1.000+ kategori, 20–22 nitelik. | **Apache-2.0**; DuckDB, SQLRooms, Kepler.gl ekosistemi. | **Ücretsiz** *(Ticari kullanım serbest).* | Kayıtların yaklaşık %40'ı güncellik doğrulaması gerektirir. |
+| **Hazır SERP / Scraper API'ler** | Google Maps SERP satırları ve zenginleştirilmiş profiller. | Yönetilen API (DataForSEO, SerpApi, Outscraper, Bright Data). | 1.000 yer başına ham SERP ~$0,006–$0,098, zenginleştirilmiş $0,40–$1,30. | Kendi tarayıcı altyapınızı yönetmek istemediğinizde ara çözümdür. |
+
+> [!TIP]
+> **Placekey Mekânsal Birleştirme:** Overture Maps Places ve Foursquare OS Places veri setleri Placekey standardı ile birleştirildiğinde ~7,8 milyon kayıt doğrudan çakışır ve çift yönlü teyit edilmiş yüksek kaliteli bir POI katmanı elde edilir.
+
+---
+
+## 4. Beş Hedef Ülkenin Resmi Kayıt ve Açık Veri Envanteri
+
+### Karşılaştırmalı Genel Bakış
+
+| Ülke | Kazımasız Ana Veri Kaynağı | Scrapling Gerektiren Kaynaklar | İletişim Bilgisi Durumu | Büyük Şehir Kapsamı |
+| :--- | :--- | :--- | :--- | :--- |
+| **Türkiye 🇹🇷** | `musteri_listesi.json`, ULASAV (264 belediye seti) | Ticaret Sicili Gazetesi, MERSİS, İTO, İZTO, ATSO, BTSO | Oda portallarında kısmi unvan/adres/telefon; e-posta kısıtlı | İstanbul, İzmir, Antalya, Bursa portalları aktif |
+| **Almanya 🇩🇪** | OffeneRegister.de (SQLite/JSON), GovData.de, Destatis | `handelsregister.de` (toplu indirme kısıtlıdır) | Resmi sicilde telefon/e-posta yok; Impressum taraması gerekir | Berlin (IHK Berlin CSV), Hamburg, Münih güçlü |
+| **Hollanda 🇳🇱** | KVK API (Zoeken €0; profiller €0,02), ulusal portal | Düşük maliyetli resmi API ve açık POI nedeniyle öncelikli kazıma gerekmez | KVK açık finansal seti anonimdir; temel API sicil/adres odaklıdır | Amsterdam, Rotterdam, Den Haag, Eindhoven açık |
+| **İngiltere 🇬🇧** | Companies House (~471 MB ZIP / ~5M şirket), FSA API | Dağınık belediye NNDR sayfalarından dosya bağlantısı toplama | Sicil adresi tamdır, telefon/e-posta içermez; FSA tabela adını ekler | Londra, Leeds doğrulandı; diğer kentler NNDR üzerinden |
+| **Fransa 🇫🇷** | Base Sirene (Parquet/CSV, ~30M firma), API Recherche | Şirket web sitelerinden marka ve iletişim bilgisi çıkarma | Sirene telefon/e-posta içermez; statut P şahıslar maskelidir | Paris, Lyon, Marsilya IRIS düzeyinde merkezi veridedir |
+
+---
+
+### Türkiye 🇹🇷 — En Zor Ülke (Merkezi Açık Veri Yok)
+- **Merkezi Durum:** Tek bir açık CSV/Parquet dosyası yoktur. Ticaret Sicili Gazetesi (`ticaretsicil.gov.tr`) ve MERSİS (`mersis.tobb.org.tr`) oturum ve giriş duvarı uygular. TOBB ile veri protokolü en temiz resmi yoldur.
+- **Yerel Odalar (Scrapling Hedefleri):**
+  - **İstanbul (İTO):** İTO Bilgi Bankası (`bilgibankasi.ito.org.tr`) unvan, ticaret sicil no ve vergi no ile sorgu imkânı verir. Captcha bulunmayan arayüzlerde Scrapling `record_requests=True` ile arka plan JSON uç noktaları yakalanır. İBB Açık Veri Portalı (`data.ibb.gov.tr`) lojistik ve işyeri verilerini sunar.
+  - **İzmir (İZTO):** `eportal.izto.org.tr` ASP.NET WebForms arayüzüdür; `DynamicSession` ile viewstate yönetilerek taranır. İzmir BB (`acikveri.bizizmir.com`) CC BY 4.0 ile açıktır.
+  - **Antalya (ATSO):** `atso.org.tr/tr/company/` unvan, vergi no, MERSİS no, ticaret sicil no ve oda sicil no ile 5 ayrı parametreden yapılandırılmış sorgu sunar.
+  - **Bursa (BTSO):** `btso.org.tr/hizmetler/online-islemler/kayitli-uyeler` kayıtlı üyeler arayüzü.
+  - **TOBB Sanayi Veritabanı (`sanayi.org.tr`):** ~70.000 üretici firma, kapasite raporu ve personel sayısı (oturum gerektirir).
+
+---
+
+### Almanya 🇩🇪 — Zengin Açık Veri Ekosistemi
+- **OffeneRegister.de:** Open Knowledge Foundation & OpenCorporates ortaklığıyla resmi Handelsregister verilerini tek seferde **~250 MB bzip2 (JSON)** veya **~740 MB gzip (SQLite, FTS5 tam metin aramalı)** olarak ve REST API ile ücretsiz sunar.
+- **Resmi Sicil (`handelsregister.de`):** DiRUG sonrası ücretsizdir ancak kullanım koşulları toplu indirmeyi ve serbest ticari yeniden kullanımı yasaklar. Bu nedenle OffeneRegister birincil kaynaktır.
+- **Şehirler:**
+  - **Berlin:** IHK Berlin Açık Veri Portalı, güncel ticari işletme verilerini (`aktuelle Gewerbedaten`) doğrudan CSV ve GitHub deposu olarak yayımlar. LOR mekansal kodlarıyla eşleşir.
+  - **Hamburg & Münih:** Urban Data Platform Hamburg ve `opendata.muenchen.de` (330+ set).
+
+---
+
+### Hollanda 🇳🇱 — KVK Merkezli Hibrit Model
+- **KVK Developer API (`developers.kvk.nl`):**
+  - `Zoeken (Arama) API`: **€0 (Ücretsiz)**.
+  - `Basisprofiel / Vestigingsprofiel`: **€0,02 / sorgu**.
+  - **Strateji:** Overture/FSQ ile saptanan işletmeler önce ücretsiz Zoeken API'siyle KVK numarasına bağlanır; yalnızca geçerli kayıtlar için €0,02 ödenerek resmi profil çekilir.
+- **KVK Jaarrekeningen:** XBRL mali tabloları açıktır ancak şirket adı ve KVK numarası anonimleştirilmiştir.
+- **Şehirler:** Amsterdam Open Data, Rotterdam Stadsarchief (`stadsarchief.rotterdam.nl`), Den Haag ve Eindhoven portalları.
+
+---
+
+### İngiltere 🇬🇧 — En Açık ve Erişilebilir Ülke
+- **Companies House (OGL Lisansı — Ticari Kullanım Serbest):**
+  - **Free Company Data Product:** Her ay güncellenen `BasicCompanyDataAsOneFile-YYYY-MM-01.zip` (~471 MB ZIP, ~2 GB CSV) paketiyle ~5 milyon aktif İngiliz şirketini tek dosyada sunar.
+  - **PSC Snapshot:** Gerçek fayda sahipleri ve ortaklık yapısı (günlük JSON).
+  - **Accounts Data:** Yıllık ~2,2 milyon bilançonun %60'ı (iXBRL/XBRL ZIP).
+  - **REST API:** 5 dakikada 600 istek limitiyle ücretsiz.
+- **Food Standards Agency (FSA) API (`data.food.gov.uk`):** API anahtarı istemez (`x-api-version` başlığı yeterlidir). Restoran, kafe, otel ve pub'ların tabela adlarını (trading name) ve adreslerini verir.
+- **NNDR (Business Rates):** Belediye ticari mülk ve vergi tabloları (Londra Datastore, Leeds Data Mill North).
+
+---
+
+### Fransa 🇫🇷 — Base Sirene ve Merkezi API Ekosistemi
+- **Base Sirene (INSEE) (`data.gouv.fr` — Licence Ouverte 2.0):**
+  - 1973'ten beri tüm şirketler (9 haneli SIREN) ve şubeler (14 haneli SIRET) yer alır (~30M firma, ~43M şube).
+  - Aylık Parquet / CSV formatında sunulur (~985 MB sıkıştırılmış). 2027'de tamamen Parquet'ye geçilecektir.
+  - SIREN, SIRET ve posta kodları baştaki sıfırların kaybolmaması için `string` olarak saklanmalıdır. NAF 2025 kodları ve çalışan bantları mevcuttur.
+- **Merkezi API'ler:**
+  - `API Recherche d’entreprises`: Tokensız açık arama, şirket yöneticileri (dirigeants) ve RNE pazarlama itirazı kontrolü.
+  - `API Sirene`: Günlük tescil ve unvan değişiklikleri.
+- **Şehirler:** Paris, Marsilya, Lyon ve Nice için belediye portalına gerek yoktur; Base Sirene tüm komünleri ve 15.500 IRIS istatistik bölgesini adres düzeyinde kapsar.
+
+---
+
+## 5. Ülke-Üstü ve Sınır Ötesi Doğrulama Kaynakları
+
+1. **GLEIF LEI (`api.gleif.org`):** CC0 lisanslı global tüzel kişi kimliği (LEI) ve ana-bağlı şirket hiyerarşi grafiği.
+2. **OpenCorporates (`api.opencorporates.com`):** 200M+ şirket, 100+ yargı alanı; uluslararası unvan tekilleştirme standardı.
+3. **AB VIES (`ec.europa.eu/taxation_customs/vies`):** Avrupa Birliği KDV numarası doğrulama servisi; pasif/paravan şirket elemede kritik.
+4. **OpenStreetMap Overpass API (`overpass-turbo.eu`):** Tersane havuzları, liman koordinatları, marinalar ve endüstriyel POI doğrulaması.
+5. **e-Justice BRIS (`e-justice.europa.eu`):** Avrupa Birliği resmi ticaret sicilleri tek kapı sorgu ağı.
+
+---
+
+## 6. Uçtan Uca B2B Veri Boru Hattı ve Entity Resolution
+
+### 6.1. Entity Resolution (Deterministik Tekilleştirme Sırası)
+Farklı kaynaklardan gelen veriler aşağıdaki hiyerarşiyle tek bir kimlik grafiğinde birleştirilir:
+1. **VKN / KVK / SIREN / Company Number Eşleşmesi:** Doğrudan otomatik birleştir (Kesin Kimlik).
+2. **Domain Kökü Eşleşmesi (`example.com`):** Otomatik birleştir.
+3. **Normalize Telefon Hash'i (E.164 `+90...`):** Güçlü sinyal ile birleştir.
+4. **Fuzzy Unvan Eşleşmesi (Jaro-Winkler ≥ 0.92) + Aynı Şehir + Aynı NACE:** Manuel inceleme kuyruğuna aktar.
+5. **Çelişkili Veri Durumu:** Kaynak güven puanı (`trust_score`) yüksek olan kazanır; ezilen kayıt silinmez, `merged_into` ile bağlanır.
+
+```sql
+-- Ana Şirket Tablosu
+CREATE TABLE company (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  country TEXT NOT NULL,
+  mersis_no TEXT UNIQUE,
+  vkn CHAR(10) UNIQUE,
+  siren CHAR(9) UNIQUE,
+  kvk_no CHAR(8) UNIQUE,
+  legal_name TEXT NOT NULL,
+  normalized_name TEXT NOT NULL,
+  domain TEXT UNIQUE,
+  nace_code TEXT,
+  province_id INT,
+  employee_band SMALLINT,
+  status TEXT DEFAULT 'active',
+  trust_score NUMERIC(4,2) DEFAULT 0,
+  icp_score NUMERIC(4,2) DEFAULT 0,
+  merged_into UUID REFERENCES company(id),
+  first_seen TIMESTAMPTZ DEFAULT now(),
+  last_verified_at TIMESTAMPTZ
+);
+
+-- Doğrulanmış İletişim Tablosu
+CREATE TABLE contact (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID REFERENCES company(id) ON DELETE CASCADE,
+  type TEXT CHECK (type IN ('email','phone','mobile','address','social')),
+  value TEXT NOT NULL,
+  normalized TEXT NOT NULL,
+  is_verified BOOLEAN DEFAULT false,
+  verification_method TEXT,
+  legal_basis TEXT,
+  confidence NUMERIC(3,2),
+  last_checked_at TIMESTAMPTZ
+);
+
+-- Kaynak Kanıt İzi (KVKK ve Güvenilirlik İçin Şart)
+CREATE TABLE source_evidence (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID REFERENCES company(id),
+  source_name TEXT NOT NULL,
+  source_class CHAR(1) CHECK (source_class IN ('A','B','C')),
+  url TEXT,
+  raw_hash CHAR(64),
+  fetched_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### 6.2. Hukuki Sayfa Taraması (En Yüksek ROI)
+Şirket web sitelerinin tamamını taramak yerine yalnızca yasal zorunluluk olan sayfalar taranır:
+- **Almanya:** `Impressum` sayfası (Telemediengesetz §5 gereği şirket yöneticisi, tam unvan, adres, vergi no, telefon ve e-posta içermek zorundadır).
+- **Fransa:** `Mentions légales` sayfası (LCEN kanunu gereği zorunludur).
+- Bu tek sayfa Scrapling ile çekildiğinde, tüm siteyi kazımaktan %90 daha hızlı ve %100 doğrulanmış iletişim verisi elde edilir.
+
+### 6.3. Sıralama ve ICP Skorlama Formülü
+Satış ekibine filtrelenmemiş yüz binlerce kayıt vermek işe yaramaz. Önceliklendirme formülü:
+
+$$	ext{Skor} = 0.30\cdot 	ext{ICP Uyumu} + 0.20\cdot 	ext{Veri Tazeliği} + 0.20\cdot 	ext{İletişim Doluluğu} + 0.20\cdot 	ext{Niyet Sinyali} + 0.10\cdot 	ext{Erişilebilirlik}$$
+
+**Niyet Sinyalleri (Zamanla Sönen / Decay Eden Olaylar):**
+- Son 90 günde EKAP'ta tekne/gemi ihalesine teklif verme veya kazanma.
+- Uluslararası yat/denizcilik fuarı katılımcılığı (Monaco, Cannes, METSTRADE, TÜYAP).
+- Kariyer sayfalarında CAD/CFD mühendisi veya gemi inşa mimarı ilanı açma.
+- Yeni şube tescili, sermaye artırımı, tersane sahası genişletme.
+
+---
+
+## 7. Scrapling Üretim Hazır Kod İskeleti
+
+Aşağıdaki modül; adaptive seçiciler, Cloudflare aşımı, arka plan ağ yanıtı yakalama ve oturum yönetimi içeren uçtan uca üretim şablonudur:
 
 ```python
 """
-NautiGraph B2B - Scrapling Dayanıklı Sicil ve Dizin Tarayıcısı
+NautiGraph B2B - Scrapling Hibrit Toplayıcı ve Ağ Yakalama Modülü
 """
 import asyncio
-from scrapling.fetchers import StealthySession, DynamicSession
+from typing import Dict, Any, List
+from scrapling.fetchers import Fetcher, DynamicSession, StealthySession
 from scrapling.spiders import Spider
 
 
-class MaritimeRegistrySpider(Spider):
-    name = "maritime_registry"
-    start_urls = [
-        "https://ornek-ticaret-odasi-dizini.org/sektor/yat-tasarim",
-    ]
+class B2BRegistrySpider(Spider):
+    name = "b2b_registry"
     crawldir = "./crawlstate"
     robots_txt_obey = True
     concurrent_requests = 4
     
-    # Adaptive selector yapılandırması: DOM değişse bile elementi korur
+    # Adaptive DOM seçici yapılandırması
     selector_config = {
         "adaptive": True,
         "auto_save": True
     }
 
     async def parse(self, response):
-        # Şirket listesi satırlarını ayrıştır
-        for row in response.css("table.company-results tr.item"):
-            company_data = {
-                "legal_name": row.css("td.name::text").get(),
-                "city": row.css("td.city::text").get(),
-                "tax_no": row.css("td.vkn::text").get(),
-                "detail_url": response.urljoin(row.css("a.detail-link::attr(href)").get()),
+        # 1. Liste satırlarını çek
+        for row in response.css("table.company-table tr.item"):
+            company = {
+                "legal_name": row.css("td.title::text").get(),
+                "city": row.css("td.location::text").get(),
+                "reg_no": row.css("td.reg::text").get(),
+                "detail_url": response.urljoin(row.css("a.link::attr(href)").get())
             }
-            
-            # Detay sayfasına takip isteği gönder
-            if company_data["detail_url"]:
+            if company["detail_url"]:
                 yield response.follow(
-                    company_data["detail_url"],
+                    company["detail_url"],
                     callback=self.parse_detail,
-                    meta={"company": company_data}
+                    meta={"company": company}
                 )
 
-        # Sonraki sayfa takibi
-        next_page = response.css("a.pagination-next::attr(href)").get()
-        if next_page:
-            yield response.follow(next_page, callback=self.parse)
+        # 2. Sonraki sayfa takibi
+        next_url = response.css("a.next-page::attr(href)").get()
+        if next_url:
+            yield response.follow(next_url, callback=self.parse)
 
     async def parse_detail(self, response):
         company = response.meta["company"]
-        # İletişim ve web sitesi zenginleştirmesi
-        company["website"] = response.css("a.official-web::attr(href)").get()
-        company["phone"] = response.css("span.phone-number::text").get()
+        company["website"] = response.css("a.website::attr(href)").get()
+        company["phone"] = response.css("span.phone::text").get()
         company["email"] = response.css("a[href^='mailto:']::text").get()
-        
         yield company
 
 
 # =============================================================================
-# Cloudflare ve Dinamik Portallar İçin Özel Oturumlar
+# Arka Plan Ağ İsteklerini Yakalama (XHR / JSON API Sniffing)
 # =============================================================================
 
-async def fetch_cloudflare_protected_directory(target_url: str):
+async def capture_chamber_ajax_api(target_portal_url: str, search_query: str) -> List[Dict[str, Any]]:
     """
-    Cloudflare Turnstile veya WAF arkasındaki dizinleri aşmak için StealthySession kullanımı.
+    Oda arama sayfasının arka planda çağırdığı gizli JSON uç noktasını
+    HTML ayrıştırmaya gerek kalmadan record_requests ile yakalar.
+    """
+    async with DynamicSession(headless=True, record_requests=True) as session:
+        await session.goto(target_portal_url)
+        await session.fill("#txtSearch", search_query)
+        await session.click("#btnSubmit")
+        await session.wait_for_selector(".results-grid")
+
+        # Arka plandaki JSON yanıtlarını ara
+        api_responses = session.network.search(url_pattern=r"/api/v1/companies")
+        results = []
+        for r in api_responses:
+            try:
+                results.extend(r.json().get("items", []))
+            except Exception:
+                pass
+        return results
+
+
+# =============================================================================
+# Cloudflare Turnstile ve Bot Korumalı Dizinleri Aşma
+# =============================================================================
+
+async def fetch_protected_supplier_directory(target_url: str):
+    """
+    StealthySession ile Turnstile / Interstitial korumasını aşarak HTML çeker.
     """
     async with StealthySession(solve_cloudflare=True, humanize=True, geoip=True) as session:
         response = await session.get(target_url)
+        # Adaptive seçici ile öğeyi çek
         return response.adaptive_select("div.supplier-card")
 
 
-async def fetch_dynamic_portal_with_login(login_url: str, target_url: str, credentials: dict):
+# =============================================================================
+# Hukuki Sayfa Taraması (Impressum / Mentions Légales)
+# =============================================================================
+
+async def extract_legal_page_contacts(domain: str) -> Dict[str, Any]:
     """
-    Oturum ve JavaScript gerektiren Türk kamu/oda portalları için DynamicSession kullanımı.
+    Bir firmanın Impressum veya İletişim sayfasından teyitli iletişim verisi çıkarır.
     """
-    async with DynamicSession(headless=True) as session:
-        # 1. Giriş yap
-        await session.goto(login_url)
-        await session.fill("#username", credentials["user"])
-        await session.fill("#password", credentials["pass"])
-        await session.click("#btn-login")
-        await session.wait_for_selector(".user-dashboard")
-        
-        # 2. Yetkili oturumla hedef dizini çek
-        response = await session.goto(target_url)
-        return response.css("table.registry-list")
+    fetcher = Fetcher()
+    endpoints = ["/impressum", "/mentions-legales", "/iletisim", "/contact"]
+    for ep in endpoints:
+        try:
+            url = f"https://{domain}{ep}"
+            resp = fetcher.get(url, timeout=6)
+            if resp.status == 200:
+                emails = resp.css("a[href^='mailto:']::text").getall()
+                phones = resp.css("a[href^='tel:']::text").getall()
+                if emails or phones:
+                    return {
+                        "domain": domain,
+                        "source_url": url,
+                        "emails": list(set(emails)),
+                        "phones": list(set(phones))
+                    }
+        except Exception:
+            continue
+    return {"domain": domain, "emails": [], "phones": []}
 ```
 
 ---
 
-## 6. Proje Entegrasyon Notları (NautiGraph TR)
+## 8. Hukuki Çerçeve ve Uyumluluk (KVKK, GDPR, İYS)
 
-1. **`business_manager/app.py` Entegrasyonu:**
-   Toplayıcı kuyruk motoru (`CRAWLER_STATE`), yukarıdaki akışa göre ülke seçildiğinde ilgili boru hattını devreye alır:
-   - `Türkiye` seçildiğinde: `musteri_listesi.json` yerel sicil verisi + Sanayi veritabanı.
-   - `İngiltere` seçildiğinde: Companies House Bulk CSV ve REST API.
-   - `Almanya` seçildiğinde: OpenRegister API + Impressum crawl.
-   - `İtalya & Hollanda` seçildiğinde: KVK / Registro Imprese ve sektörel fuar katılımcı listeleri.
-
-2. **Hukuki Dayanak (KVKK & GDPR):**
-   Tüzel kişi tacir kayıtları kamuya açık sicil kapsamındadır. Ancak web sitelerinden çekilen şahıs iletişimleri için **meşru menfaat denge testi (KVKK md. 5/2-f / GDPR Art. 6/1-f)** kayıt altına alınmalı ve **İYS / ROKS** ret mekanizması açık tutulmalıdır.
----
-
-## 7. Beş Ülkede Şirket Veritabanları ve Açık Veri Kaynaklarından Veri Toplama Rehberi: Scrapling ve Kazımasız Mimari
-
-Türkiye, Almanya, Hollanda, İngiltere ve Fransa genelinde şirket ve fiziksel işletme verisi toplamanın en verimli yolu, her siteyi Web Scraping ile kazımaya çalışmak değil; resmi açık veri yığınlarını (toplu CSV, Parquet, SQLite dosyaları ve ücretsiz devlet API'lerini) doğrudan indirip **Scrapling'i yalnızca toplu indirme veya açık API sunmayan ticaret odaları, yerel belediye listeleri ve kurumsal web sitesi doğrulamaları için devreye almaktır.**
-
-- **İngiltere (Companies House ve FSA)** ile **Fransa (INSEE Sirene)**: Neredeyse tüm ticari sicil ve gıda/hizmet işletmesi kayıtlarını ücretsiz, makine okunabilir ve ticari yeniden kullanıma açık biçimde sunar.
-- **Almanya:** Resmi sicili (`handelsregister.de`) kullanım şartlarıyla toplu çekimi kısıtladığından sivil toplum girişimi **OffeneRegister.de** ve Berlin Sanayi ve Ticaret Odası (**IHK Berlin**) açık CSV veri setleri öne çıkar.
-- **Hollanda:** **KVK arama API'si** ücretsizdir (€0); şirket detayları ise sorgu başına çok düşük bir ücrete (€0,02) tabidir.
-- **Türkiye:** Tüm ülkeyi kapsayan merkezi bir açık sicil yığını bulunmadığından **İTO, İZTO, BTSO ve ATSO** gibi oda portallarında Scrapling tabanlı oturum ve ağ yakalama mimarisi ana rolü üstlenir.
-
-### POI (İlgi Çekici Nokta) Katmanı ve Maliyetsizleştirme
-Google Maps benzeri fiziksel işletme (POI – Point of Interest) verileri için Google Places API'ye yüksek faturalar ödemek veya üçüncü parti Maps kazıyıcılarına bağımlı kalmak yerine:
-1. **Overture Maps Places** (Ekim 2026 sürümünde 88.418.121 küresel yer kaydı)
-2. **Foursquare OS Places** (100 milyonun üzerinde küresel POI)
-
-açık kaynak veri setlerini temel katman olarak kullanmak edinim maliyetini sıfıra indirir. Resmi devlet sicilleri çoğunlukla yasal unvan, NACE/SIC/NAF faaliyet kodu ve sicil adresini verirken telefon, e-posta ve web sitesi içermez; bu nedenle en sağlam mimari, **açık POI veri setleri ile resmi sicil tablolarını birleştirip yalnızca eksik web ve iletişim alanlarını Scrapling ile tamamlamaya dayanır.**
+- **KVKK (6698 sayılı Kanun):** Tüzel kişi kayıtları (A.Ş., Ltd. Şti.) kişisel veri kapsamı dışındadır. Ancak şahıs işletmeleri, tacirler ve çalışan e-postaları (`ad.soyad@`) kişisel veridir. Hukuki dayanak: **KVKK md. 5/2-f (Meşru Menfaat)**. Denge testi dokümante edilmelidir.
+- **İYS (İleti Yönetim Sistemi) ve 6563 sayılı Kanun:** Ticari elektronik iletilerde 2020 değişikliği tacirleri de kapsar. Soğuk e-posta gönderiminde onay durumu (`consent_status`) tutulmalı ve ret edenler için **ROKS** kontrolü uygulanmalıdır.
+- **GDPR (Genel Veri Koruma Tüzüğü):** AB vatandaşlarına ait verilerde *Article 6(1)(f)* meşru menfaat işletilir; her e-postada tek tıkla abonelikten çıkma (*opt-out*) ve *Impressum* bilgisi zorunludur.
+- **Telif ve Veritabanı Hakkı:** Sadece kamuya açık veriler toplanmalı, `robots.txt` kurallarına uyulmalı ve sunucuları çökertecek agresif eşzamanlı isteklerden kaçınılmalıdır.
 
 ---
 
-## 8. Scrapling Mimarisi: Ne Zaman Kazıma, Ne Zaman Doğrudan API veya Toplu İndirme?
+## 9. NautiGraph TR Sistem Entegrasyonu
 
-Scrapling, Python 3.10 ve üzeri ortamlarda (`pip install "scrapling[all]"` ve tarayıcı bağımlılıkları için `scrapling install`) çalışan, hem yüksek hızlı HTTP istemcisi hem de tam tarayıcı otomasyonu sunan uyarlanabilir bir veri kazıma çerçevesidir. Üç çekirdek çekme motoru sayesinde hedef sitenin teknik korumasına göre düşük maliyetten yüksek gizliliğe doğru kademeli geçiş yapılır.
-
-### Scrapling Bileşenleri ve Karar Matrisi
-
-| Scrapling Bileşeni | Altyapı ve Temel Yetenekler | Uygun Olduğu Hedef Kaynak Türü | Maliyet ve Ölçek Sınırı |
-| :--- | :--- | :--- | :--- |
-| **Fetcher / AsyncFetcher** | Tarayıcı TLS parmak izi taklidi, HTTP/3 desteği, `FetcherSession` ile çerez/oturum yönetimi. | Statik HTML tabloları, açık veri katalogları, hafif belediye sayfaları ve doğrudan JSON uç noktaları. | En düşük RAM/CPU tüketimi; `asyncio` ile çok yüksek eşzamanlılık. |
-| **DynamicFetcher / DynamicSession** | Optimize edilmiş `patchright` tabanlı Chromium/Chrome çalıştırma, `wait_selector` ve sekme havuzuyla eşzamanlı gezinme. | ASP.NET WebForms (İZTO), JavaScript ile yüklenen tablolar ve istemci tarafı render gerektiren oda portalları. | Orta-yüksek bellek kullanımı; `wait_selector` olmadan boş iskelet dönebilir. |
-| **StealthyFetcher / StealthySession** | Modifiye edilmiş Camoufox motoru, gerçek tarayıcı parmak izi enjeksiyonu, `solve_cloudflare=True` ile otomatik Cloudflare Turnstile/Interstitial aşımı, yaklaşık 3.500 reklam/izleyici alan adını engelleme ve Cloudflare DoH ile DNS sızıntısı önleme. | Cloudflare Turnstile/Interstitial veya sıkı bot tespiti uygulayan ticaret odaları ve kurumsal web siteleri. | Tarayıcı tabanlı olduğu için yüksek hacimli eşzamanlı taramalarda yüksek kaynak tüketir. |
-| **Arka Plan API Yakalama (`record_requests=True`)** | Tarayıcı oturumunda arka plandaki ağ yanıtlarını kaydeder ve `session.network.search()` ile metin/JSON gövdelerini tekrar istek atmadan okur. | Oda arama sayfalarının arka planda çağırdığı gizli JSON/API uç noktalarını HTML ayrıştırmadan doğrudan çekmek. | Sınırlı geçmiş belleği tutar; karmaşık DOM seçicisi yazma ihtiyacını tamamen ortadan kaldırır. |
-| **Uyarlanabilir Ayrıştırma (`adaptive=True`) & MCP** | `auto_save=True` ile öğe parmak izini kaydeder; sayfa şablonu değişse bile öğeyi benzerlik üzerinden yeniden bulur. Dahili Spider çerçevesi ve AI token maliyetini düşüren MCP sunucusu içerir. | Tasarımı sık güncellenen dizinler ve şirket web sitelerinden iletişim verisi çıkarma iş akışları. | Parmak izinin ilk çalıştırmada başarıyla kaydedilmiş olması şarttır. |
-
-> [!CAUTION]
-> **Anti-Bot ve Ölçek Sınırları:**
-> Büyük ölçekli taramalarda `ProxyRotator` ile döngüsel proxy rotasyonu ve `cdp_url` üzerinden uzak tarayıcı bağlantısı doğrudan desteklenir. Bununla birlikte Akamai, DataDome, Kasada ve Incapsula gibi kurumsal koruma katmanlarında harici antibot token çözücüleri gerekir. Resim/metin tabanlı güvenlik kodu (CAPTCHA) soran formlarda da Cloudflare Turnstile otomasyonu tek başına yeterli olmaz. Devletlerin doğrudan CSV, Parquet veya REST API sunduğu durumlarda Scrapling kullanmak gereksiz bakım ve sunucu maliyeti doğurur.
-
----
-
-## 9. Google Maps Alternatifleri ve Küresel Açık İşletme Veri Setleri
-
-Fiziksel işletmelerin konum, kategori, çalışma saatleri ve marka bilgilerini toplamak için Google Places API'ye veya harita kazıyıcılarına bağımlı kalmadan açık lisanslı küresel POI veri setleri birincil kaynak olarak kullanılmalıdır.
-
-Google Maps Platformu, 1 Mart 2025 itibarıyla eski aylık 200 USD sabit krediyi kaldırarak SKU başına aylık ücretsiz kullanım limitlerine geçmiştir (Essentials SKU'ları için 10.000, Pro için 5.000, Enterprise için 1.000 ücretsiz olay). Ayrıca Place Details veya Text Search çağrılarında tek bir üst katman alanının istenmesi tüm çağrının o üst katmandan faturalandırılmasına yol açar.
-
-### Küresel POI Kaynakları Karşılaştırması
-
-| Küresel Kaynak / API | Kapsam ve Veri Hacmi | Lisans ve Erişim Yöntemi | Maliyet Modeli | Bilinen Eksikler ve Kalite Notları |
-| :--- | :--- | :--- | :--- | :--- |
-| **Overture Maps Places** *(AWS, Meta, Microsoft, TomTom)* | Ekim 2026 sürümünde **88.418.121 yer**, 2,53 milyar bina, 475 milyon adres. Başlıca kaynaklar: Meta (61,27M), BrightQuery (16,77M), Microsoft (5,86M), Foursquare (3,61M), AllThePlaces (1,97M). | **CDLA-Permissive-2.0, Apache-2.0 ve CC0-1.0** (Places teması OpenStreetMap verisi ve ODbL paylaşım zorunluluğu içermez). AWS S3, Azure Blob ve BigQuery (`bigquery-public-data.overture_maps.place`) üzerinden aylık sürüm. | **Ücretsiz** *(Ticari kullanım tamamen serbest).* | Tekrar eden kayıtlar (duplicate), düşük özellik doluluğu ve çöp veri içerebilir; `confidence` skoru ile filtrelenmelidir. İşletmelerin %4,5'inde eksik adres bulunur. |
-| **Foursquare OS Places** | **100M+ küresel POI**, 200+ ülke ve bölge, 1.000+ kategori, 20–22 temel nitelik (saatler, puanlar vb.). | **Apache-2.0**; açık kaynak indirme ve DuckDB / SQLRooms / Kepler.gl ekosistemi. | **Ücretsiz** *(Ticari kullanım serbest).* | Küresel kayıtların yaklaşık %40'ının güncelliğinin yenilenmesi veya doğrulanması gerekebilir. |
-| **OpenCorporates API** | Çok ülkeli yasal şirket sicilleri ve yönetici verileri. | Kamu yararı projelerine açık/share-alike; ticari kullanım lisanslıdır. | Ücretsiz plan (~50 istek/gün, 200/ay); ticari planlar £225/ay (500 çağrı) ile £1.200/ay (5.000 çağrı) arasındadır. | Yüksek hacimli ticari ülke taramaları için maliyetlidir; ulusal açık siciller varken aracı olarak kullanılmamalıdır. |
-| **Google Places API (New)** *(Resmi)* | Küresel ticari POI, iletişim ve atmosfer verileri. | Resmi REST API; alan maskesi (`field mask`) ile çağrı. | Aylık ücretsiz kota sonrası ilk kademede 1.000 olay başına: Details Essentials $5,00, Details Pro $17,00, Text Search Pro $32,00. 1.000 yer maliyeti ~$6,60–$18,60 düzeyindedir. | Arama başına en fazla 20 yer döner; pahalıdır ve e-posta adresi vermez. |
-| **Üçüncü Parti Maps SERP / Kazıyıcı API'ler** | Google Maps arama sonuçları ve zenginleştirilmiş işletme satırları. | Yönetilen API (DataForSEO, ScrapingDog, SerpApi, Apify, Outscraper, Bright Data). | En düşük tarifelerde 1.000 yer başına ham SERP satırı ~$0,006–$0,098, zenginleştirilmiş kayıt $0,40–$1,30 aralığındadır. | Kendi tarayıcı altyapınızı yönetmek yerine tercih edilebilir. |
-
-> [!TIP]
-> **Placekey Standardı:** Açık POI katmanını güçlendirmek için Overture Maps Places ile Foursquare OS Places veri setleri Placekey standardı veya coğrafi/isim eşleştirmesiyle birleştirilebilir. İki veri seti arasında yaklaşık 7.868.660 doğrudan kayıt çakışması tespit edilmiştir.
-
----
-
-## 10. Beş Hedef Ülkenin Şirket Veritabanları ve Büyük Şehir Portalları Karşılaştırması
-
-Avrupa Birliği'nde Yüksek Değerli Veri Setleri (HVD) Yönetmeliği (AB) 2023/138, kamu kurumlarının şirket mülkiyeti dahil belirlenen veri setlerini 9 Haziran 2024'ten itibaren ücretsiz, makine okunabilir, API ve toplu indirme kanallarıyla sunmasını zorunlu kılmıştır. Ancak üye ülkeler arasındaki teknik olgunluk farkı veri toplama stratejisini belirler:
-
-| Ülke | Ana Şirket Veritabanı *(Scrapling Olmadan)* | Scrapling Gerektiren Ana / Oda Kaynakları | İletişim Bilgisi Durumu | 5 Büyük Şehir Kapsamı ve Durumu |
-| :--- | :--- | :--- | :--- | :--- |
-| **Türkiye** | Merkezi toplu indirme yok; ULASAV (`ulasav.csb.gov.tr`) ekonomi etiketinde 264 set indeksler. | Ticaret Sicili Gazetesi, MERSİS / TOBB, İTO, İZTO, BTSO, ATSO. | Oda portallarında kısmi iletişim/sicil bilgisi bulunur; bazı formlar giriş veya güvenlik kodu ister. | İstanbul, İzmir, Bursa, Antalya, Ankara belediye portalları aktif; ATO doğrudan üye sorgu uç noktası doğrulanmadı. |
-| **Almanya** | OffeneRegister.de (250 MB JSON / 740 MB SQLite), GovData.de, Destatis, open-data-germany.org. | `handelsregister.de` (kullanım şartları toplu çekimi ve serbest yeniden kullanımı kısıtlar). | Resmi sicilde telefon/e-posta/web yoktur; turizm/restoran POI'leri için open-data-germany.org ve Overture/FSQ kullanılır. | Berlin (IHK Berlin CSV), Hamburg, Münih güçlü portallara sahip; Köln ve Frankfurt için müstakil portal URL'si doğrulanmadı. |
-| **Hollanda** | KVK API (Zoeken €0; profiller €0,02/sorgu), KVK Jaarrekeningen (ücretsiz XBRL, anonim), ulusal portal (22.900+ set). | Düşük maliyetli resmi API ve açık POI katmanları sayesinde öncelikli Scrapling hedefi gerektirmez. | KVK açık finansal sette firma adı ve KVK numarası gizlidir; temel API profilleri adres/sicil odaklıdır. | Amsterdam, Rotterdam, Den Haag, Eindhoven portalları doğrulandı; Utrecht doğrudan KVK API ve ulusal portal ile kapsanır. |
-| **İngiltere** | Companies House (Aylık ~471 MB CSV/ZIP, günlük PSC JSON, günlük XBRL, ücretsiz REST & Streaming API) + FSA FHRS/FHIS API. | Dağınık belediye NNDR (Business Rates) sayfalarından XLSX/CSV bağlantısı toplama ve kurumsal web siteleri. | Companies House yönetici ve sicil adresi verir, telefon/e-posta/web vermez; FSA işletme tabela adını ekler. | Londra (London Datastore + ilçe NNDR) ve Leeds (Data Mill North) doğrulandı; Birmingham, Manchester, Glasgow ulusal API ve NNDR üzerinden çekilir. |
-| **Fransa** | Base Sirene (INSEE) (`data.gouv.fr` üzerinden aylık Parquet/CSV) + API Recherche d'entreprises + API Sirene. | Şirket web sitelerinden marka ve iletişim bilgisi kazıma. | Sirene telefon, e-posta, web sitesi ve tüzel kişi yöneticisi içermez (statut P gizlidir). | Paris, Marsilya, Lyon, Toulouse, Nice için müstakil belediye portalına gerek yoktur; Sirene ve API Recherche coğrafi/IRIS düzeyinde tüm kentleri kapsar. |
-
----
-
-## 11. Beş Ülkenin Derinlemesine Detay Analizi ve Şehir Düzeyi Veri Kaynakları
-
-### 🇹🇷 Türkiye
-Türkiye'de İngiltere veya Fransa'daki gibi tüm aktif şirketleri tek bir açık CSV veya Parquet dosyası olarak indirmeye izin veren merkezi bir açık sicil veri seti bulunmamaktadır. Bu nedenle Türkiye, il ticaret odaları ve merkezi sicil arayüzleri üzerinden Scrapling ile veri toplanması gereken başlıca ülkedir.
-- **Merkezi Düzey:**
-  - **Türkiye Ticaret Sicili Gazetesi (`ticaretsicil.gov.tr`):** `unvansorgulama.php` ve `ilangoruntuleme.php` sayfaları sunsa da detaylı erişim için oturum açma ("GİRİŞ YAPMALISINIZ") şartı uygular.
-  - **MERSİS (`mersis.tobb.org.tr`) & Sanayi Veritabanı (`sanayi.org.tr`):** Halka açık toplu API yerine e-Devlet giriş ekranlarına dayalıdır.
-  - **ULASAV (`ulasav.csb.gov.tr`):** Ekonomi kategorisi altında 264 belediye veri setini indeksler.
-- **Büyük Şehirler ve Odalar:**
-  - **İstanbul (İTO):** İTO Bilgi Bankası (`bilgibankasi.ito.org.tr/tr/bilgi-bankasi/firma-bilgileri`) ve `guncelle.ito.org.tr` üzerinden sorgu yapılır. Güvenlik kodu bulunmayan Bilgi Bankası akışlarında Scrapling `StealthySession` ve `record_requests=True` kullanılarak arka plan XHR API çağrıları doğrudan yakalanabilir. İBB Açık Veri Portalı (`data.ibb.gov.tr`) ve ilçe portalları (Tuzla, Kadıköy vb.) ek katman sağlar.
-  - **İzmir (İZTO):** `eportal.izto.org.tr/web/Uye_Firmalar_Yeni.aspx` Oda Sicil No gibi ölçütlerle sorgu yapan ASP.NET WebForms arayüzüdür ve `DynamicSession` ile viewstate/durum yönetimi gerektirir. İzmir BB Açık Veri Portalı (`acikveri.bizizmir.com`) CC BY 4.0 ile ticari kullanıma açıktır.
-  - **Bursa (BTSO):** `btso.org.tr/hizmetler/online-islemler/kayitli-uyeler` ve Bursa Açık Yeşil Platformu.
-  - **Antalya (ATSO):** `atso.org.tr/tr/company/` unvan, vergi no, MERSİS no, ticaret sicil no ve oda sicil no ile beş ayrı alandan sorgulama sunarak Scrapling için en yapılandırılmış hedeflerden birini oluşturur; belediye verileri `acikveri.antalya.bel.tr` adresindedir.
-  - **Ankara:** Ankara BB Şeffaflık Portalı (`seffaf.ankara.bel.tr`) mevcuttur.
-
----
-
-### 🇩🇪 Almanya
-Almanya'da resmi ticaret sicili yasal şartlar bakımından kısıtlayıcı olsa da sivil toplum destekli açık veri yığınları ve Berlin örneği sayesinde Scrapling olmadan geniş ölçekli şirket verisi toplanabilir.
-- **Ulusal Veri Yığınları:**
-  - **OffeneRegister.de:** Open Knowledge Foundation Deutschland ve OpenCorporates ortaklığıyla Alman Handelsregister verilerini tek seferde ~250 MB bzip2 (line-delimited JSON) veya FTS5 tam metin indeksli ~740 MB gzip (SQLite) dosyaları halinde ve REST API ile ücretsiz sunar. Eyalet mahkemesi adlandırma varyasyonlarına dikkat edilmelidir.
-  - **Resmi Sicil (`handelsregister.de`):** Kuzey Ren-Vestfalya Adalet Bakanlığı kullanım şartları toplu indirmeyi ve serbest ticari yeniden kullanımı yasaklar.
-  - **GovData.de & Destatis:** Federal katalog, istatistikler ve `open-data-germany.org` turizm/restoran Knowledge Graph POI setleri.
-- **Büyük Şehirler:**
-  - **Berlin:** IHK Berlin Açık Veri Portalı (`ihk.de/berlin/...`), güncel ticari işletme verilerini (`aktuelle Gewerbedaten`) doğrudan CSV ve GitHub deposu olarak yayımlar. LOR mekansal anahtarları ve posta kodlarıyla eşleştirilebilir.
-  - **Hamburg:** Urban Data Platform Hamburg (`en.urbandataplatform.hamburg`) ve GovData entegrasyonu.
-  - **Münih:** `opendata.muenchen.de` üzerinde 330'dan fazla veri seti.
-  - **Frankfurt & Köln:** OffeneRegister.de, GovData.de ve Overture/Foursquare katmanlarından posta kodu ve şehir filtreleriyle çekilir.
-
----
-
-### 🇳🇱 Hollanda
-Hollanda'da ticaret sicili KVK (Kamer van Koophandel) tarafından yönetilir ve ücretsiz açık veri ile düşük maliyetli resmi API net biçimde ayrılmıştır. Ticari liste sağlayıcılarının 1.000 B2B adres için ~€386 istediği bu pazarda en akılcı model:
-- **KVK Developer API (`developers.kvk.nl/pricing`):**
-  - **Zoeken (Arama) API:** Sorgu başına **€0 (Tamamen Ücretsiz)**.
-  - **Basisprofiel, Vestigingsprofiel ve Naamgeving:** Sorgu başına yalnızca **€0,02**.
-  - **Strateji:** Overture veya Foursquare ile saptanan işletmeler önce ücretsiz Zoeken API'siyle KVK numarasına bağlanır; yalnızca geçerli kayıtlar için €0,02 karşılığında resmi profil çekilir.
-- **KVK Open Dataset Jaarrekeningen:** 8 parça ZIP/XML halinde XBRL bilançoları sunar ancak firma adı ve KVK numarası gizli (anonim) olduğu için firma rehberi oluşturmada tek başına yetersizdir.
-- **Şehir Portalları:** Amsterdam Open Data, Rotterdam Stadsarchief (`stadsarchief.rotterdam.nl`), Den Haag (`denhaag.nl`) ve Eindhoven (`data.eindhoven.nl`).
-
----
-
-### 🇬🇧 İngiltere
-İngiltere, hem kurumsal sicil hem de yerel işletme kayıtları bakımından Scrapling olmadan eksiksiz veri toplanabilen en zengin ekosistemdir.
-- **Companies House (OGL Lisansı):**
-  - **Free Company Data Product:** Her ay sonu güncellenen `BasicCompanyDataAsOneFile-YYYY-MM-01.zip` paketi (~471 MB ZIP, açıldığında ~2 GB CSV) ile ~5 milyon aktif İngiliz şirketini tek dosyada sunar.
-  - **PSC Snapshot (Gerçek Fayda Sahipleri):** Günlük JSON formatında açık indirme.
-  - **Accounts Data Product:** Yıllık ~2,2 milyon bilançonun %60'ını iXBRL/XBRL ZIP olarak ücretsiz sunar.
-  - **REST API:** 5 dakikada 600 istek limitiyle canlı doğrulama.
-- **Food Standards Agency (FSA) FHRS/FHIS API (`data.food.gov.uk`):**
-  - Hesap veya API key istemez (sadece `x-api-version` başlığı yeterlidir).
-  - Tabela adları (trading name), hijyen puanları, kafe, restoran, pub, gıda marketi ve otellerin adres kayıtlarını JSON/XML olarak döner.
-- **NNDR (Business Rates) Açık Verisi:**
-  - Yerel belediyeler ticari mülkleri, vergi matrahlarını (rateable value) ve tüzel kişi şirket adlarını XLSX/CSV olarak yayımlar. Londra Datastore (`data.london.gov.uk`), Leeds (`datamillnorth.org`) örneklerdendir. Dağınık NNDR sayfalarındaki dosya bağlantılarını toplamak için hafif bir Scrapling Fetcher örümceği yeterlidir.
-
----
-
-### 🇫🇷 Fransa
-Fransa, INSEE Base Sirene ve merkezi arama API'leri sayesinde Scrapling olmadan tam kapsamlı işletme verisi toplanabilen birincil ülkedir.
-- **Base Sirene (INSEE) (`data.gouv.fr` — Licence Ouverte 2.0):**
-  - 1973'ten beri tüm şirketleri (9 haneli SIREN) ve şubeleri (14 haneli SIRET) kapsar (~30 milyon işletme, ~43 milyon şube).
-  - Aylık Parquet ve CSV formatında sunulur (~985 MB sıkıştırılmış boyut). 2027 itibarıyla CSV sonlandırılarak tamamen Parquet formatına geçilecektir.
-  - Baştaki sıfırların kaybolmaması için SIREN, SIRET ve posta kodları metin (`string`) olarak saklanmalıdır.
-  - NAF/APE faaliyet kodları (NAF 2025 geçişi dahil) ve çalışan bantları yer alır. Telefon/e-posta içermez.
-- **Merkezi API'ler:**
-  - **API Recherche d’entreprises (`data.gouv.fr`):** Şirket yöneticileri (dirigeants), coğrafi arama ve RNE pazarlama itirazı kontrolü için token gerektirmeyen açık API.
-  - **API Sirene (INSEE):** Günlük tescil ve unvan değişimlerini yakalamak için resmi API.
-- **Şehir Kapsamı:** Paris, Marsilya, Lyon, Toulouse ve Nice için belediye portallarına gerek kalmaksızın tüm işletmeler Base Sirene içinde INSEE komün kodu ve 15.500 IRIS istatistik bölgesi düzeyinde adres koordinatlarıyla haritalanabilir.
-
----
-
-## 12. Uçtan Uca Hibrit Veri Toplama ve Zenginleştirme Boru Hattı
-
-Beş ülkede hem resmi sicil doğruluğunu hem de fiziksel işletme ve iletişim zenginliğini en düşük maliyetle birleştiren 3 aşamalı mimari:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ AŞAMA 1: RESMİ SİCİL OMURGASI (KAZIMASIZ / ZERO-SCRAPE)                     │
-│ UK: Companies House Bulk CSV + PSC │ FR: Base Sirene Parquet                │
-│ DE: OffeneRegister.de SQLite       │ NL: KVK Zoeken API (€0)                │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ AŞAMA 2: AÇIK KAYNAK POI KATMANI EŞLEŞTİRMESİ                               │
-│ Overture Maps Places (88.4M) + Foursquare OS Places (100M)                  │
-│ -> Konum, tabela adı, kategori, çalışma saatleri ve mevcut telefon/web       │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ AŞAMA 3: HEDEFLİ SCRAPLING OTOMASYONU                                       │
-│ 1. Türkiye Odaları: İTO, İZTO, ATSO, BTSO (StealthySession + Network API)   │
-│ 2. UK NNDR Sayfaları: Değişken XLSX/CSV link toplayıcı                      │
-│ 3. Firma Web Siteleri: Impressum & Mentions Légales sayfalarından e-posta/tel│
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-1. **Aşama 1 — Resmi Sicil Omurgasını Kazımasız Kurma:**
-   - İngiltere için Companies House aylık `BasicCompanyData` + günlük PSC + FSA API.
-   - Fransa için INSEE Sirene Parquet dosyaları + `API Recherche d'entreprises`.
-   - Almanya için OffeneRegister.de SQLite/JSON + IHK Berlin CSV.
-   - Hollanda için ücretsiz KVK Zoeken API'si (€0).
-   - Veriler doğrudan indirilerek Postgres tablosuna aktarılır.
-2. **Aşama 2 — Açık Kaynak POI Katmanını Eşleştirme:**
-   - Overture Maps Places (BigQuery, S3 veya Azure üzerinden hedef 5 ülkenin coğrafi sınırları çekilip `confidence` skoruyla filtrelenmiş olarak) ve Foursquare OS Places veri setleri indirilir.
-   - İsim/adres/konum benzerliği üzerinden resmi sicil kayıtlarıyla birleştirilir. Tabela adları, çalışma saatleri ve mevcut web/telefon bilgileri sıfır maliyetle tamamlanır.
-3. **Aşama 3 — Hedefli Scrapling Otomasyonunu Çalıştırma:**
-   - Yalnızca toplu indirmesi olmayan Türkiye ticaret odaları (İTO Bilgi Bankası, İZTO, BTSO, ATSO, yetkili Ticaret Sicili) ve dağınık İngiltere belediye NNDR sayfaları taranır.
-   - İlk iki aşamadan elde edilen işletmelerin web sitelerindeki **`Impressum` / `Mentions Légales` / İletişim** sayfalarını çekmek için Scrapling devreye alınır.
-   - Daima hafif `Fetcher` ile başlanır; JavaScript veya bot engeli varsa `DynamicSession` / `StealthySession` (`record_requests=True`) aşamasına geçilir ve değişken DOM yapılarında `adaptive=True` devreye sokulur.
+NautiGraph platformunda bu strateji şu dosya ve modüllerle tam uyumlu çalışır:
+1. **`business_manager/run.bat`:** Python HTTP sunucusunu görünür CMD ekranında başlatır, tarayıcıyı `http://127.0.0.1:8765/` adresinde açar ve CMD kapatıldığında süreci sonlandırır.
+2. **`business_manager/app.py`:** Toplayıcı kuyruk motoru (`CRAWLER_STATE`), arka plan iş parçacığı (`_crawler_worker`), analitik paneli (`/api/analytics/panel`) ve toplayıcı denetimi (`/api/crawler/start`, `/api/crawler/stop`).
+3. **`business_manager/database.py` & `schema.sql`:** `companies`, `contacts`, `source_evidence`, `crawler_jobs` tabloları ve `country`, `industry_sector` endeksleri.
+4. **`musteri_listesi.json`:** 1.629 adet resmi Tuzla / İstanbul ticaret sicil kaydı ile yerel veri tohumlama.
+5. **Arayüz (`index.html`):** Canlı üst toplayıcı durumu (ticker & countdown bar), 30 günlük çift çubuklu akış histogramı, ülke donut grafiği, sektör barları ve kaynak dağılım kartları.
